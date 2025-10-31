@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="apple-touch-icon" sizes="76x76" href="./assets/img/apple-icon.png" />
     <link rel="icon" type="image/png" href="{{ asset('assets/img/logo.png') }}" />
-    <title>Gestion Pharmacies</title>
+    <title>Gestion Ticker</title>
     <!--     Fonts and icons     -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
     <!-- Google Fonts -->
@@ -70,8 +70,8 @@ body {
     <!-- end sidenav -->
 
     <main class="relative h-full max-h-screen transition-all duration-200 ease-in-out xl:ml-68 rounded-xl">
-        <!-- Navbar -->
-        @include('layouts.navbar')
+        <!-- Navbar  -->
+      
 
         <!-- end Navbar -->
 

@@ -6,9 +6,9 @@ class="fixed inset-y-0 left-0 z-50 w-64 transform -translate-x-full md:translate
 <!-- Header logo + close (mobile) -->
 
   <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-    <a href="{{ route('medicaments.index') }}" class="flex items-center gap-3">
+    <a  class="flex items-center gap-3">
       <img src="{{ asset('assets/img/logo.png') }}" class="h-8" alt="logo">
-      <span class="text-lg font-semibold text-gray-800">Opharma</span>
+      <span class="text-lg font-semibold text-gray-800">gestion Ticker</span>
     </a>
     <button id="sidebarClose" class="md:hidden p-2 rounded-lg hover:bg-gray-100" aria-label="Close sidebar">
       <i data-lucide="x" class="w-5 h-5"></i>
@@ -18,53 +18,23 @@ class="fixed inset-y-0 left-0 z-50 w-64 transform -translate-x-full md:translate
   <!-- Liste menu -->
   <nav class="px-3 py-6 space-y-1">
     <!-- Exemple d'item : on maintient la logique request()->routeIs pour l'active state -->
-    <a href="{{ route('dashboard') }}"
+    <a href=""
        class="flex items-center gap-3 px-4 py-2 rounded-lg font-roboto font-light text-sm transition-colors
-              {{ request()->routeIs('dashboard') ? 'bg-gradient-to-r from-green-200 to-green-200/70 p-4 rounded-lg  text-white' : 'text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-green-200 hover:to-green-200/70 transition-all duration-300' }}">
+               'bg-gradient-to-r from-green-200 to-green-200/70 p-4 rounded-lg  text-white' : 'text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-green-200 hover:to-green-200/70 transition-all duration-300' }}">
         <img src="{{ asset('icons/dashboard.png') }}" class="w-5 h-5 hover:text-white" alt="Dashboard">
       <span>Tableau de bord</span>
     </a>
 
-    <a href="{{ route('pharmacies.index') }}"
+    <a href=""
        class="flex items-center gap-3 px-4 py-2 font-roboto font-light rounded-lg text-sm transition-colors
-              {{ request()->routeIs('pharmacies.*') ? 'bg-gradient-to-r from-green-200 to-green-200/70 p-4 rounded-lg  text-white' : 'text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-green-200 hover:to-green-200/70 transition-all duration-300' }}">
+               'bg-gradient-to-r from-green-200 to-green-200/70 p-4 rounded-lg  text-white' : 'text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-green-200 hover:to-green-200/70 transition-all duration-300' }}">
         <img src="{{ asset('icons/pharmacy.png') }}" class="w-5 h-5 " alt="Pharmacie">
-      <span>Pharmacies</span>
+      <span>Demande d'evenement</span>
     </a>
 
-    <a href="{{ route('medicaments.index') }}"
-       class="flex items-center gap-3 px-4 py-2 font-roboto font-light rounded-lg text-sm transition-colors
-              {{ request()->routeIs('medicaments.*') ? 'bg-gradient-to-r from-green-200 to-green-200/70 p-4 rounded-lg  text-white' : 'text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-green-200 hover:to-green-200/70 transition-all duration-300' }}">
-        <img src="{{ asset('icons/drugs.png') }}" class="w-5 h-5 " alt="Medicament">
-      <span>Médicaments</span>
-    </a>
 
-    <a href="{{ route('doses.index') }}"
-       class="flex items-center gap-3 px-4 py-2 font-roboto font-light rounded-lg text-sm transition-colors
-              {{ request()->routeIs('doses.*') ? 'bg-gradient-to-r from-green-200 to-green-200/70 p-4 rounded-lg  text-white' : 'text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-green-200 hover:to-green-200/70 transition-all duration-300' }}">
-      <img src="{{ asset('icons/medication.png') }}" class="w-5 h-5 " alt="Doses et Formes">
-      <span>Doses et Formes</span>
-    </a>
 
-    <a href="{{ route('gerants.index') }}"
-       class="flex items-center gap-3 px-4 py-2 font-roboto font-light rounded-lg text-sm transition-colors
-              {{ request()->routeIs('gerants.*') ? 'bg-gradient-to-r from-green-200 to-green-200/70 p-4 rounded-lg  text-white' : 'text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-green-200 hover:to-green-200/70 transition-all duration-300' }}">
-        <img src="{{ asset('icons/user.png') }}" class="w-5 h-5 " alt="Gerant">
-      <span>Gérants</span>
-    </a>
-
-    <hr class="my-3 border-t border-gray-100">
-
-    <h6 class="px-4 text-xs font-bold uppercase text-gray-400">Account pages</h6>
-
-    <a href="{{ route('admins.index') }}"
-       class="flex items-center gap-3 px-4 font-roboto font-light py-2 rounded-lg text-sm transition-colors
-              {{ request()->routeIs('admins.*') ? 'bg-gradient-to-r from-green-200 to-green-200/70 p-4 rounded-lg  text-white' : 'text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-green-200 hover:to-green-200/70 transition-all duration-300' }}">
-              <img src="{{ asset('icons/user.png') }}" class="w-5 h-5 " alt="Admin">
-      <span>Admins</span>
-    </a>
-
-    <a href="{{ route('profile.edit') }}"
+    <a href=""
        class="flex items-center gap-3 px-4 font-roboto font-light py-2 rounded-lg text-sm transition-colors
               {{ request()->routeIs('profile.*') ? 'bg-gradient-to-r from-green-200 to-green-200/70 p-4 rounded-lg  text-white' : 'text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-green-200 hover:to-green-200/70 transition-all duration-300' }}">
         <img src="{{ asset('icons/setting.png') }}" class="w-5 h-5 " alt="Profil">
@@ -82,7 +52,8 @@ class="fixed inset-y-0 left-0 z-50 w-64 transform -translate-x-full md:translate
 
 <!-- Modal Déconnexion -->
 <dialog id="logout-dialog" class="rounded-2xl p-0 w-full max-w-md">
-  <form method="POST" action="{{ route('logout') }}" class="flex flex-col bg-white rounded-2xl shadow-lg overflow-hidden">
+  {{-- action="{{ route('logout') }}" --}}
+  <form method="POST"  class="flex flex-col bg-white rounded-2xl shadow-lg overflow-hidden">
     @csrf
     <div class="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-red-400 to-red-400 text-white">
       <h3 class="text-lg font-semibold">Confirmation</h3>

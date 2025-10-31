@@ -1,0 +1,21 @@
+[data-target="tooltip"][data-popper-placement^="top"] > [data-popper-arrow] {
+  bottom: -4px;
+}
+
+[data-target="tooltip"][data-popper-placement^="bottom"] > [data-popper-arrow] {
+  top: -4px;
+}
+
+[data-target="tooltip"][data-popper-placement^="left"] > [data-popper-arrow] {
+  right: -0px;
+}
+
+[data-target="tooltip"][data-popper-placement^="right"] > [data-popper-arrow] {
+  left: -4px;
+}
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+body {
+    font-family: 'Roboto', sans-serif;
+}
+
