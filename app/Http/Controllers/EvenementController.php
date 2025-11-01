@@ -1,9 +1,15 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 use App\Models\Evenement;
 use Illuminate\Http\Request;
+use App\Models\User;
+use App\Models\Organisateur;
+use App\Models\EvenementTypeBillet;
+use App\Models\TypeBillet;
 
 class EvenementController extends Controller
 {
@@ -12,15 +18,13 @@ class EvenementController extends Controller
      */
     public function index()
     {
-        //
+        $evenements = Evenement::with(['organisateur.user'])->latest()->get();
+        return view('evenements.showAll',compact('evenements'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+         return view('evenements.create');
     }
 
     /**
@@ -28,16 +32,106 @@ class EvenementController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
+        try {
+          
+        $validated = $request->validate([
+            'nom_evenement' => 'required|string|max:255',
+            'nom_organisateur' => 'nullable|string|max:255',
+            'email_organisateur' => 'nullable|string|max:255',
+            'adresse' => 'required|string|max:255',
+            'salle' => 'required|string|max:255',
+            'date_debut' => 'required|date',
+            'date_fin' => 'required|date|after_or_equal:date_debut',
+            'heure_debut' => 'required',
+            'heure_fin' => 'required',
+            'vip' => 'nullable|integer|min:0',
+            'standard' => 'nullable|integer|min:0',
+            'vvip' => 'nullable|integer|min:0',
+            'telephone' => 'required',
+        ]);
+
+        
+
+        if (!empty($validated['nom_organisateur'])) {
+            $user = User::create(['name' => $validated['nom_organisateur'],
+            'email' => $validated['email_organisateur'],
+            'password'=>Hash::make('password123'),
+            'role'=> 'organisateur'  
+        ]);
+
+        $organisateur = Organisateur::create([
+            'user_id' => $user->id,
+            'telephone' => $validated['telephone'],  
+        ]);
+        
+          
+        $evenement = Evenement::create([
+            'nom' => $validated['nom_evenement'],
+            'url_evenement'=>Str::slug($validated['nom_evenement']),
+            'organisateur_id' => $organisateur->id,
+            'adresse' => $validated['adresse'],
+            'salle' => $validated['salle'],
+            'date_debut' => $validated['date_debut'],
+            'date_fin' => $validated['date_fin'],
+            'heure_debut' => $validated['heure_debut'],
+            'heure_fin' => $validated['heure_fin'],
+            'statut' => 'encours'
+        ]);
+
+    
+       
+        $billets = [
+            'vip' => $validated['vip'] ?? 0,
+            'standard' => $validated['standard'] ?? 0,
+            'vvip' => $validated['vvip'] ?? 0,
+        ];
+
+        foreach ($billets as $type => $quantite) {
+            if ($quantite > 0) {
+                $typeBillet = TypeBillet::where('nom_type', $type)->first();
+                if ($typeBillet) {
+                    EvenementTypeBillet::create([
+                        'evenement_id' => $evenement->id,
+                        'type_billet_id' => $typeBillet->id,
+                        'nombre_billet'=>$quantite
+                    ]);
+                }
+            }
+        }
+
+        } else {
+            $organisateur_id = null;
+        }
+
+           return redirect()->route('evenements.index');
+
+         } catch (\Throwable $th) {
+            return redirect()->back();
+        }
+
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Evenement $evenement)
+    
+    public function show($url_evenement)
     {
-        //
+        try {
+            // On récupère l'événement via son URL unique
+            $evenement = Evenement::with([
+                'organisateur.user', 
+                'typeBillets' => function ($query) {
+                    $query->withPivot('nombre_billet');
+                }
+            ])->where('url_evenement', $url_evenement)->firstOrFail();
+
+            return view('evenements.show', compact('evenement'));
+
+        } catch (\Exception $e) {
+            return redirect()->route('evenements.index')
+                            ->with('error', "Événement introuvable.");
+        }
     }
+
 
     /**
      * Show the form for editing the specified resource.
@@ -58,8 +152,27 @@ class EvenementController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Evenement $evenement)
+    public function destroy($id)
     {
-        //
+          try {
+        $evenement = Evenement::with('typeBillets')->findOrFail($id);
+        $evenement->typeBillets()->detach();
+        $evenement->delete();
+        return redirect()->route('evenements.index')->with('success', 'Événement supprimé avec succès.');
+
+    } catch (\Exception $e) {
+        return redirect()->route('evenements.index')->with('error', 'Une erreur est survenue lors de la suppression.');
     }
+    }
+
+
+   public function updateStatus(Request $request, $id)
+{
+    $evenement = Evenement::findOrFail($id);
+    $evenement->statut = $request->statut;
+    $evenement->save();
+
+    return redirect()->back()->with('success', 'Statut de l’événement mis à jour avec succès.');
+}
+
 }

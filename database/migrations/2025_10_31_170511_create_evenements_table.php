@@ -14,8 +14,8 @@ return new class extends Migration
        Schema::create('evenements', function (Blueprint $table) {
     $table->id();
     $table->foreignId('organisateur_id')->constrained('organisateurs')->onDelete('cascade');
-    $table->foreignId('scanneur_id')->constrained('scanneurs')->onDelete('cascade');
-    $table->foreignId('demande_evenement_id')->constrained('demande_evenements')->onDelete('cascade');
+    $table->foreignId('scanneur_id')->nullable()->constrained('scanneurs')->onDelete('cascade');
+    $table->string('url_evenement');
     $table->string('nom');
     $table->dateTime('date_debut');
     $table->dateTime('date_fin');
@@ -23,7 +23,8 @@ return new class extends Migration
     $table->string('salle');
     $table->time('heure_debut');
     $table->time('heure_fin');
-    $table->integer('nombre_billet');
+    $table->enum('statut', ['encours', 'ferme'])->default('encours');
+
     $table->timestamps();
 });
 

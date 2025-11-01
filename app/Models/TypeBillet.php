@@ -9,4 +9,7 @@ class TypeBillet extends Model
 {
     /** @use HasFactory<\Database\Factories\TypeBilletFactory> */
     use HasFactory;
+    protected $fillable = [
+        'nom_type',
+    ];
 }

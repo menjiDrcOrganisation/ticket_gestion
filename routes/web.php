@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\EvenementController;
+
 
 Route::get('/', function () {
     return view('index');
@@ -18,5 +20,8 @@ Route::middleware('auth')->group(function () {
 });
 
 
+
 require __DIR__.'/auth.php';
+require __DIR__ . '/evenement.php';
+
 require __DIR__.'/dmd_event.php';
