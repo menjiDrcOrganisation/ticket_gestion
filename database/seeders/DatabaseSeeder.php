@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
     TypeEvenement::factory(10)->create();
 
     DemandeEvenement::factory(20)->create();
+     \App\Models\EvenementBilletTypeBillet::factory(10)->create();
     // Tu peux aussi générer d'autres utilisateurs
     //\App\Models\User::factory(5)->create();
 }

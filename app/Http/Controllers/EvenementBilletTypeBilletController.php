@@ -12,12 +12,30 @@ class EvenementBilletTypeBilletController extends Controller
      */
     public function index()
     {
-        //
+        $eventbillet = EvenementBilletTypeBillet::all();
+        dd( $eventbillet);
+        return view('evenementBilletTypeBillet.index', compact('eventbillet'));
     }
 
     /**
      * Show the form for creating a new resource.
      */
+    public function achatbillet(Request $request, $evenementId)
+    {
+        
+try {
+        // Logique pour afficher les billets disponibles pour l'événement spécifié
+
+    $achats = EvenementBilletTypeBillet::where('evenement_id', $evenementId)->get();
+
+    return view('achat', compact('achats'));
+
+
+    } catch (\Throwable $th) {
+        return redirect()->back()->with('error', 'Erreur lors de la récupération des billets.');
+       
+    }
+}
     public function create()
     {
         //

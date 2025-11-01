@@ -3,21 +3,34 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\Evenement;
+use App\Models\Billet;
+use App\Models\TypeBillet;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\EvenementBilletTypeBillet>
- */
 class EvenementBilletTypeBilletFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            //
+            'evenement_id' => Evenement::factory(),
+            'billet_id' => Billet::factory(),
+            'type_billet_id' => TypeBillet::factory(),
+            'prix' => $this->faker->randomFloat(2, 1000, 100000),
+            'statut' => $this->faker->randomElement(['disponible', 'épuisé', 'annulé']),
+            'quantite' => $this->faker->numberBetween(10, 500),
         ];
     }
+    // EvenementBilletTypeBillet.php
+public function evenement() {
+    return $this->belongsTo(Evenement::class);
+}
+
+public function billet() {
+    return $this->belongsTo(Billet::class);
+}
+
+public function type_billet() {
+    return $this->belongsTo(TypeBillet::class);
+}
+
 }

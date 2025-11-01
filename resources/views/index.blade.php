@@ -1,310 +1,152 @@
-@extends('layouts.main')
-@section('title','Pharmacies')
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Billets</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="bg-white w-full max-w-7xl mx-auto px-6 py-6 my-10 rounded-lg shadow">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+            <h2 class="text-2xl font-semibold text-gray-800">Gestion des Billets</h2>
+            <button onclick="openModal('storeModal')" class="mt-3 md:mt-0 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg shadow">
+                + Ajouter un billet
+            </button>
+        </div>
 
-@section('content')
+        <!-- Barre de recherche et filtre -->
+        <div class="flex flex-wrap gap-3 mb-4">
+            <input type="text" id="searchInput" placeholder="Rechercher..." class="border border-gray-300 rounded-lg px-3 py-2 w-full md:w-80 focus:ring-2 focus:ring-emerald-400">
+            <select id="statusFilter" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-400">
+                <option value="">Tous les statuts</option>
+                <option value="disponible">Disponible</option>
+                <option value="épuisé">Épuisé</option>
+                <option value="annulé">Annulé</option>
+            </select>
+        </div>
 
-
-
-
-
-<div class="bg-white w-full px-6 py-6 mx-auto">
-    <div class="flex flex-wrap -mx-3">
-        <div class="flex-none w-full max-w-full px-3">
-            <div class="relative flex flex-col mb-6 bg-white  shadow-xl rounded-2xl">
-
-                <!-- Header -->
-                <div class="p-6 border-b rounded-t-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <h6 class="dark:text-dark text-xl font-semibold flex items-center gap-2">
-                        {{-- <img src="https://cdn-icons-png.flaticon.com/512/2966/2966489.png" class="w-7 h-7" alt="icon"> --}}
-                        Gestion demandes d'evenements
-                    </h6>
-
-                    <div class="flex flex-wrap items-center gap-3">
-
-                        <!-- Input recherche -->
-                        <div class="relative">
-                            <input type="text" id="searchInput" placeholder="Rechercher..."
-                                class="w-96 rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-emerald-400 focus:outline-none">
-                            <span class="absolute left-2.5 top-2.5">
-                                <img src="https://cdn-icons-png.flaticon.com/512/149/149852.png" class="w-4 h-4 opacity-70" alt="search">
+        <!-- Tableau -->
+        <div class="overflow-x-auto shadow-md rounded-lg">
+            <table id="billetTable" class="min-w-full text-sm text-gray-800">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-semibold">#</th>
+                        <th class="px-4 py-3 text-left font-semibold">Événement</th>
+                        <th class="px-4 py-3 text-left font-semibold">Type</th>
+                        <th class="px-4 py-3 text-left font-semibold">Quantité</th>
+                        <th class="px-4 py-3 text-left font-semibold">Prix</th>
+                        <th class="px-4 py-3 text-center font-semibold">Statut</th>
+                        <th class="px-4 py-3 text-center font-semibold">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Exemple de données -->
+                    <tr class="border-b hover:bg-gray-50" data-status="disponible">
+                        <td class="px-4 py-3">1</td>
+                        <td class="px-4 py-3">Concert Gospel</td>
+                        <td class="px-4 py-3">VIP</td>
+                        <td class="px-4 py-3">100</td>
+                        <td class="px-4 py-3">50 000 FC</td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="status px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 cursor-pointer" onclick="toggleStatus(this)">
+                                Disponible
                             </span>
-                        </div>
+                        </td>
+                        <td class="px-4 py-3 text-center space-x-2">
+                            <button onclick="openModal('updateModal1')" class="text-blue-600 hover:underline">Éditer</button>
+                            <button onclick="openModal('deleteModal1')" class="text-red-600 hover:underline">Supprimer</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-                        <!-- Select statut -->
-                        <select id="statusFilter"
-                            class="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-400 focus:outline-none  text-dark">
-                            <option value="">Tous les statuts</option>
-                            <option value="valide">Valide</option>
-                            <option value="ferme">Fermé</option>
-                            <option value="en_attente">En attente</option>
-                        </select>
-
-                        <!-- Bouton Ajouter -->
-                        <button command="show-modal" commandfor="dialog"
-                            class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-dark hover:bg-blue-500 shadow">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M12 4v16m8-8H4"/>
-                            </svg>
-                            Ajouter
-                        </button>
-                    </div>
+    <!-- Modal Ajout -->
+    <div id="storeModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div class="bg-white rounded-lg shadow-lg w-96 p-6">
+            <h3 class="text-lg font-semibold mb-4">Ajouter un billet</h3>
+            <form>
+                <input type="text" placeholder="Nom de l'événement" class="w-full border rounded px-3 py-2 mb-2" required>
+                <input type="text" placeholder="Type de billet" class="w-full border rounded px-3 py-2 mb-2" required>
+                <input type="number" placeholder="Quantité" class="w-full border rounded px-3 py-2 mb-2" required>
+                <input type="number" step="0.01" placeholder="Prix" class="w-full border rounded px-3 py-2 mb-2" required>
+                <select class="w-full border rounded px-3 py-2 mb-4">
+                    <option value="disponible">Disponible</option>
+                    <option value="épuisé">Épuisé</option>
+                    <option value="annulé">Annulé</option>
+                </select>
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="closeModal('storeModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Annuler</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Ajouter</button>
                 </div>
+            </form>
+        </div>
+    </div>
 
-                {{-- @include("pharmacies.create") --}}
-
-                <!-- Table -->
-                <div class="flex-auto px-0 pt-4 pb-2">
-                    <div class="overflow-x-auto">
-                        <table id="pharmacyTable"
-                            class="min-w-full border-collapse text-white">
-                            <thead>
-                                <tr class="bg-dark">
-                                    <th class="px-6 py-3 text-left text-xs font-bold uppercase">Pharmacie</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold uppercase">Adresse & Téléphone</th>
-                                    <th class="px-6 py-3 text-center text-xs font-bold uppercase">Statut</th>
-                                    <th class="px-6 py-3 text-center text-xs font-bold uppercase">Créée le</th>
-                                    <th class="px-6 py-3 text-center"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {{-- @foreach ($pharmacies as $pharmacie) --}}
-                                {{-- <tr class="hover:bg-slate-50 transition"
-                                    data-status="{{ $pharmacie->statut }}">
-                                    <!-- Nom + Gérant --> --}}
-                                    <td class="p-4 border-b">
-                                        <div class="flex items-start gap-3">
-                                            <img src="{{ asset('assets/img/logo.png') }}" class="w-6 h-6" alt="pharmacy">
-                                            <div>
-                                                {{-- <h6 class="text-sm font-light">{{ ucfirst(strtolower($pharmacie->nom))}}</h6> --}}
-                                                <p class="text-xs text-slate-500 font-light">
-                                                    Gérant : 
-                                                    {{-- {{ ucfirst(strtolower($pharmacie->gerant->user->name))}} <br>
-                                                    {{ ucfirst(strtolower($pharmacie->gerant->user->email))}} --}}
-                                                     
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <!-- Adresse + Téléphone -->
-                                    <td class="p-4 border-b">
-                                        {{-- <p class="text-sm font-light">{{ ucfirst(strtolower($pharmacie->adresse))}}</p> --}}
-                                        {{-- <p class="text-xs text-slate-500">  {{ $pharmacie->telephone }}</p> --}}
-                                    </td>
-
-                                    <!-- Statut -->
-                                    <td class="p-4 text-center border-b">
-                                        {{-- @php
-                                            switch ($pharmacie->statut) {
-                                                case 'valide': $btnClass = 'bg-emerald-100 text-emerald-700'; break;
-                                                case 'ferme': $btnClass = 'bg-red-100 text-red-700'; break;
-                                                case 'en_attent': $btnClass = 'bg-orange-100 text-orange-400'; break;
-                                                default: $btnClass = 'bg-orange-100 text-orange-400';
-                                            }
-                                        @endphp --}}
-
-                                        {{-- <button command="show-modal" commandfor="edit-statut-{{ $pharmacie->id_pharmacie }}"
-                                            class="px-3 py-1 rounded-full text-xs font-semibold {{ $btnClass }}">
-                                            {{ ucfirst($pharmacie->statut) }}
-                                        </button> --}}
-                                        {{-- @include('pharmacies.editestatut') --}}
-                                    </td>
-
-                                    <!-- Date -->
-                                    <td class="p-4 text-center border-b">
-                                        <span class="text-xs text-slate-500">
-                                            {{-- {{ $pharmacie->created_at->format('d/m/Y') }} --}}
-                                        </span>
-                                    </td>
-
-                                    <!-- Actions -->
-                                    <td class="p-4 text-center border-b">
-                                        {{-- <button command="show-modal" commandfor="edit-pharmacie-{{ $pharmacie->id_pharmacie }}"
-                                            class="flex items-center gap-1 px-3 py-1 text-xs font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-400">
-                                            <img src="https://cdn-icons-png.flaticon.com/512/1828/1828911.png" class="w-3 h-3" alt="edit">
-                                            Modifier
-                                        </button> --}}
-                                        {{-- @include('pharmacies.edit') --}}
-                                    </td>
-                                </tr>
-                                {{-- @endforeach --}}
-                            </tbody>
-                        </table>
-                    </div>
+    <!-- Exemple Modals édition / suppression -->
+    <div id="updateModal1" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div class="bg-white rounded-lg shadow-lg w-96 p-6">
+            <h3 class="text-lg font-semibold mb-4">Modifier le billet</h3>
+            <form>
+                <input type="text" placeholder="Concert Gospel" class="w-full border rounded px-3 py-2 mb-2">
+                <input type="text" placeholder="VIP" class="w-full border rounded px-3 py-2 mb-2">
+                <input type="number" placeholder="100" class="w-full border rounded px-3 py-2 mb-2">
+                <input type="number" placeholder="50000" class="w-full border rounded px-3 py-2 mb-2">
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="closeModal('updateModal1')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Annuler</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Modifier</button>
                 </div>
+            </form>
+        </div>
+    </div>
 
+    <div id="deleteModal1" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div class="bg-white rounded-lg shadow-lg w-96 p-6">
+            <h3 class="text-lg font-semibold mb-4">Confirmation</h3>
+            <p>Voulez-vous supprimer le billet <strong>VIP</strong> ?</p>
+            <div class="flex justify-end gap-2 mt-4">
+                <button type="button" onclick="closeModal('deleteModal1')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Annuler</button>
+                <button type="button" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Supprimer</button>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Script recherche -->
-{{-- <script>
-document.addEventListener("DOMContentLoaded", () => {
-    const searchInput = document.getElementById('searchInput');
-    const statusFilter = document.getElementById('statusFilter');
-    const table = document.getElementById('pharmacyTable');
-
-    function debounce(fn, delay = 150) {
-        let t;
-        return (...args) => {
-            clearTimeout(t);
-            t = setTimeout(() => fn(...args), delay);
-        };
-    }
-
-    function normalize(str) {
-        if (!str) return "";
-        return str
-            .toString()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .toLowerCase()
-            .trim();
-    }
-
-    function ensureNoResultsRow() {
-        let tbody = table.querySelector('tbody');
-        let noRow = table.querySelector('.no-results-row');
-        if (!noRow) {
-            const colCount = table.querySelectorAll('thead th').length || (table.rows[0] ? table.rows[0].cells.length : 1);
-            noRow = document.createElement('tr');
-            noRow.className = 'no-results-row';
-            const td = document.createElement('td');
-            td.colSpan = colCount;
-            td.style.textAlign = 'center';
-            td.style.fontStyle = 'italic';
-            td.textContent = 'Aucun résultat trouvé.';
-            noRow.appendChild(td);
-            tbody.appendChild(noRow);
-        }
-        return noRow;
-    }
-
-    function filterTable() {
-        const rawSearch = normalize(searchInput.value || '');
-        const searchTokens = rawSearch.split(/\s+/).filter(Boolean);
-        const rawStatus = normalize(statusFilter.value || '');
-
-        const rows = table.querySelectorAll('tbody tr');
-        let anyVisible = false;
-
-        rows.forEach(row => {
-            if (row.classList.contains('no-results-row')) return;
-
-            const cells = row.getElementsByTagName('td');
-            if (cells.length === 0) {
-                row.style.display = 'none';
-                return;
-            }
-
-            // Statut basé sur data-status
-            const statutText = row.dataset && row.dataset.status ? normalize(row.dataset.status) : "";
-
-            const rowText = normalize(row.textContent);
-
-            const matchSearch = searchTokens.length === 0 || searchTokens.every(tok => rowText.includes(tok));
-            const matchStatus = rawStatus === '' || rawStatus === 'all' || statutText.includes(rawStatus);
-
-            if (matchSearch && matchStatus) {
-                row.style.display = '';
-                anyVisible = true;
-            } else {
-                row.style.display = 'none';
-            }
-        });
-
-        const noRow = ensureNoResultsRow();
-        noRow.style.display = anyVisible ? 'none' : '';
-    }
-
-    searchInput.addEventListener('input', debounce(filterTable, 120));
-    statusFilter.addEventListener('change', filterTable);
-
-    const observer = new MutationObserver(debounce(filterTable, 120));
-    const tbody = table.querySelector('tbody');
-    if (tbody) {
-        observer.observe(tbody, { childList: true, subtree: true });
-    }
-
-    filterTable();
-});
-</script> --}}
-
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const searchInput = document.getElementById('searchInput');
-        const statusFilter = document.getElementById('statusFilter');
-        const table = document.getElementById('pharmacyTable');
-    
-        function normalize(str) {
-            return str
-                ? str.toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
-                : "";
-        }
-    
-        function ensureNoResultsRow() {
-            const tbody = table.querySelector('tbody');
-            let noRow = tbody.querySelector('.no-results-row');
-            if (!noRow) {
-                const colCount = table.querySelectorAll('thead th').length;
-                noRow = document.createElement('tr');
-                noRow.className = 'no-results-row';
-                noRow.innerHTML = `<td colspan="${colCount}" class="text-center italic py-4">Aucun résultat trouvé.</td>`;
-                tbody.appendChild(noRow);
-            }
-            return noRow;
-        }
-    
-        function filterTable() {
-            const search = normalize(searchInput.value);
-            const status = normalize(statusFilter.value);
-    
-            const rows = table.querySelectorAll('tbody tr');
-            let anyVisible = false;
-    
-            rows.forEach(row => {
-                if (row.classList.contains('no-results-row')) return;
-    
-                const rowText = normalize(row.innerText);
-                const rowStatus = normalize(row.dataset.status);
-    
-                const matchSearch = search === "" || rowText.includes(search);
-                const matchStatus = status === "" || rowStatus === status;
-    
-                if (matchSearch && matchStatus) {
-                    row.style.display = "";
-                    anyVisible = true;
-                } else {
-                    row.style.display = "none";
-                }
-            });
-    
-            // Afficher/masquer "aucun résultat"
-            const noRow = ensureNoResultsRow();
-            noRow.style.display = anyVisible ? "none" : "";
-        }
-    
-        searchInput.addEventListener("input", filterTable);
-        statusFilter.addEventListener("change", filterTable);
-    
-        filterTable(); // initial
-    });
-    </script>
-
+    <!-- JS Modal + Filtre + Changement de statut -->
     <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const alert = document.getElementById("alert-message");
-        if (alert) {
-            setTimeout(() => {
-                alert.style.transition = "opacity 0.5s ease";
-                alert.style.opacity = "0";
-                setTimeout(() => alert.remove(), 500); // Supprime après animation
-            }, 3000); // 3 secondes
-        }
-    });
-</script>
+    function openModal(id){document.getElementById(id).classList.remove('hidden');}
+    function closeModal(id){document.getElementById(id).classList.add('hidden');}
 
-    
-@endsection
+    // Recherche / filtre
+    document.addEventListener("DOMContentLoaded",()=>{
+        const search=document.getElementById('searchInput');
+        const filter=document.getElementById('statusFilter');
+        const table=document.getElementById('billetTable');
+        function normalize(str){return str?str.toLowerCase().trim():"";}
+        function filterTable(){
+            const term=normalize(search.value);
+            const status=normalize(filter.value);
+            table.querySelectorAll('tbody tr').forEach(row=>{
+                const matchSearch=row.innerText.toLowerCase().includes(term);
+                const matchStatus=!status || normalize(row.dataset.status)===status;
+                row.style.display=(matchSearch&&matchStatus)?'':'none';
+            });
+        }
+        search.addEventListener('input',filterTable);
+        filter.addEventListener('change',filterTable);
+    });
+
+    // Changement de statut (cliquable)
+    function toggleStatus(el){
+        const current=el.textContent.trim().toLowerCase();
+        let next='';
+        if(current==='disponible'){next='épuisé';el.className="status px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700 cursor-pointer";}
+        else if(current==='épuisé'){next='annulé';el.className="status px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 cursor-pointer";}
+        else{next='disponible';el.className="status px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 cursor-pointer";}
+        el.textContent=next.charAt(0).toUpperCase()+next.slice(1);
+        el.closest('tr').dataset.status=next;
+    }
+    </script>
+</body>
+</html>

@@ -6,7 +6,7 @@ use App\Http\Controllers\EvenementController;
 
 
 Route::get('/', function () {
-    return view('index');
+    return view('resume');
 });
 
 Route::get('/dashboard', function () {

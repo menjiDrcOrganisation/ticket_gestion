@@ -18,7 +18,7 @@ return new class extends Migration
     $table->dateTime('date_achat');
     $table->string('nom_auteur');
     $table->string('numero');
-    $table->string('email');
+    $table->string('email')->nullable();
     $table->string('code_billet');
     $table->timestamps();
 });

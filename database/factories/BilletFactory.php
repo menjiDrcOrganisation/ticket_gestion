@@ -4,20 +4,18 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Billet>
- */
 class BilletFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            //
+            'quantite_reelle' => $this->faker->numberBetween(1, 100),
+            'quantite_fictive' => $this->faker->numberBetween(1, 100),
+            'date_achat' => $this->faker->dateTimeBetween('-1 month', 'now'),
+            'nom_auteur' => $this->faker->name(),
+            'numero' => $this->faker->phoneNumber(),
+            'email' => $this->faker->safeEmail(),
+            'code_billet' => strtoupper($this->faker->bothify('BLT-####-????')),
         ];
     }
 }
