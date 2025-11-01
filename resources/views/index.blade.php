@@ -24,7 +24,7 @@
                         <!-- Input recherche -->
                         <div class="relative">
                             <input type="text" id="searchInput" placeholder="Rechercher..."
-                                class="w-96 rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-emerald-400 focus:outline-none dark:bg-white dark:text-dark">
+                                class="w-96 rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-emerald-400 focus:outline-none">
                             <span class="absolute left-2.5 top-2.5">
                                 <img src="https://cdn-icons-png.flaticon.com/512/149/149852.png" class="w-4 h-4 opacity-70" alt="search">
                             </span>
@@ -32,7 +32,7 @@
 
                         <!-- Select statut -->
                         <select id="statusFilter"
-                            class="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-400 focus:outline-none  text-dark dark:bg-white dark:text-dark">
+                            class="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-400 focus:outline-none  text-dark">
                             <option value="">Tous les statuts</option>
                             <option value="valide">Valide</option>
                             <option value="ferme">Fermé</option>
@@ -57,9 +57,9 @@
                 <div class="flex-auto px-0 pt-4 pb-2">
                     <div class="overflow-x-auto">
                         <table id="pharmacyTable"
-                            class="min-w-full border-collapse text-white dark:text-slate-200">
+                            class="min-w-full border-collapse text-white">
                             <thead>
-                                <tr class="bg-dark dark:bg-slate-700/50">
+                                <tr class="bg-dark">
                                     <th class="px-6 py-3 text-left text-xs font-bold uppercase">Pharmacie</th>
                                     <th class="px-6 py-3 text-left text-xs font-bold uppercase">Adresse & Téléphone</th>
                                     <th class="px-6 py-3 text-center text-xs font-bold uppercase">Statut</th>
@@ -69,15 +69,15 @@
                             </thead>
                             <tbody>
                                 {{-- @foreach ($pharmacies as $pharmacie) --}}
-                                {{-- <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/70 transition"
+                                {{-- <tr class="hover:bg-slate-50 transition"
                                     data-status="{{ $pharmacie->statut }}">
                                     <!-- Nom + Gérant --> --}}
-                                    <td class="p-4 border-b dark:border-slate-600">
+                                    <td class="p-4 border-b">
                                         <div class="flex items-start gap-3">
                                             <img src="{{ asset('assets/img/logo.png') }}" class="w-6 h-6" alt="pharmacy">
                                             <div>
                                                 {{-- <h6 class="text-sm font-light">{{ ucfirst(strtolower($pharmacie->nom))}}</h6> --}}
-                                                <p class="text-xs text-slate-500 font-light dark:text-slate-300">
+                                                <p class="text-xs text-slate-500 font-light">
                                                     Gérant : 
                                                     {{-- {{ ucfirst(strtolower($pharmacie->gerant->user->name))}} <br>
                                                     {{ ucfirst(strtolower($pharmacie->gerant->user->email))}} --}}
@@ -88,13 +88,13 @@
                                     </td>
 
                                     <!-- Adresse + Téléphone -->
-                                    <td class="p-4 border-b dark:border-slate-600">
+                                    <td class="p-4 border-b">
                                         {{-- <p class="text-sm font-light">{{ ucfirst(strtolower($pharmacie->adresse))}}</p> --}}
-                                        {{-- <p class="text-xs text-slate-500 dark:text-slate-300">  {{ $pharmacie->telephone }}</p> --}}
+                                        {{-- <p class="text-xs text-slate-500">  {{ $pharmacie->telephone }}</p> --}}
                                     </td>
 
                                     <!-- Statut -->
-                                    <td class="p-4 text-center border-b dark:border-slate-600">
+                                    <td class="p-4 text-center border-b">
                                         {{-- @php
                                             switch ($pharmacie->statut) {
                                                 case 'valide': $btnClass = 'bg-emerald-100 text-emerald-700'; break;
@@ -112,14 +112,14 @@
                                     </td>
 
                                     <!-- Date -->
-                                    <td class="p-4 text-center border-b dark:border-slate-600">
-                                        <span class="text-xs text-slate-500 dark:text-slate-300">
+                                    <td class="p-4 text-center border-b">
+                                        <span class="text-xs text-slate-500">
                                             {{-- {{ $pharmacie->created_at->format('d/m/Y') }} --}}
                                         </span>
                                     </td>
 
                                     <!-- Actions -->
-                                    <td class="p-4 text-center border-b dark:border-slate-600">
+                                    <td class="p-4 text-center border-b">
                                         {{-- <button command="show-modal" commandfor="edit-pharmacie-{{ $pharmacie->id_pharmacie }}"
                                             class="flex items-center gap-1 px-3 py-1 text-xs font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-400">
                                             <img src="https://cdn-icons-png.flaticon.com/512/1828/1828911.png" class="w-3 h-3" alt="edit">
