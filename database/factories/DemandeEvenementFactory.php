@@ -4,20 +4,23 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\DemandeEvenement>
- */
 class DemandeEvenementFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
-    public function definition(): array
+    protected $model = \App\Models\DemandeEvenement::class;
+
+    public function definition()
     {
         return [
-            //
+            'type_evenement' => $this->faker->randomElement([
+                'Concert', 'Conférence', 'Atelier', 'Exposition', 'Séminaire'
+            ]),
+            'contact_organisateur' => $this->faker->name(),
+            'nom_evenement' => $this->faker->sentence(3),
+            'affiche' => null, // ou $this->faker->image('public/storage/affiches',400,300,null,false)
+            'description' => $this->faker->paragraph(),
+            'statut' => $this->faker->randomElement(['en_attente', 'valide', 'ferme']),
+            'created_at' => now(),
+            'updated_at' => now(),
         ];
     }
 }

@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\DemandeEvenement;
+use App\Models\TypeEvenement;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -16,7 +18,9 @@ class DatabaseSeeder extends Seeder
    public function run(): void
 {
     User::factory()->admin()->create();
+    TypeEvenement::factory(10)->create();
 
+    DemandeEvenement::factory(20)->create();
     // Tu peux aussi générer d'autres utilisateurs
     //\App\Models\User::factory(5)->create();
 }

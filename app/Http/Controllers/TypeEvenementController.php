@@ -12,7 +12,8 @@ class TypeEvenementController extends Controller
      */
     public function index()
     {
-        //
+        $typeEvenements = TypeEvenement::all();
+        return view('typeEvenement.index', compact('typeEvenements'));
     }
 
     /**
@@ -20,7 +21,7 @@ class TypeEvenementController extends Controller
      */
     public function create()
     {
-        //
+    
     }
 
     /**
@@ -28,7 +29,17 @@ class TypeEvenementController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try {
+            $request->validate([
+                'nom_type' => 'required|string|max:255',
+            ]);
+            $typeEvenement = TypeEvenement::create([
+                'nom_type' => $request->nom_type,
+            ]);
+            return redirect()->back()->with('success', 'Type d\'événement créé avec succès');
+        } catch (\Throwable $th) {
+            return redirect()->back()->with('error', 'Erreur lors de la création du type d\'événement');
+        }
     }
 
     /**
@@ -44,7 +55,7 @@ class TypeEvenementController extends Controller
      */
     public function edit(TypeEvenement $typeEvenement)
     {
-        //
+        
     }
 
     /**
@@ -52,7 +63,15 @@ class TypeEvenementController extends Controller
      */
     public function update(Request $request, TypeEvenement $typeEvenement)
     {
-        //
+        try {
+            $request->validate([
+                'nom_type' => 'sometimes|required|string|max:255',
+            ]);
+            $typeEvenement->update($request->only('nom_type'));
+            return redirect()->back()->with('success', 'Type d\'événement mis à jour avec succès');
+        } catch (\Throwable $th) {
+            return redirect()->back()->with('error', 'Erreur lors de la mise à jour du type d\'événement');
+        }
     }
 
     /**
@@ -60,6 +79,11 @@ class TypeEvenementController extends Controller
      */
     public function destroy(TypeEvenement $typeEvenement)
     {
-        //
+        try {
+            $typeEvenement->delete();
+            return redirect()->back()->with('success', 'Type d\'événement supprimé avec succès'); 
+        } catch (\Throwable $th) {
+            return redirect()->back()->with('error', 'Erreur lors de la suppression du type d\'événement');
+        }
     }
 }

@@ -13,8 +13,11 @@ return new class extends Migration
     {
         Schema::create('demande_evenements', function (Blueprint $table) {
     $table->id();
-    $table->foreignId('type_evenement_id')->constrained('type_evenements')->onDelete('cascade');
+    //$table->foreignId('type_evenement_id')->constrained('type_evenements')->onDelete('cascade');
+    $table->string('type_evenement');
+    $table->string('contact_organisateur');
     $table->string('nom_evenement');
+    $table->string('affiche')->nullable();
     $table->text('description');
     $table->string('statut');
     $table->timestamps();
