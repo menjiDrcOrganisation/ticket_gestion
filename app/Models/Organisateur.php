@@ -18,7 +18,8 @@ class Organisateur extends Model
     {
         return $this->belongsTo(User::class);
     }   
-    function events()
+   
+    public function evenements()
     {
         return $this->hasMany(Evenement::class);
     }

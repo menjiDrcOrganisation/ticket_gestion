@@ -15,7 +15,8 @@ return new class extends Migration
     $table->id();
     $table->foreignId('evenement_id')->constrained('evenements')->onDelete('cascade');
     $table->foreignId('type_billet_id')->constrained('type_billets')->onDelete('cascade');
-    $table->text('description');
+    $table->integer('nombre_billet');
+
     $table->timestamps();
 });
 
