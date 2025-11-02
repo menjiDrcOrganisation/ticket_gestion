@@ -12,6 +12,7 @@ class EvenementTypeBillet extends Model
      protected $fillable = [
         'evenement_id',
         'type_billet_id', 
-         'nombre_billet'
+         'nombre_billet',
+         'prix_unitaire'
     ];
 }

@@ -34,6 +34,7 @@ class Evenement extends Model
     {
         return $this->belongsToMany(TypeBillet::class, 'evenement_type_billets')
                     ->withPivot('nombre_billet')
+                    ->withPivot('prix_unitaire')
                     ->withTimestamps();
     }
 

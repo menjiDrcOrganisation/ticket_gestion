@@ -18,13 +18,14 @@ class EvenementController extends Controller
      */
     public function index()
     {
-        $evenements = Evenement::with(['organisateur.user'])->latest()->get();
+        $evenements = Evenement::with(['organisateur.user','typeBillets'])->latest()->get();
         return view('evenements.showAll',compact('evenements'));
     }
 
     public function create()
     {
-         return view('evenements.create');
+        $typeBillets = TypeBillet::all();
+         return view('evenements.create',compact('typeBillets'));
     }
 
     /**
@@ -32,9 +33,6 @@ class EvenementController extends Controller
      */
     public function store(Request $request)
     {
-
-        try {
-          
         $validated = $request->validate([
             'nom_evenement' => 'required|string|max:255',
             'nom_organisateur' => 'nullable|string|max:255',
@@ -45,72 +43,65 @@ class EvenementController extends Controller
             'date_fin' => 'required|date|after_or_equal:date_debut',
             'heure_debut' => 'required',
             'heure_fin' => 'required',
-            'vip' => 'nullable|integer|min:0',
-            'standard' => 'nullable|integer|min:0',
-            'vvip' => 'nullable|integer|min:0',
+            'ticket_type_id' => 'required|array',
+            'quantite' => 'required|array',
+            'prix' => 'required|array',
             'telephone' => 'required',
         ]);
 
-        
+        try {
+            // Création de l'organisateur si fourni
+            if (!empty($validated['nom_organisateur'])) {
+                $user = User::create([
+                    'name' => $validated['nom_organisateur'],
+                    'email' => $validated['email_organisateur'],
+                    'password' => Hash::make('password123'),
+                    'role' => 'organisateur',
+                ]);
 
-        if (!empty($validated['nom_organisateur'])) {
-            $user = User::create(['name' => $validated['nom_organisateur'],
-            'email' => $validated['email_organisateur'],
-            'password'=>Hash::make('password123'),
-            'role'=> 'organisateur'  
-        ]);
+                $organisateur = Organisateur::create([
+                    'user_id' => $user->id,
+                    'telephone' => $validated['telephone'],
+                ]);
+            } else {
+                $organisateur = null;
+            }
 
-        $organisateur = Organisateur::create([
-            'user_id' => $user->id,
-            'telephone' => $validated['telephone'],  
-        ]);
-        
-          
-        $evenement = Evenement::create([
-            'nom' => $validated['nom_evenement'],
-            'url_evenement'=>Str::slug($validated['nom_evenement']),
-            'organisateur_id' => $organisateur->id,
-            'adresse' => $validated['adresse'],
-            'salle' => $validated['salle'],
-            'date_debut' => $validated['date_debut'],
-            'date_fin' => $validated['date_fin'],
-            'heure_debut' => $validated['heure_debut'],
-            'heure_fin' => $validated['heure_fin'],
-            'statut' => 'encours'
-        ]);
+            // Création de l'événement
+            $evenement = Evenement::create([
+                'nom' => $validated['nom_evenement'],
+                'url_evenement' => Str::slug($validated['nom_evenement']),
+                'organisateur_id' => $organisateur?->id,
+                'adresse' => $validated['adresse'],
+                'salle' => $validated['salle'],
+                'date_debut' => $validated['date_debut'],
+                'date_fin' => $validated['date_fin'],
+                'heure_debut' => $validated['heure_debut'],
+                'heure_fin' => $validated['heure_fin'],
+                'statut' => 'encours',
+            ]);
 
-    
-       
-        $billets = [
-            'vip' => $validated['vip'] ?? 0,
-            'standard' => $validated['standard'] ?? 0,
-            'vvip' => $validated['vvip'] ?? 0,
-        ];
+            // Boucle sur les billets
+            foreach ($validated['ticket_type_id'] as $index => $typeId) {
+                $quantite = $validated['quantite'][$index] ?? 0;
+                $prix = $validated['prix'][$index] ?? 0;
 
-        foreach ($billets as $type => $quantite) {
-            if ($quantite > 0) {
-                $typeBillet = TypeBillet::where('nom_type', $type)->first();
-                if ($typeBillet) {
+                if ($quantite > 0) {
                     EvenementTypeBillet::create([
                         'evenement_id' => $evenement->id,
-                        'type_billet_id' => $typeBillet->id,
-                        'nombre_billet'=>$quantite
+                        'type_billet_id' => $typeId,
+                        'nombre_billet' => $quantite,
+                        'prix_unitaire' => $prix,
                     ]);
                 }
             }
+
+            return redirect()->route('evenements.index')->with('success', 'Événement créé avec succès.');
+        } catch (\Throwable $th) {
+            return $th;
         }
-
-        } else {
-            $organisateur_id = null;
-        }
-
-           return redirect()->route('evenements.index');
-
-         } catch (\Throwable $th) {
-            return redirect()->back();
-        }
-
     }
+
 
     
     public function show($url_evenement)
