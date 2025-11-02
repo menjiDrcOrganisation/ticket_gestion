@@ -23,5 +23,4 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 require __DIR__ . '/evenement.php';
-
 require __DIR__.'/dmd_event.php';
