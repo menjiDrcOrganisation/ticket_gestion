@@ -14,8 +14,9 @@ return new class extends Migration
       Schema::create('ressources', function (Blueprint $table) {
     $table->id();
     $table->string('nom_artiste');
-    $table->string('phrase_accroche');
-    $table->text('a_propos');
+    $table->string('phrase_accroche')->nullable();
+    $table->string('photo_affiche')->nullable();
+    $table->text('a_propos')->nullable();
     $table->foreignId('evenement_id')->constrained('evenements')->onDelete('cascade');
     $table->timestamps();
 });
