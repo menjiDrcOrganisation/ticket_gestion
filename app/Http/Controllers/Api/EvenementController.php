@@ -12,8 +12,7 @@ class EvenementController extends Controller
 {
     public function getEvenement(Request $request,$short_url)
     {
-       
-        $evenement = Evenement::with(['organisateur', 'typeBillets'])
+        $evenement = Evenement::with(['organisateur', 'typeBillets','ressource'])
         ->where('url_evenement', $short_url)
         ->first();
 
@@ -34,7 +33,7 @@ class EvenementController extends Controller
 
     public function getAll(Request $request)
     {
-        $evenements = Evenement::with([ 'typeBillets'])->get();
+        $evenements = Evenement::with([ 'typeBillets','ressource'])->get();
 
     if (!$evenements) {
         return response()->json([

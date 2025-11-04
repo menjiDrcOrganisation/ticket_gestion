@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Organisateur;
 use App\Models\EvenementTypeBillet;
 use App\Models\TypeBillet;
+use App\Models\Ressource;
 
 class EvenementController extends Controller
 {
@@ -47,10 +48,16 @@ class EvenementController extends Controller
             'quantite' => 'required|array',
             'prix' => 'required|array',
             'telephone' => 'required',
+            'nom_artiste'=> 'required',
+            'acroche'=> 'required',
+            'a_propos'=> 'required',
+            'photo_affiche'=> 'required'
         ]);
 
+       
+
         try {
-            // Création de l'organisateur si fourni
+          
             if (!empty($validated['nom_organisateur'])) {
                 $user = User::create([
                     'name' => $validated['nom_organisateur'],
@@ -79,6 +86,17 @@ class EvenementController extends Controller
                 'heure_debut' => $validated['heure_debut'],
                 'heure_fin' => $validated['heure_fin'],
                 'statut' => 'encours',
+            ]);
+
+            $photo_affiche=$validated['photo_affiche'];
+            $image_path = $photo_affiche->store("affiches","public");
+
+            Ressource::create([
+                  'nom_artiste' => $validated['nom_artiste'],
+                'phrase_accroche'=> $validated['acroche'],
+                'a_propos'=> $validated['a_propos'],
+                'photo_affiche'=>$image_path,
+                'evenement_id'=> $evenement->id
             ]);
 
             // Boucle sur les billets

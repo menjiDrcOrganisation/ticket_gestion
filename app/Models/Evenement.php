@@ -38,4 +38,9 @@ class Evenement extends Model
                     ->withTimestamps();
     }
 
+     public function ressource()
+    {
+        return $this->hasMany(Ressource::class);
+    }
+
 }

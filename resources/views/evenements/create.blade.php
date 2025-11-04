@@ -4,10 +4,9 @@
         Créer un Événement
     </h2>
 
-
-
     <!-- Formulaire Événement -->
     <form
+    enctype="multipart/form-data"
         action="{{ route('evenements.store') }}"
         method="POST"
         class="space-y-5"
@@ -122,8 +121,6 @@
 
         <!-- Nombre de billets -->
     
-
-
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
     @foreach ($typeBillets as $ticket)
         <div>
@@ -136,8 +133,8 @@
                         type="number"
                         name="quantite[]"
                         id="quantite_{{ $ticket['id'] }}"
-                        min="1"
-                        value="1"
+                        min="0"
+                        value="0"
                         placeholder="Nombre"
                         class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-{{ $ticket['color'] }}-400 focus:outline-none"
                     />
@@ -148,8 +145,8 @@
                         type="number"
                         name="prix[]"
                         id="prix_{{ $ticket['id'] }}"
-                        min="1"
-                        value="1"
+                        min="0"
+                        value="0"
                         placeholder="Prix"
                         class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-{{ $ticket['color'] }}-400 focus:outline-none"
                     />
@@ -160,7 +157,7 @@
 </div>
 
         <div
-            class="mb-6 bg-gray-50 p-4 rounded border border-gray-200 shadow-sm"
+            class="mb-6 p-4 rounded border border-gray-200 shadow-sm"
         >
             <p class="text-sm font-semibold mb-2 text-gray-700">
                 Ajouter un nouvel organisateur :
@@ -189,6 +186,82 @@
                 required
             />
         </div>
+
+
+        <!-- Partie artiste -->
+
+        <div>
+            <div>
+                <label
+                    for="nom_artiste"
+                    class="block font-semibold text-gray-700 mb-1"
+                    >Nom de l'artiste</label
+                >
+                <input
+                    name="nom_artiste"
+                    id="nom_artiste"
+                    class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                    required
+                />
+              
+            </div>
+
+            <div>
+                <label
+                    for="acroche"
+                    class="block font-semibold text-gray-700 mb-1"
+                    >Phrase d'acroche</label
+                >
+                <textarea
+                    name="acroche"
+                    id="acroche"
+                    class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                    required
+                />
+               </textarea>
+            </div>
+
+
+            <div>
+                <label
+                    for="a_propos"
+                    class="block font-semibold text-gray-700 mb-1"
+                    >A propos</label
+                >
+                <textarea
+                    name="a_propos"
+                    id="a_propos"
+                    class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                    required
+                />
+               </textarea>
+            </div>
+
+            <div>
+                <label
+                    for="nom_artiste"
+                    class="block font-semibold text-gray-700 mb-1"
+                    >Photo de l'affiche</label
+                >
+                <input
+                    name="photo_affiche"
+                    id="photo_affiche"
+                    type="file"
+                    class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                    required
+                />
+               </textarea>
+            </div>
+
+            
+        <!-- fin partie artiste -->
+
+
+
+
+        </div>
+
+
 
         <!-- Bouton Submit -->
         <div class="text-center">
