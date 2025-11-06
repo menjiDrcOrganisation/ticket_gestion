@@ -10,6 +10,7 @@ class EvenementTypeBillet extends Model
     /** @use HasFactory<\Database\Factories\EvenementTypeBilletFactory> */
     use HasFactory;
      protected $fillable = [
+        'type_billet_id',
         'evenement_id',
         'type_billet_id', 
          'nombre_billet',

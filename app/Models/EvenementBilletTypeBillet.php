@@ -14,6 +14,8 @@ class EvenementBilletTypeBillet extends Model
        'billet_id',
        'type_billet_id',
        'quantite_fictif',
-       'quantite'
+       'quantite',
+       'date_achat',
+       'statut'
     ];
 }

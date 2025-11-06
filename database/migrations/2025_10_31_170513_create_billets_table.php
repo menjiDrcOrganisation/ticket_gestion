@@ -13,8 +13,6 @@ return new class extends Migration
     {
         Schema::create('billets', function (Blueprint $table) {
     $table->id();
-    $table->integer('quantite_reelle');
-    $table->integer('quantite_fictive');
     $table->dateTime('date_achat');
     $table->string('nom_auteur');
     $table->string('numero');

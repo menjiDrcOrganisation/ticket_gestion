@@ -14,8 +14,7 @@ class Billet extends Model
        'nom_auteur',
        'numero',
        'email',
-       'code_billet',
-       'quantite_reelle',
-       'quantite_fective'
+       'code_billet'
+    
     ];
 }

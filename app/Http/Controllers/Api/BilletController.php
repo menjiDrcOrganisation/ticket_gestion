@@ -18,9 +18,9 @@ class BilletController extends Controller
                 'nom_complet_client' => 'required|string',
                 'numero_client' => 'required|string',
                 'service' => 'required|string',
+                'id_evenement' => 'required|string'
             ]);
 
-            return  $validated;
 
             $result = MobileMoneyService::sendPayment( $validated);
 
