@@ -172,9 +172,9 @@ body {
           </div>
         </div>
         
-        <!-- Stats cards -->
+        <!-- Stats cards corrigées -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div class="stats-card rounded-xl p-4 shadow-sm border border-gray-100">
+          <div class="stats-card rounded-xl p-4 shadow-sm border border-gray-100 card-hover">
             <div class="flex justify-between items-center">
               <div>
                 <p class="text-sm text-gray-500">Total des achats</p>
@@ -185,36 +185,36 @@ body {
               </div>
             </div>
           </div>
-          <div class="stats-card rounded-xl p-4 shadow-sm border border-gray-100">
+          <div class="stats-card rounded-xl p-4 shadow-sm border border-gray-100 card-hover">
             <div class="flex justify-between items-center">
               <div>
-                <p class="text-sm text-gray-500">Payés</p>
-                <h3 class="text-xl font-bold text-gray-800">{{ $achats->where('statut', 'Payé')->count() }}</h3>
+                <p class="text-sm text-gray-500">Montant total Payé</p>
+                <h3 class="text-xl font-bold text-gray-800">{{ number_format($totalPaye, 0, ',', ' ') }} FC</h3>
               </div>
               <div class="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
                 <i class="fas fa-check-circle text-green-600"></i>
               </div>
             </div>
           </div>
-          <div class="stats-card rounded-xl p-4 shadow-sm border border-gray-100">
+          <div class="stats-card rounded-xl p-4 shadow-sm border border-gray-100 card-hover">
             <div class="flex justify-between items-center">
               <div>
-                <p class="text-sm text-gray-500">En attente</p>
-                <h3 class="text-xl font-bold text-gray-800">{{ $achats->where('statut', 'En attente')->count() }}</h3>
+                <p class="text-sm text-gray-500">Total en CDF</p>
+                <h3 class="text-xl font-bold text-gray-800">{{ number_format($totalCDF, 0, ',', ' ') }} FC</h3>
               </div>
               <div class="h-10 w-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                <i class="fas fa-clock text-yellow-600"></i>
+                <i class="fas fa-money-bill text-yellow-600"></i>
               </div>
             </div>
           </div>
-          <div class="stats-card rounded-xl p-4 shadow-sm border border-gray-100">
+          <div class="stats-card rounded-xl p-4 shadow-sm border border-gray-100 card-hover">
             <div class="flex justify-between items-center">
               <div>
-                <p class="text-sm text-gray-500">Annulés</p>
-                <h3 class="text-xl font-bold text-gray-800">{{ $achats->where('statut', 'Annulé')->count() }}</h3>
+                <p class="text-sm text-gray-500">Total en Dollars</p>
+                <h3 class="text-xl font-bold text-gray-800">${{ number_format($totalUSD, 0, ',', ' ') }}</h3>
               </div>
               <div class="h-10 w-10 bg-red-100 rounded-full flex items-center justify-center">
-                <i class="fas fa-times-circle text-red-600"></i>
+                <i class="fas fa-dollar-sign text-red-600"></i>
               </div>
             </div>
           </div>
@@ -254,16 +254,20 @@ body {
             <div class="flex justify-between items-start">
               <div>
                 <h3 class="font-semibold text-gray-800">{{ $achat->billet->nom_auteur ?? "N/A" }}</h3>
-                <p class="text-sm text-gray-500">{{ $achat->billet->email ?? 'N/A' }}</p>
+                <p class="text-sm text-gray-500">{{ $achat->billet->numero ?? 'N/A' }}</p>
               </div>
-              <span class="status-badge {{ $achat->statut=='Payé' ? 'bg-green-100 text-green-800' : ($achat->statut=='En attente' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-700') }}">
+              <span class="status-badge {{ $achat->statut=='paye' ? 'bg-green-100 text-green-800' : ($achat->statut=='En attente' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-700') }}">
                 {{ $achat->statut }}
               </span>
             </div>
             <div class="mt-3">
-              <p class="text-sm text-gray-700"><i class="fas fa-music text-gray-400 mr-2"></i>{{ $achat->evenement->nom ?? "N/A" }}</p>
-              <p class="text-sm text-gray-700 mt-1"><i class="fas fa-tag text-gray-400 mr-2"></i>{{ $achat->type_billet->nom_type ?? 'N/A' }} ({{ $achat->quantite_reelle }} billets)</p>
-              <p class="font-medium text-gray-900 mt-2"><i class="fas fa-money-bill-wave text-gray-400 mr-2"></i>{{ number_format($achat->prix, 2, ',', ' ') }} FC</p>
+              <p class="text-sm text-gray-700"><i class="fas fa-tag text-gray-400 mr-2"></i>{{ $achat->type_billet->nom_type ?? 'N/A' }} ({{ $achat->quantite }} billets)</p>
+              @php
+                $prixUnitaire = $achat->type_billet->evenement_type_billet->first()?->prix_unitaire ?? 0;
+                $total = $prixUnitaire * $achat->quantite;
+                $devise = $achat->type_billet->evenement_type_billet->first()?->devise ?? 'FC';
+              @endphp
+              <p class="font-medium text-gray-900 mt-2"><i class="fas fa-money-bill-wave text-gray-400 mr-2"></i>{{ number_format($total, 2, ',', ' ') }} {{ $devise }}</p>
             </div>
             <div class="flex justify-between mt-4 pt-3 border-t border-gray-100">
               <span class="text-xs text-gray-500">{{ $achat->created_at->format('d M Y') }}</span>
@@ -283,31 +287,38 @@ body {
             <thead class="bg-gray-50 border-b border-gray-100">
               <tr>
                 <th class="px-6 py-4 text-left font-medium text-gray-800">Client</th>
-                <th class="px-6 py-4 text-left font-medium text-gray-800">Événement</th>
                 <th class="px-6 py-4 text-left font-medium text-gray-800">Type</th>
                 <th class="px-6 py-4 text-center font-medium text-gray-800">Quantité</th>
                 <th class="px-6 py-4 text-center font-medium text-gray-800">Total</th>
                 <th class="px-6 py-4 text-center font-medium text-gray-800">Statut</th>
+                <th class="px-6 py-4 text-center font-medium text-gray-800">Date</th>
                 <th class="px-6 py-4 text-center font-medium text-gray-800">Actions</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
               @foreach($achats as $achat)
+              @php
+                $prixUnitaire = $achat->type_billet->evenement_type_billet->first()?->prix_unitaire ?? 0;
+                $total = $prixUnitaire * $achat->quantite;
+                $devise = $achat->type_billet->evenement_type_billet->first()?->devise ?? 'FC';
+              @endphp
               <tr class="hover:bg-gray-50 transition-colors">
                 <td class="px-6 py-4">
                   <div>
                     <div class="font-medium text-gray-800">{{ $achat->billet->nom_auteur ?? "N/A" }}</div>
-                    <div class="text-sm text-gray-500">{{ $achat->billet->email ?? 'N/A' }}</div>
+                    <div class="text-sm text-gray-500">{{ $achat->billet->numero ?? 'N/A' }}</div>
                   </div>
                 </td>
-                <td class="px-6 py-4">{{ $achat->evenement->nom  ?? "N/A"}}</td>
                 <td class="px-6 py-4">{{ $achat->type_billet->nom_type ?? "N/A" }}</td>
                 <td class="px-6 py-4 text-center">{{ $achat->quantite }}</td>
-                <td class="px-6 py-4 text-center font-medium">{{ number_format($achat->prix, 2, ',', ' ') }} FC</td>
+                <td class="px-6 py-4 text-center font-medium">{{ number_format($total, 2, ',', ' ') }} {{ $devise }}</td>
                 <td class="px-6 py-4 text-center">
                   <span class="status-badge {{ $achat->statut=='Payé' ? 'bg-green-100 text-green-800' : ($achat->statut=='En attente' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-700') }}">
                     {{ $achat->statut }}
                   </span>
+                </td>
+                <td class="px-6 py-4 text-center text-sm text-gray-500">
+                  {{ $achat->created_at->format('d/m/Y') }}
                 </td>
                 <td class="px-6 py-4 text-center">
                   <div class="flex justify-center gap-2">
@@ -325,24 +336,107 @@ body {
         <!-- Pagination -->
         <div class="flex justify-between items-center mt-6 pt-4 border-t border-gray-200">
           <div class="text-sm text-gray-500">
-            {{-- Affichage de {{ $achats->firstItem() ?? 0 }} à {{ $achats->lastItem() ?? 0 }} sur {{ $achats->total() }} achats --}}
+            Affichage de {{ ($achats->currentPage() - 1) * $achats->perPage() + 1 }} à {{ min($achats->currentPage() * $achats->perPage(), $achats->total()) }} sur {{ $achats->total() }} achats
           </div>
           <div class="flex gap-1">
-            <button class="px-3 py-1.5 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">
-              <i class="fas fa-chevron-left"></i>
-            </button>
-            <button class="px-3 py-1.5 rounded-md bg-blue-600 text-white">1</button>
-            <button class="px-3 py-1.5 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">2</button>
-            <button class="px-3 py-1.5 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">3</button>
-            <button class="px-3 py-1.5 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">
-              <i class="fas fa-chevron-right"></i>
-            </button>
+            @if($achats->onFirstPage())
+              <button class="px-3 py-1.5 rounded-md bg-gray-100 text-gray-400 cursor-not-allowed">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+            @else
+              <button onclick="window.location='{{ $achats->previousPageUrl() }}'" class="px-3 py-1.5 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+            @endif
+            
+            @foreach(range(1, min(5, $achats->lastPage())) as $page)
+              <button onclick="window.location='{{ $achats->url($page) }}'" class="px-3 py-1.5 rounded-md {{ $achats->currentPage() == $page ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }} transition-colors">
+                {{ $page }}
+              </button>
+            @endforeach
+            
+            @if($achats->hasMorePages())
+              <button onclick="window.location='{{ $achats->nextPageUrl() }}'" class="px-3 py-1.5 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            @else
+              <button class="px-3 py-1.5 rounded-md bg-gray-100 text-gray-400 cursor-not-allowed">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            @endif
           </div>
         </div>
       </div>
     </div>
   </div>
 </main>
+
+<!-- Modals pour les actions -->
+@foreach($achats as $achat)
+<!-- Modal Réenvoyer -->
+<div id="resendModal{{ $achat->id }}" class="hidden fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4">
+  <div class="bg-white p-6 rounded-xl w-full max-w-md shadow-lg">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+        <i class="fas fa-paper-plane text-blue-600"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-800">Réenvoyer le billet</h3>
+    </div>
+    <p class="text-gray-600 mb-6">Renvoyer le billet à <strong>{{ $achat->billet->nom_auteur ?? "N/A" }}</strong> ?</p>
+    <div class="flex justify-end gap-3">
+      <button onclick="closeModal('resendModal{{ $achat->id }}')" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">Annuler</button>
+      <button class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Détails -->
+<div id="detailsModal{{ $achat->id }}" class="hidden fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4">
+  <div class="bg-white p-6 rounded-xl w-full max-w-md shadow-lg">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+        <i class="fas fa-eye text-blue-600"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-800">Détails de l'achat</h3>
+    </div>
+    @php
+      $prixUnitaire = $achat->type_billet->evenement_type_billet->first()?->prix_unitaire ?? 0;
+      $total = $prixUnitaire * $achat->quantite;
+      $devise = $achat->type_billet->evenement_type_billet->first()?->devise ?? 'FC';
+    @endphp
+    <div class="space-y-3 text-sm">
+      <div class="flex justify-between"><span class="text-gray-600">Client:</span><span class="font-medium">{{ $achat->billet->nom_auteur ?? "N/A" }}</span></div>
+      <div class="flex justify-between"><span class="text-gray-600">Téléphone:</span><span>{{ $achat->billet->numero ?? 'N/A' }}</span></div>
+      <div class="flex justify-between"><span class="text-gray-600">Type billet:</span><span>{{ $achat->type_billet->nom_type ?? "N/A" }}</span></div>
+      <div class="flex justify-between"><span class="text-gray-600">Quantité:</span><span>{{ $achat->quantite }}</span></div>
+      <div class="flex justify-between"><span class="text-gray-600">Prix unitaire:</span><span>{{ number_format($prixUnitaire, 2, ',', ' ') }} {{ $devise }}</span></div>
+      <div class="flex justify-between"><span class="text-gray-600">Total:</span><span class="font-bold">{{ number_format($total, 2, ',', ' ') }} {{ $devise }}</span></div>
+      <div class="flex justify-between"><span class="text-gray-600">Statut:</span><span class="status-badge {{ $achat->statut=='Payé' ? 'bg-green-100 text-green-800' : ($achat->statut=='En attente' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-700') }}">{{ $achat->statut }}</span></div>
+      <div class="flex justify-between"><span class="text-gray-600">Date:</span><span>{{ $achat->created_at->format('d/m/Y H:i') }}</span></div>
+    </div>
+    <div class="flex justify-end mt-6">
+      <button onclick="closeModal('detailsModal{{ $achat->id }}')" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Supprimer -->
+<div id="deleteModal{{ $achat->id }}" class="hidden fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4">
+  <div class="bg-white p-6 rounded-xl w-full max-w-md shadow-lg">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="h-10 w-10 bg-red-100 rounded-full flex items-center justify-center">
+        <i class="fas fa-exclamation-triangle text-red-600"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-800">Supprimer l'achat</h3>
+    </div>
+    <p class="text-gray-600 mb-6">Êtes-vous sûr de vouloir supprimer l'achat de <strong>{{ $achat->billet->nom_auteur ?? "N/A" }}</strong> ? Cette action est irréversible.</p>
+    <div class="flex justify-end gap-3">
+      <button onclick="closeModal('deleteModal{{ $achat->id }}')" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">Annuler</button>
+      <button class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">Supprimer</button>
+    </div>
+  </div>
+</div>
+@endforeach
 
 <script>
 function toggleSidebar(){

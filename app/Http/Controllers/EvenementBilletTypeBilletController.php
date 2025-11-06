@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\EvenementBilletTypeBillet;
+use App\Models\EvenementTypeBillet;
 use Illuminate\Http\Request;
 
 class EvenementBilletTypeBilletController extends Controller
@@ -21,21 +22,40 @@ class EvenementBilletTypeBilletController extends Controller
      * Show the form for creating a new resource.
      */
     public function achatbillet(Request $request, $evenementId)
-    {
-        
-try {
-        // Logique pour afficher les billets disponibles pour l'événement spécifié
+{
+    try {
+        // Récupère tous les achats pour l'événement
+        $achats = EvenementBilletTypeBillet::with(['type_billet', 'evenement'])
+            ->where('evenement_id', $evenementId)
+            ->paginate(10);
 
-    $achats = EvenementBilletTypeBillet::where('evenement_id', $evenementId)->get();
+        // Récupération des informations de tarification
+        $tarifs = EvenementTypeBillet::where('evenement_id', $evenementId)->get();
 
-    return view('achat', compact('achats'));
+        // Calcul des totaux par devise
+        $totalCDF = $tarifs->where('devise', 'CDF')->sum(function ($item) {
+            return $item->prix_unitaire * $item->nombre_billet;
+        });
 
+        $totalUSD = $tarifs->where('devise', 'USD')->sum(function ($item) {
+            return $item->prix_unitaire * $item->nombre_billet;
+        });
+
+        // Total général (CDF + USD convertis si besoin)
+        $totalPaye = $tarifs->sum(function ($item) {
+            return $item->prix_unitaire * $item->nombre_billet;
+        });
+
+        // Debug ou affichage
+        // dd($achats, $totalPaye, $totalCDF, $totalUSD);
+
+        return view('achat', compact('achats', 'totalPaye', 'totalCDF', 'totalUSD'));
 
     } catch (\Throwable $th) {
-        return redirect()->back()->with('error', 'Erreur lors de la récupération des billets.');
-       
+        return redirect()->back()->with('error', 'Erreur lors de la récupération des billets : ' . $th->getMessage());
     }
 }
+
     public function create()
     {
         //

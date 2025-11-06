@@ -12,4 +12,10 @@ class TypeBillet extends Model
     protected $fillable = [
         'nom_type',
     ];
+    function evenement_type_billet()
+    {
+        return $this->hasMany(EvenementTypeBillet::class, 'type_billet_id');
+    }   
+    
+    
 }
