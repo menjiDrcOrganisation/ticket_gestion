@@ -12,6 +12,8 @@ class EvenementBilletTypeBillet extends Model
     protected     $fillable = [
        'evenement_id',
        'billet_id',
-       'type_billet_id'
+       'type_billet_id',
+       'quantite_fictif',
+       'quantite'
     ];
 }

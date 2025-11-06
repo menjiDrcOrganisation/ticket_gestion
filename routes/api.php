@@ -13,3 +13,4 @@ use App\Http\Controllers\Api\DemandeEvenementController;
 Route::post('/demande-evenement', [DemandeEvenementController::class, 'storeDemande']);
 
 require __DIR__.'/evenementApi.php';
+require __DIR__.'/billetApi.php';

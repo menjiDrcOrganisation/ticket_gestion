@@ -13,6 +13,7 @@ class EvenementTypeBillet extends Model
         'evenement_id',
         'type_billet_id', 
          'nombre_billet',
-         'prix_unitaire'
+         'prix_unitaire',
+         'devise'
     ];
 }

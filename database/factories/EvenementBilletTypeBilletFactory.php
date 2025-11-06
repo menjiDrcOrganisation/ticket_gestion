@@ -15,9 +15,9 @@ class EvenementBilletTypeBilletFactory extends Factory
             'evenement_id' => Evenement::factory(),
             'billet_id' => Billet::factory(),
             'type_billet_id' => TypeBillet::factory(),
-            'prix' => $this->faker->randomFloat(2, 1000, 100000),
             'statut' => $this->faker->randomElement(['disponible', 'épuisé', 'annulé']),
-            'quantite' => $this->faker->numberBetween(10, 500),
+            'quantite' => 40,
+            'quantite_fictif'=> 40,
         ];
     }
     // EvenementBilletTypeBillet.php
