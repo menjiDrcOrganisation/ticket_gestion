@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Evenement;
 use App\Models\EvenementBilletTypeBillet;
 use App\Models\EvenementTypeBillet;
 use Illuminate\Http\Request;
@@ -12,11 +13,42 @@ class EvenementBilletTypeBilletController extends Controller
      * Display a listing of the resource.
      */
     public function index()
+   
     {
-        $eventbillet = EvenementBilletTypeBillet::all();
-        dd( $eventbillet);
-        return view('evenementBilletTypeBillet.index', compact('eventbillet'));
+        $evenementsActifs = Evenement::where('statut', 'actif')->count();
+
+        $billetsVendus = EvenementBilletTypeBillet::sum('quantite');
+
+        $revenusCDF = EvenementTypeBillet::where('devise', 'CDF')->get()->sum(fn($a) => $a->prix_unitaire * $a->quantite);
+        $revenusUSD = EvenementTypeBillet::where('devise', 'USD')->get()->sum(fn($a) => $a->prix_unitaire * $a->quantite);
+
+        $tauxRemplissage = $evenementsActifs > 0 
+            ? round(($billetsVendus / ($evenementsActifs * 100)) * 100, 2)
+            : 0;
+
+        $derniersAchats = EvenementBilletTypeBillet::with(['evenement', 'billet'])
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $evenementsPopulaires = EvenementBilletTypeBillet::with('evenement')
+            ->selectRaw('evenement_id, SUM(quantite) as total')
+            ->groupBy('evenement_id')
+            ->orderByDesc('total')
+            ->take(3)
+            ->get();
+
+        return view('billet', compact(
+            'evenementsActifs',
+            'billetsVendus',
+            'revenusCDF',
+            'revenusUSD',
+            'tauxRemplissage',
+            'derniersAchats',
+            'evenementsPopulaires'
+        ));
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -72,10 +104,38 @@ class EvenementBilletTypeBilletController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(EvenementBilletTypeBillet $evenementBilletTypeBillet)
+    public function show($id)
     {
-        //
+         $evenement = Evenement::findOrFail($id);
+
+        // Récupérer les billets et ventes de l'événement
+        $achats = EvenementBilletTypeBillet::where('evenement_id', $id)->get();
+        $typesBillets = EvenementTypeBillet::where('evenement_id', $id)->with('type_billet')->get();
+
+        $totalBilletsVendus = $achats->sum('quantite');
+        $revenusCDF = $achats->where('devise', 'CDF')->sum(fn($a) => $a->prix_unitaire * $a->quantite);
+        $revenusUSD = $achats->where('devise', 'USD')->sum(fn($a) => $a->prix_unitaire * $a->quantite);
+
+        // Taux de remplissage basé sur le nombre total disponible
+        $totalBilletsDisponibles = $typesBillets->sum('nombre_billet');
+        $tauxRemplissage = $totalBilletsDisponibles > 0 
+            ? round(($totalBilletsVendus / $totalBilletsDisponibles) * 100, 1)
+            : 0;
+
+        // Achats récents
+        $derniersAchats = $achats->sortByDesc('date_achat')->take(5);
+
+        return view('resume', compact(
+            'evenement',
+            'totalBilletsVendus',
+            'revenusCDF',
+            'revenusUSD',
+            'tauxRemplissage',
+            'typesBillets',
+            'derniersAchats'
+        ));
     }
+
 
     /**
      * Show the form for editing the specified resource.
