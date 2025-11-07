@@ -36,7 +36,7 @@ Route::get('achatbillet/{evenementId}', [EvenementBilletTypeBilletController::cl
 
 
 
-Route::get('evenements/{id}', [EvenementBilletTypeBilletController::class, 'show'])
-    ->name('evenements.dashboard');
+Route::get('dashboard_event/{id}', [EvenementBilletTypeBilletController::class, 'show'])
+    ->name('achatbillet.show');
 
 ?>
