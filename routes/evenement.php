@@ -11,4 +11,4 @@ Route::prefix('evenements')->name('evenements.')->group(function () {
         Route::put('/{id}', [EvenementController::class, 'update'])->name('update');    
         Route::delete('/{id}', [EvenementController::class, 'destroy'])->name('destroy');
          Route::patch('/evenements/{id}/update-status', [EvenementController::class, 'updateStatus'])->name('updateStatus');
-    });
+    })->middleware(['auth']);

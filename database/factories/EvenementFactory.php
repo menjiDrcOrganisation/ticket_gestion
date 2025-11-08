@@ -13,7 +13,7 @@ class EvenementFactory extends Factory
         return [
             'organisateur_id' => Organisateur::factory(),
             'scanneur_id' => null,
-            'url_evenement' => $this->faker->unique()->url(),
+            'url_evenement' => $this->faker->lexify('event-????'),
             'nom' => $this->faker->sentence(3),
             'date_debut' => $this->faker->dateTimeBetween('now', '+2 months'),
             'date_fin' => $this->faker->dateTimeBetween('+2 months', '+4 months'),

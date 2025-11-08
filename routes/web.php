@@ -7,7 +7,9 @@ use App\Http\Controllers\EvenementController;
 
 Route::get('/', function () {
     return view('resume');
-});
+})->middleware(['auth']);
+
+
 
 Route::get('/dashboard', function () {
     return view('dashboard');

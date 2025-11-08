@@ -12,13 +12,14 @@ class EvenementBilletTypeBilletFactory extends Factory
     public function definition(): array
     {
         return [
-            'evenement_id' => Evenement::factory(),
+            'evenement_id' => $this->faker->randomElement([1, 2, 3, 4]),
             'billet_id' => Billet::factory(),
-            'type_billet_id' => TypeBillet::factory(),
+            'type_billet_id' => $this->faker->randomElement([1, 2, 3, 4]), 
             'statut' => $this->faker->randomElement(['disponible', 'épuisé', 'annulé']),
             'quantite' => 40,
-            'quantite_fictif'=> 40,
+            'quantite_fictif' => 40,
         ];
+
     }
     // EvenementBilletTypeBillet.php
 public function evenement() {

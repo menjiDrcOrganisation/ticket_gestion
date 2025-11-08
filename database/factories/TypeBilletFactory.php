@@ -8,8 +8,9 @@ class TypeBilletFactory extends Factory
 {
     public function definition(): array
     {
+        
         return [
-            'nom_type' => $this->faker->randomElement(['Standard', 'VIP', 'VVIP', 'Premium']),
+            'nom_type' => $this->faker->unique()->randomElement(['Standard', 'VIP', 'VVIP', 'Premium']),
         ];
     }
 }

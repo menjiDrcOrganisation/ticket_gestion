@@ -62,7 +62,7 @@ class EvenementController extends Controller
                 $user = User::create([
                     'name' => $validated['nom_organisateur'],
                     'email' => $validated['email_organisateur'],
-                    'password' => Hash::make('password123'),
+                    'password' => Hash::make('Organi12345'),
                     'role' => 'organisateur',
                 ]);
 

@@ -28,10 +28,12 @@ class MobileMoneyService
             if ($type_billet->nombre_billet < $request['nombre_reel']) {
                 throw new Exception('Quantité insuffisante de billets disponibles.');
             }
+
+          
             $data = [
                 'transactionReference' => 'TX-' . date('YmdHis') . '-' . rand(1000, 9999),
                 'amount'               => $type_billet->prix_unitaire * $request['nombre_reel'],
-                'currency'             => $type_billet->devise,
+                'currency'             => $type_billet->prix_unitaire,
                 'customerFullName'     => $request['nom_complet_client'],
                 'customerEmailAdress'  => 'menji@example.com',
                 'provider'             => $request['service'],

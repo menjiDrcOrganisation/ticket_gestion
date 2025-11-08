@@ -64,6 +64,8 @@
         @endforeach
     </ul>
 </td>
+
+                    
                     <td class="px-4 py-2 border text-center">
                         <a
                             href="https://ticket.menjidrc.com/{{ $evenement->url_evenement }}"
