@@ -18,4 +18,17 @@ class EvenementBilletTypeBillet extends Model
        'date_achat',
        'statut'
     ];
+    public function evenement()
+    {
+        return $this->belongsTo(Evenement::class, 'evenement_id');
+    }
+    public function billet()
+    {
+        return $this->belongsTo(Billet::class, 'billet_id');
+    }
+    public function type_billet()
+    {
+        return $this->belongsTo(TypeBillet::class, 'type_billet_id');
+    }
+    
 }

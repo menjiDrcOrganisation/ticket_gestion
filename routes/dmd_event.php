@@ -30,7 +30,13 @@ Route::post('achat/billet/', [DemandeEvenementController::class, 'processAchatBi
 
 
 // Route pour générer le billet PDF
-Route::get('billet/', [EvenementBilletTypeBilletController::class,  'index'])->name('billet.generatePDF');
+Route::get('resume/', [EvenementBilletTypeBilletController::class,  'index'])->name('billet.generatePDF');
 
 Route::get('achatbillet/{evenementId}', [EvenementBilletTypeBilletController::class,  'achatbillet'])->name('billets.index');
+
+
+
+Route::get('dashboard_event/{id}', [EvenementBilletTypeBilletController::class, 'show'])
+    ->name('achatbillet.show');
+
 ?>

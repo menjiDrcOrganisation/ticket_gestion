@@ -1,334 +1,360 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Achats de Billets</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#3b82f6',
-            secondary: '#10b981',
-            dark: '#1f2937',
-          }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tableau de Bord - TicketMaster</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          primary: '#4f46e5',
+          secondary: '#7c3aed',
+          success: '#10b981',
+          warning: '#f59e0b',
+          dark: '#1e293b',
         }
       }
     }
-  </script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    body { font-family: 'Inter', sans-serif; }
-    
-    .sidebar-link {
-      @apply flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-gray-700 hover:bg-blue-50 hover:text-primary;
-    }
-    
-    .sidebar-link.active {
-      @apply bg-blue-100 text-primary font-medium;
-    }
-    
-    .action-btn {
-      @apply px-3 py-1.5 rounded-md transition-all duration-200 font-medium;
-    }
-    
-    .status-badge {
-      @apply px-3 py-1 rounded-full text-xs font-medium;
-    }
-    
-    .card-hover {
-      @apply transition-all duration-300 hover:shadow-md hover:-translate-y-1;
-    }
-  </style>
+  }
+</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  body { 
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  }
+  .sidebar-link {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-gray-600 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-600 hover:shadow-sm;
+  }
+  .sidebar-link.active { 
+    @apply bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-600 font-semibold shadow-sm border-r-3 border-indigo-500;
+  }
+  .status-badge { 
+    @apply px-3 py-1.5 rounded-full text-xs font-medium;
+  }
+  .dashboard-card {
+    @apply bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300;
+  }
+  .stat-card {
+    @apply bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 relative overflow-hidden;
+  }
+  .gradient-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  .progress-bar {
+    @apply w-full bg-gray-200 rounded-full h-2 overflow-hidden;
+  }
+  .progress-fill {
+    @apply h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-1000 ease-out;
+  }
+  .chart-container {
+    @apply bg-white rounded-2xl p-6 shadow-sm border border-gray-100;
+  }
+</style>
 </head>
 
-<body class="bg-gray-50 min-h-screen flex flex-col">
+<body class="min-h-screen flex">
 
-  <!-- Barre du haut (mobile) -->
-  <header class="flex items-center justify-between bg-white shadow-sm px-4 py-3 md:hidden sticky top-0 z-30">
-    <button onclick="toggleSidebar()" class="p-2 rounded-lg hover:bg-gray-100 transition-colors">
-      <i class="fas fa-bars text-gray-700"></i>
-    </button>
-    <h1 class="font-semibold text-lg text-dark">Achats de Billets</h1>
-    <div class="h-8 w-8 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center text-white font-bold text-sm">
-      TM
-    </div>
-  </header>
-
-  <!-- Overlay mobile -->
-  <div id="overlay" class="fixed inset-0 bg-black/50 hidden z-40 md:hidden" onclick="toggleSidebar()"></div>
-
-  <!-- Sidebar -->
-  <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-white border-r shadow-sm transform -translate-x-full md:translate-x-0 md:relative md:block z-50 transition-transform duration-300 ease-in-out">
-    <div class="flex items-center justify-center py-6 border-b">
-      <div class="flex items-center gap-3">
-        <div class="h-10 w-10 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center text-white font-bold">
-          TM
-        </div>
-        <span class="font-bold text-lg text-dark">TicketMaster</span>
+<!-- Sidebar -->
+<aside id="sidebar" class="fixed inset-y-0 left-0 w-80 bg-white border-r border-gray-200 flex flex-col shadow-lg z-50">
+  <div class="p-6 border-b border-gray-100">
+    <div class="flex items-center gap-4">
+      <div class="h-14 w-14 gradient-bg rounded-2xl flex items-center justify-center text-white shadow-lg">
+        <i class="fas fa-ticket-alt text-xl"></i>
       </div>
-    </div>
-
-    <nav class="p-4 space-y-1">
-      <a href="{{ route('dashboard') }}" class="sidebar-link">
-        <i class="fas fa-chart-pie w-5 text-center"></i> Tableau de bord
-      </a>
-      <a href="{{ route('evenements.index') }}" class="sidebar-link">
-        <i class="fas fa-calendar-plus w-5 text-center"></i> Événements
-      </a>
-      <a href="{{ route('dashboard') }}" class="sidebar-link">
-        <i class="fas fa-ticket-alt w-5 text-center"></i> Billets
-      </a>
-      <a href="{{ route('dashboard') }}" class="sidebar-link active">
-        <i class="fas fa-shopping-cart w-5 text-center"></i> Achats
-      </a>
-      <button class="sidebar-link text-red-500 hover:bg-red-50 hover:text-red-600 w-full text-left mt-6"
-              onclick="openModal('logoutModal')">
-        <i class="fas fa-sign-out-alt w-5 text-center"></i> Déconnexion
-      </button>
-    </nav>
-  </aside>
-
-  <!-- Contenu principal -->
-  <main class="flex-1 p-4 md:p-6 md:ml-0 lg:ml-64 transition-all duration-300">
-    <div class="max-w-7xl mx-auto">
-      <div class="bg-white w-full p-6 rounded-xl shadow-sm border border-gray-100">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-          <div>
-            <h2 class="text-2xl font-bold text-dark">Achats de Billets</h2>
-            <p class="text-gray-500 mt-1">Gérez tous les achats de billets de vos événements</p>
-          </div>
-          <button onclick="openModal('addModal')" class="mt-4 md:mt-0 bg-gradient-to-r from-primary to-blue-500 hover:from-blue-600 hover:to-blue-500 text-white px-5 py-2.5 rounded-lg shadow-sm transition-all duration-200 flex items-center gap-2 w-full md:w-auto justify-center">
-            <i class="fas fa-plus"></i> Nouvel achat
-          </button>
-        </div>
-
-        <!-- Recherche et filtres -->
-        <div class="flex flex-col md:flex-row gap-4 mb-6">
-          <div class="relative flex-1">
-            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-            <input type="text" placeholder="Rechercher un client, un événement..."
-                   class="border border-gray-300 rounded-lg pl-10 pr-4 py-2.5 w-full focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all">
-          </div>
-          <div class="flex gap-2">
-            <select class="border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-200 focus:border-blue-400">
-              <option>Tous les statuts</option>
-              <option>Payé</option>
-              <option>En attente</option>
-              <option>Annulé</option>
-            </select>
-            <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2.5 rounded-lg transition-colors flex items-center gap-2">
-              <i class="fas fa-filter"></i> Filtres
-            </button>
-          </div>
-        </div>
-
-        <!-- Liste mobile (cartes) -->
-        <div class="md:hidden space-y-4">
-          <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 card-hover">
-            <div class="flex justify-between items-start">
-              <div>
-                <h3 class="font-semibold text-dark">Jean Mulumba</h3>
-                <p class="text-sm text-gray-600 mt-1">jean.mulumba@example.com</p>
-              </div>
-              <span class="status-badge bg-green-100 text-green-800">Payé</span>
-            </div>
-            <div class="mt-3">
-              <p class="text-sm text-gray-700"><i class="fas fa-music text-gray-400 mr-2"></i>Concert Gospel</p>
-              <p class="text-sm text-gray-700 mt-1"><i class="fas fa-tag text-gray-400 mr-2"></i>VIP (2 billets)</p>
-              <p class="font-medium text-gray-900 mt-2"><i class="fas fa-money-bill-wave text-gray-400 mr-2"></i>100 000 FC</p>
-            </div>
-            <div class="flex justify-between mt-4 pt-3 border-t border-gray-100">
-              <span class="text-xs text-gray-500">12 Nov 2023</span>
-              <div class="flex gap-2">
-                <button onclick="openModal('resendModal1')" class="text-blue-600 hover:text-blue-800 transition-colors">
-                  <i class="fas fa-paper-plane"></i>
-                </button>
-                <button onclick="openModal('detailsModal1')" class="text-gray-600 hover:text-dark transition-colors">
-                  <i class="fas fa-eye"></i>
-                </button>
-                <button onclick="openModal('deleteModal1')" class="text-red-500 hover:text-red-700 transition-colors">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 card-hover">
-            <div class="flex justify-between items-start">
-              <div>
-                <h3 class="font-semibold text-dark">Marie Kabasele</h3>
-                <p class="text-sm text-gray-600 mt-1">marie.k@example.com</p>
-              </div>
-              <span class="status-badge bg-yellow-100 text-yellow-800">En attente</span>
-            </div>
-            <div class="mt-3">
-              <p class="text-sm text-gray-700"><i class="fas fa-theater-masks text-gray-400 mr-2"></i>Pièce de Théâtre</p>
-              <p class="text-sm text-gray-700 mt-1"><i class="fas fa-tag text-gray-400 mr-2"></i>Standard (1 billet)</p>
-              <p class="font-medium text-gray-900 mt-2"><i class="fas fa-money-bill-wave text-gray-400 mr-2"></i>25 000 FC</p>
-            </div>
-            <div class="flex justify-between mt-4 pt-3 border-t border-gray-100">
-              <span class="text-xs text-gray-500">10 Nov 2023</span>
-              <div class="flex gap-2">
-                <button class="text-blue-600 hover:text-blue-800 transition-colors">
-                  <i class="fas fa-paper-plane"></i>
-                </button>
-                <button class="text-gray-600 hover:text-dark transition-colors">
-                  <i class="fas fa-eye"></i>
-                </button>
-                <button class="text-red-500 hover:text-red-700 transition-colors">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tableau pour écrans moyens et grands -->
-        <div class="hidden md:block overflow-x-auto rounded-xl border border-gray-100 shadow-sm">
-          <table class="min-w-full text-gray-700">
-            <thead class="bg-gray-50 border-b border-gray-100">
-              <tr>
-                <th class="px-6 py-4 text-left font-medium text-dark">Client</th>
-                <th class="px-6 py-4 text-left font-medium text-dark">Événement</th>
-                <th class="px-6 py-4 text-left font-medium text-dark">Type</th>
-                <th class="px-6 py-4 text-center font-medium text-dark">Quantité</th>
-                <th class="px-6 py-4 text-center font-medium text-dark">Total</th>
-                <th class="px-6 py-4 text-center font-medium text-dark">Statut</th>
-                <th class="px-6 py-4 text-center font-medium text-dark">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4">
-                  <div>
-                    <div class="font-medium text-dark">Jean Mulumba</div>
-                    <div class="text-sm text-gray-500">jean.mulumba@example.com</div>
-                  </div>
-                </td>
-                <td class="px-6 py-4">Concert Gospel</td>
-                <td class="px-6 py-4">
-                  <span class="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">VIP</span>
-                </td>
-                <td class="px-6 py-4 text-center">2</td>
-                <td class="px-6 py-4 text-center font-medium">100 000 FC</td>
-                <td class="px-6 py-4 text-center">
-                  <span class="status-badge bg-green-100 text-green-800">Payé</span>
-                </td>
-                <td class="px-6 py-4 text-center">
-                  <div class="flex justify-center gap-2">
-                    <button onclick="openModal('resendModal1')" class="action-btn bg-blue-100 text-blue-700 hover:bg-blue-200" title="Réenvoyer">
-                      <i class="fas fa-paper-plane"></i>
-                    </button>
-                    <button onclick="openModal('detailsModal1')" class="action-btn bg-gray-100 text-gray-700 hover:bg-gray-200" title="Voir détails">
-                      <i class="fas fa-eye"></i>
-                    </button>
-                    <button onclick="openModal('deleteModal1')" class="action-btn bg-red-100 text-red-700 hover:bg-red-200" title="Supprimer">
-                      <i class="fas fa-trash"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4">
-                  <div>
-                    <div class="font-medium text-dark">Marie Kabasele</div>
-                    <div class="text-sm text-gray-500">marie.k@example.com</div>
-                  </div>
-                </td>
-                <td class="px-6 py-4">Pièce de Théâtre</td>
-                <td class="px-6 py-4">
-                  <span class="px-2.5 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">Standard</span>
-                </td>
-                <td class="px-6 py-4 text-center">1</td>
-                <td class="px-6 py-4 text-center font-medium">25 000 FC</td>
-                <td class="px-6 py-4 text-center">
-                  <span class="status-badge bg-yellow-100 text-yellow-800">En attente</span>
-                </td>
-                <td class="px-6 py-4 text-center">
-                  <div class="flex justify-center gap-2">
-                    <button class="action-btn bg-blue-100 text-blue-700 hover:bg-blue-200" title="Réenvoyer">
-                      <i class="fas fa-paper-plane"></i>
-                    </button>
-                    <button class="action-btn bg-gray-100 text-gray-700 hover:bg-gray-200" title="Voir détails">
-                      <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="action-btn bg-red-100 text-red-700 hover:bg-red-200" title="Supprimer">
-                      <i class="fas fa-trash"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Pagination -->
-        <div class="flex justify-between items-center mt-6">
-          <p class="text-gray-600 text-sm">Affichage de 1 à 2 sur 12 résultats</p>
-          <div class="flex gap-1">
-            <button class="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">
-              <i class="fas fa-chevron-left"></i>
-            </button>
-            <button class="px-3 py-1.5 rounded-lg bg-primary text-white">1</button>
-            <button class="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">2</button>
-            <button class="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">3</button>
-            <button class="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">
-              <i class="fas fa-chevron-right"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <!-- Modal Réenvoi -->
-  <div id="resendModal1" class="hidden fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4">
-    <div class="bg-white p-6 rounded-xl w-full max-w-md shadow-lg">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-          <i class="fas fa-paper-plane text-blue-600"></i>
-        </div>
-        <h3 class="text-lg font-semibold text-dark">Réenvoyer le billet</h3>
-      </div>
-      <p class="text-gray-600 mb-6">Renvoyer le billet pour le <span class="font-medium">Concert Gospel</span> à <span class="font-medium">Jean Mulumba</span> ?</p>
-      <div class="flex justify-end gap-3">
-        <button onclick="closeModal('resendModal1')" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors">Annuler</button>
-        <button class="px-4 py-2.5 bg-gradient-to-r from-primary to-blue-500 hover:from-blue-600 hover:to-blue-500 text-white rounded-lg transition-all duration-200 flex items-center gap-2">
-          <i class="fas fa-paper-plane"></i> Confirmer
-        </button>
+      <div>
+        <span class="font-bold text-2xl text-gray-900">TicketMaster</span>
+        <p class="text-sm text-gray-500 mt-1">Plateforme de gestion</p>
       </div>
     </div>
   </div>
 
-  <!-- JS -->
-  <script>
-    function toggleSidebar(){
-      const sidebar = document.getElementById('sidebar');
-      const overlay = document.getElementById('overlay');
-      sidebar.classList.toggle('-translate-x-full');
-      overlay.classList.toggle('hidden');
-    }
-    function openModal(id){
-      document.getElementById(id).classList.remove('hidden');
-    }
-    function closeModal(id){
-      document.getElementById(id).classList.add('hidden');
-    }
-    
-    // Fermer les modals en cliquant à l'extérieur
-    document.addEventListener('click', function(event) {
-      const modals = document.querySelectorAll('[id$="Modal"]');
-      modals.forEach(modal => {
-        if (event.target === modal) {
-          modal.classList.add('hidden');
-        }
-      });
-    });
-  </script>
+  <nav class="flex-1 p-6 space-y-2">
+    <a href="{{ route('dashboard') }}" class="sidebar-link active">
+      <div class="h-10 w-10 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center">
+        <i class="fas fa-chart-pie text-indigo-600 text-lg"></i>
+      </div>
+      <span class="flex-1 text-base font-medium">Tableau de bord</span>
+      <div class="h-2 w-2 bg-indigo-500 rounded-full"></div>
+    </a>
+    <a href="{{ route('evenements.index') }}" class="sidebar-link">
+      <div class="h-10 w-10 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl flex items-center justify-center">
+        <i class="fas fa-calendar-plus text-purple-600 text-lg"></i>
+      </div>
+      <span class="flex-1 text-base font-medium">Événements</span>
+    </a>
+    <a href="{{ route('billets.index') }}" class="sidebar-link">
+      <div class="h-10 w-10 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl flex items-center justify-center">
+        <i class="fas fa-ticket-alt text-green-600 text-lg"></i>
+      </div>
+      <span class="flex-1 text-base font-medium">Billets</span>
+    </a>
+    <a href="{{ route('achats.index') }}" class="sidebar-link">
+      <div class="h-10 w-10 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl flex items-center justify-center">
+        <i class="fas fa-shopping-cart text-blue-600 text-lg"></i>
+      </div>
+      <span class="flex-1 text-base font-medium">Achats</span>
+    </a>
+  </nav>
 
+  <div class="p-6 border-t border-gray-100">
+    <div class="flex items-center gap-3 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl">
+      <div class="h-12 w-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center text-white font-bold">
+        <i class="fas fa-user text-lg"></i>
+      </div>
+      <div class="flex-1">
+        <p class="font-semibold text-gray-800">Admin User</p>
+        <p class="text-xs text-gray-500">Administrateur</p>
+      </div>
+      <button class="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+        <i class="fas fa-cog text-lg"></i>
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- Contenu principal -->
+<main class="flex-1 p-8 ml-80 bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 min-h-screen">
+  <!-- En-tête -->
+  <div class="flex justify-between items-center mb-8">
+    <div>
+      <h1 class="text-4xl font-bold text-gray-900 mb-2">Tableau de Bord</h1>
+      <p class="text-gray-600 text-lg">Bienvenue, voici un aperçu de votre activité</p>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="relative">
+        <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+        <input type="text" placeholder="Rechercher..." 
+               class="pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all">
+      </div>
+      <button class="p-3 bg-white border border-gray-200 rounded-2xl hover:shadow-md transition-all">
+        <i class="fas fa-bell text-gray-600 text-lg"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Statistiques principales -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+    <div class="stat-card group">
+      <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full -mr-4 -mt-4"></div>
+      <div class="flex items-center justify-between mb-4">
+        <div class="h-12 w-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center text-white">
+          <i class="fas fa-calendar-check text-lg"></i>
+        </div>
+        <span class="text-sm font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">
+          <i class="fas fa-arrow-up mr-1"></i>12%
+        </span>
+      </div>
+      <p class="text-sm text-gray-500 mb-2">Événements Actifs</p>
+      <h3 class="text-3xl font-bold text-gray-900 mb-2">{{ $evenementsActifs }}</h3>
+      <div class="w-full bg-gray-200 rounded-full h-1.5">
+        <div class="bg-gradient-to-r from-indigo-500 to-purple-500 h-1.5 rounded-full" style="width: 75%"></div>
+      </div>
+    </div>
+
+    <div class="stat-card group">
+      <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-full -mr-4 -mt-4"></div>
+      <div class="flex items-center justify-between mb-4">
+        <div class="h-12 w-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center text-white">
+          <i class="fas fa-ticket-alt text-lg"></i>
+        </div>
+        <span class="text-sm font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">
+          <i class="fas fa-arrow-up mr-1"></i>8%
+        </span>
+      </div>
+      <p class="text-sm text-gray-500 mb-2">Billets Vendus</p>
+      <h3 class="text-3xl font-bold text-gray-900 mb-2">{{ $billetsVendus }}</h3>
+      <div class="w-full bg-gray-200 rounded-full h-1.5">
+        <div class="bg-gradient-to-r from-green-500 to-emerald-500 h-1.5 rounded-full" style="width: 65%"></div>
+      </div>
+    </div>
+
+    <div class="stat-card group">
+      <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-full -mr-4 -mt-4"></div>
+      <div class="flex items-center justify-between mb-4">
+        <div class="h-12 w-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center text-white">
+          <i class="fas fa-money-bill-wave text-lg"></i>
+        </div>
+        <span class="text-sm font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">
+          <i class="fas fa-arrow-up mr-1"></i>23%
+        </span>
+      </div>
+      <p class="text-sm text-gray-500 mb-2">Revenus Totaux</p>
+      <h3 class="text-3xl font-bold text-gray-900 mb-2">{{ number_format($revenusCDF, 0, ',', ' ') }} FC</h3>
+      <div class="w-full bg-gray-200 rounded-full h-1.5">
+        <div class="bg-gradient-to-r from-blue-500 to-cyan-500 h-1.5 rounded-full" style="width: 85%"></div>
+      </div>
+    </div>
+
+    <div class="stat-card group">
+      <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-orange-500/10 to-amber-500/10 rounded-full -mr-4 -mt-4"></div>
+      <div class="flex items-center justify-between mb-4">
+        <div class="h-12 w-12 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center text-white">
+          <i class="fas fa-chart-line text-lg"></i>
+        </div>
+        <span class="text-sm font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">
+          <i class="fas fa-arrow-up mr-1"></i>5%
+        </span>
+      </div>
+      <p class="text-sm text-gray-500 mb-2">Taux de Remplissage</p>
+      <h3 class="text-3xl font-bold text-gray-900 mb-2">{{ $tauxRemplissage }}%</h3>
+      <div class="w-full bg-gray-200 rounded-full h-1.5">
+        <div class="bg-gradient-to-r from-orange-500 to-amber-500 h-1.5 rounded-full" style="width: {{ $tauxRemplissage }}%"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+    <!-- Événements populaires -->
+    <div class="dashboard-card">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-gray-900">Événements Populaires</h3>
+        <button class="text-indigo-600 hover:text-indigo-700 text-sm font-medium flex items-center gap-2">
+          Voir tout <i class="fas fa-arrow-right text-xs"></i>
+        </button>
+      </div>
+      <div class="space-y-4">
+        @forelse ($evenementsPopulaires as $index => $pop)
+        <div class="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-100 hover:border-indigo-200 transition-all group">
+          <div class="flex items-center gap-4">
+            <div class="h-12 w-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center text-white font-bold text-sm">
+              {{ $index + 1 }}
+            </div>
+            <div>
+              <p class="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                {{ $pop->evenement->nom ?? 'Inconnu' }}
+              </p>
+              <p class="text-xs text-gray-500">{{ $pop->total }} billets vendus</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs px-3 py-1.5 rounded-full font-medium">
+              {{ round(($pop->total / $billetsVendus) * 100, 1) }}%
+            </span>
+          </div>
+        </div>
+        @empty
+        <div class="text-center py-8">
+          <i class="fas fa-calendar-times text-4xl text-gray-300 mb-3"></i>
+          <p class="text-gray-500">Aucun événement enregistré</p>
+        </div>
+        @endforelse
+      </div>
+    </div>
+
+    <!-- Graphique simple -->
+    <div class="dashboard-card">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-gray-900">Performance des Ventes</h3>
+        <select class="text-sm border border-gray-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400">
+          <option>7 derniers jours</option>
+          <option>30 derniers jours</option>
+          <option>3 derniers mois</option>
+        </select>
+      </div>
+      <div class="h-64 flex items-end justify-between gap-2 pt-8">
+        <!-- Barres du graphique simplifié -->
+        <div class="flex-1 flex flex-col items-center">
+          <div class="w-full bg-gradient-to-t from-indigo-500 to-purple-400 rounded-t-lg transition-all hover:from-indigo-600 hover:to-purple-500" style="height: 60%"></div>
+          <span class="text-xs text-gray-500 mt-2">Lun</span>
+        </div>
+        <div class="flex-1 flex flex-col items-center">
+          <div class="w-full bg-gradient-to-t from-indigo-500 to-purple-400 rounded-t-lg transition-all hover:from-indigo-600 hover:to-purple-500" style="height: 80%"></div>
+          <span class="text-xs text-gray-500 mt-2">Mar</span>
+        </div>
+        <div class="flex-1 flex flex-col items-center">
+          <div class="w-full bg-gradient-to-t from-indigo-500 to-purple-400 rounded-t-lg transition-all hover:from-indigo-600 hover:to-purple-500" style="height: 45%"></div>
+          <span class="text-xs text-gray-500 mt-2">Mer</span>
+        </div>
+        <div class="flex-1 flex flex-col items-center">
+          <div class="w-full bg-gradient-to-t from-indigo-500 to-purple-400 rounded-t-lg transition-all hover:from-indigo-600 hover:to-purple-500" style="height: 90%"></div>
+          <span class="text-xs text-gray-500 mt-2">Jeu</span>
+        </div>
+        <div class="flex-1 flex flex-col items-center">
+          <div class="w-full bg-gradient-to-t from-indigo-500 to-purple-400 rounded-t-lg transition-all hover:from-indigo-600 hover:to-purple-500" style="height: 75%"></div>
+          <span class="text-xs text-gray-500 mt-2">Ven</span>
+        </div>
+        <div class="flex-1 flex flex-col items-center">
+          <div class="w-full bg-gradient-to-t from-green-500 to-emerald-400 rounded-t-lg transition-all hover:from-green-600 hover:to-emerald-500" style="height: 95%"></div>
+          <span class="text-xs text-gray-500 mt-2">Sam</span>
+        </div>
+        <div class="flex-1 flex flex-col items-center">
+          <div class="w-full bg-gradient-to-t from-green-500 to-emerald-400 rounded-t-lg transition-all hover:from-green-600 hover:to-emerald-500" style="height: 70%"></div>
+          <span class="text-xs text-gray-500 mt-2">Dim</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Derniers achats -->
+  <div class="dashboard-card">
+    <div class="flex justify-between items-center mb-6">
+      <h3 class="text-xl font-bold text-gray-900">Derniers Achats</h3>
+      <button class="text-indigo-600 hover:text-indigo-700 text-sm font-medium flex items-center gap-2">
+        Voir tout <i class="fas fa-arrow-right text-xs"></i>
+      </button>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-gray-200">
+            <th class="pb-4 text-left font-semibold text-gray-600">Client</th>
+            <th class="pb-4 text-left font-semibold text-gray-600">Événement</th>
+            <th class="pb-4 text-center font-semibold text-gray-600">Quantité</th>
+            <th class="pb-4 text-center font-semibold text-gray-600">Montant</th>
+            <th class="pb-4 text-center font-semibold text-gray-600">Statut</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          @forelse ($derniersAchats as $achat)
+          <tr class="hover:bg-gray-50 transition-colors">
+            <td class="py-4">
+              <div class="flex items-center gap-3">
+                <div class="h-10 w-10 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center">
+                  <i class="fas fa-user text-indigo-600 text-sm"></i>
+                </div>
+                <div>
+                  <div class="font-semibold text-gray-900">{{ $achat->billet->nom_auteur ?? 'Inconnu' }}</div>
+                  <div class="text-xs text-gray-500">{{ $achat->billet->email ?? '-' }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="py-4">
+              <div class="font-medium text-gray-800">{{ $achat->evenement->nom ?? 'Événement inconnu' }}</div>
+              <div class="text-xs text-gray-500">{{ $achat->created_at->format('d/m/Y H:i') }}</div>
+            </td>
+            <td class="py-4 text-center">
+              <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                {{ $achat->quantite }} billet(s)
+              </span>
+            </td>
+            <td class="py-4 text-center font-bold text-gray-900">
+              {{ number_format($achat->prix_unitaire * $achat->quantite, 0, ',', ' ') }} {{ $achat->devise }}
+            </td>
+            <td class="py-4 text-center">
+              <span class="status-badge {{ $achat->statut === 'payé' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                <i class="fas {{ $achat->statut === 'payé' ? 'fa-check-circle' : 'fa-clock' }} mr-1"></i>
+                {{ ucfirst($achat->statut) }}
+              </span>
+            </td>
+          </tr>
+          @empty
+          <tr>
+            <td colspan="5" class="py-8 text-center">
+              <i class="fas fa-shopping-cart text-3xl text-gray-300 mb-3"></i>
+              <p class="text-gray-500">Aucun achat récent</p>
+            </td>
+          </tr>
+          @endforelse
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
 </body>
 </html>
