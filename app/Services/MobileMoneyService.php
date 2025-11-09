@@ -16,7 +16,7 @@ class MobileMoneyService
     public static function sendPayment($request)
     {
         try {
-           
+
             $type_billet = EvenementTypeBillet::where('type_billet_id', $request['type_billet'])
                 ->where('evenement_id', $request['id_evenement'])
                 ->first();
@@ -29,11 +29,10 @@ class MobileMoneyService
                 throw new Exception('Quantité insuffisante de billets disponibles.');
             }
 
-          
             $data = [
                 'transactionReference' => 'TX-' . date('YmdHis') . '-' . rand(1000, 9999),
                 'amount'               => $type_billet->prix_unitaire * $request['nombre_reel'],
-                'currency'             => $type_billet->prix_unitaire,
+                'currency'             => $type_billet->devise,
                 'customerFullName'     => $request['nom_complet_client'],
                 'customerEmailAdress'  => 'menji@example.com',
                 'provider'             => $request['service'],

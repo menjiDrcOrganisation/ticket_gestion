@@ -12,6 +12,9 @@ use App\Models\EvenementTypeBillet;
 use App\Models\TypeBillet;
 use App\Models\Ressource;
 
+use App\Mail\EnvoiMotDePasseMail;
+use Illuminate\Support\Facades\Mail;
+
 class EvenementController extends Controller
 {
     /**
@@ -70,6 +73,7 @@ class EvenementController extends Controller
                     'user_id' => $user->id,
                     'telephone' => $validated['telephone'],
                 ]);
+               
             } else {
                 $organisateur = null;
             }
@@ -77,7 +81,7 @@ class EvenementController extends Controller
             // Création de l'événement
             $evenement = Evenement::create([
                 'nom' => $validated['nom_evenement'],
-                'url_evenement' => Str::slug($validated['nom_evenement']),
+                'url_evenement' => ,
                 'organisateur_id' => $organisateur?->id,
                 'adresse' => $validated['adresse'],
                 'salle' => $validated['salle'],
@@ -96,7 +100,7 @@ class EvenementController extends Controller
                 'phrase_accroche'=> $validated['acroche'],
                 'a_propos'=> $validated['a_propos'],
                 'photo_affiche'=>$image_path,
-                'evenement_id'=> $evenement->id
+                'evenement_id'=> $evenement->idStr::slug($validated['nom_evenement'])
             ]);
 
             // Boucle sur les billets
@@ -113,8 +117,21 @@ class EvenementController extends Controller
                     ]);
                 }
             }
+             try {
+                Mail::to($validated['email_organisateur'])->send(new EnvoiMotDePasseMail(
+                    $validated['nom_organisateur'],
+                    $validated['email_organisateur'],
+                    'Organi12345',
+                    'https://ticket.menjidrc.com/' . $slug
+                ));
 
-            return redirect()->route('evenements.index')->with('success', 'Événement créé avec succès.');
+                $message = 'Événement créé avec succès et mail envoyé à l’organisateur.';
+            } catch (\Exception $e) {
+               
+                $message = 'Événement créé avec succès, mais le mail n’a pas pu être envoyé. Erreur : ' . $e->getMessage();
+            }
+
+            return redirect()->route('evenements.index')->with('success', $message);
         } catch (\Throwable $th) {
             return $th;
         }

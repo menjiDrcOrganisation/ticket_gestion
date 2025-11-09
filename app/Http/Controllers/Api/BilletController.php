@@ -20,9 +20,10 @@ class BilletController extends Controller
                 'id_evenement' => 'required|string'
             ]);
 
-            $result = MobileMoneyService::sendPayment( $validated);
+        
+            $result = MobileMoneyService::sendPayment($validated);
 
-            return response()->json($result, $result['status'] ? 200 : 400);
+            return $result;
 
         } catch (\Exception $e) {
             return response()->json([

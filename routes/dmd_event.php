@@ -15,28 +15,20 @@ Route::delete('/dmd_events/{demandeEvenement}', [DemandeEvenementController::cla
 use App\Http\Controllers\TypeEvenementController;
 use App\Http\Controllers\EvenementBilletTypeBilletController;
 
+
 Route::get('/type_evenements', [TypeEvenementController::class, 'index'])->name('typeEvenement.index');
 Route::post('/type_evenements', [TypeEvenementController::class, 'store'])->name('typeEvenement.store');
 Route::get('/type_evenements/{typeEvenement}/edit', [TypeEvenementController::class, 'edit'])->name('typeEvenement.edit');
 Route::put('/type_evenements/{typeEvenement}', [TypeEvenementController::class, 'update'])->name('typeEvenement.update');
 Route::delete('/type_evenements/{typeEvenement}', [TypeEvenementController::class, 'destroy'])->name('typeEvenement.destroy');
-
 Route::post('demandeEvenement/{demandeEvenement}/change-status', [DemandeEvenementController::class, 'changeStatus'])->name('demandeEvenement.changeStatus');
-
 
 
 Route::get('achat/billet/', [DemandeEvenementController::class, 'achatBillet'])->name('achats.index');
 Route::post('achat/billet/', [DemandeEvenementController::class, 'processAchatBillet'])->name('billets.index');
 
 
-// Route pour générer le billet PDF
-Route::get('resume/', [EvenementBilletTypeBilletController::class,  'index'])->name('billet.generatePDF');
 
 Route::get('achatbillet/{evenementId}', [EvenementBilletTypeBilletController::class,  'achatbillet'])->name('billets.index');
-
-
-
-Route::get('dashboard_event/{id}', [EvenementBilletTypeBilletController::class, 'show'])
-    ->name('achatbillet.show');
 
 ?>

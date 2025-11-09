@@ -1,111 +1,6 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tableau de bord - {{ $evenement->nom }}</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#4f46e5',
-            secondary: '#7c3aed',
-            success: '#10b981',
-            warning: '#f59e0b',
-            dark: '#1e293b',
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    body { 
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    }
-    .sidebar-link {
-      @apply flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-gray-600 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-600 hover:shadow-sm;
-    }
-    .sidebar-link.active { 
-      @apply bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-600 font-semibold shadow-sm border-r-3 border-indigo-500;
-    }
-    .stat-card {
-      @apply bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 relative overflow-hidden;
-    }
-    .dashboard-card {
-      @apply bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300;
-    }
-    .status-badge {
-      @apply px-3 py-1.5 rounded-full text-xs font-medium;
-    }
-    .gradient-bg {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-  </style>
-</head>
-
-<body class="min-h-screen flex">
-  <!-- Sidebar -->
-  <aside class="fixed inset-y-0 left-0 w-72 bg-white border-r border-gray-200 flex flex-col shadow-lg z-50">
-    <div class="p-6 border-b border-gray-100">
-      <div class="flex items-center gap-3">
-        <div class="h-12 w-12 gradient-bg rounded-xl flex items-center justify-center text-white shadow-lg">
-          <i class="fas fa-ticket-alt text-xl"></i>
-        </div>
-        <div>
-          <span class="font-bold text-xl text-gray-800">TicketMaster</span>
-          <p class="text-xs text-gray-500 mt-1">Gestion des billets</p>
-        </div>
-      </div>
-    </div>
-
-    <nav class="flex-1 p-4 space-y-1">
-      <a href="{{ route('dashboard') }}" class="sidebar-link">
-        <div class="h-10 w-10 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center">
-          <i class="fas fa-chart-pie text-indigo-600 text-lg"></i>
-        </div>
-        <span class="flex-1 text-base font-medium">Tableau de bord</span>
-      </a>
-      <a href="{{ route('evenements.index') }}" class="sidebar-link">
-        <div class="h-10 w-10 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl flex items-center justify-center">
-          <i class="fas fa-calendar-plus text-purple-600 text-lg"></i>
-        </div>
-        <span class="flex-1 text-base font-medium">Événements</span>
-      </a>
-      <a href="{{ route('billets.index') }}" class="sidebar-link">
-        <div class="h-10 w-10 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl flex items-center justify-center">
-          <i class="fas fa-ticket-alt text-green-600 text-lg"></i>
-        </div>
-        <span class="flex-1 text-base font-medium">Billets</span>
-      </a>
-      <a href="{{ route('achats.index') }}" class="sidebar-link">
-        <div class="h-10 w-10 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl flex items-center justify-center">
-          <i class="fas fa-shopping-cart text-blue-600 text-lg"></i>
-        </div>
-        <span class="flex-1 text-base font-medium">Achats</span>
-      </a>
-    </nav>
-
-    <div class="p-4 border-t border-gray-100">
-      <div class="flex items-center gap-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
-        <div class="h-10 w-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center text-white font-bold">
-          <i class="fas fa-user text-sm"></i>
-        </div>
-        <div class="flex-1">
-          <p class="font-semibold text-gray-800 text-sm">Admin User</p>
-          <p class="text-xs text-gray-500">Administrateur</p>
-        </div>
-      </div>
-    </div>
-  </aside>
-
-  <!-- Contenu principal -->
-  <main class="flex-1 ml-72 min-h-screen">
-    <!-- Header -->
+@extends('layouts.main')
+ @section('content')
+   <!-- Header -->
     <div class="bg-white shadow-sm border-b border-gray-200 px-8 py-6">
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
         <div class="flex items-center gap-4 mb-4 lg:mb-0">
@@ -350,5 +245,8 @@
       </div>
     </div>
   </main>
-</body>
-</html>
+
+
+
+
+@endsection
