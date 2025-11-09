@@ -9,7 +9,9 @@
       <li><strong>Email :</strong> {{ $email }}</li>
       <li><strong>Mot de passe :</strong> {{ $mot_de_passe }}</li>
 
-      <li><strong>le lien de votre site pour le telechargement du billet :</strong> {{ $url }}</li>
+      <li><strong>le lien de votre site pour acheter le  billet :
+        
+      </strong><link rel="stylesheet" href="{{ $url }}"> {{ $url }}</li>
 
 
       

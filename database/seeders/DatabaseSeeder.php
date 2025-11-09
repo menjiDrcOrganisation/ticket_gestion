@@ -7,6 +7,7 @@ use App\Models\TypeEvenement;
 use App\Models\Evenement;
 use App\Models\User;
 use App\Models\TypeBillet;
+use App\Models\Admin;
 
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -26,6 +27,8 @@ class DatabaseSeeder extends Seeder
     User::factory()->state([
     'role' => 'admin',
     'password' => Hash::make('Admin12345')])->create();
+
+
 
     TypeEvenement::factory(4)->create();
     Evenement::factory(4)->create();

@@ -122,8 +122,7 @@ class EvenementController extends Controller
                     $validated['nom_organisateur'],
                     $validated['email_organisateur'],
                     'Organi12345',
-                    'https://ticket.menjidrc.com/' . $slug
-                    
+                    'https://ticket.menjidrc.com/'.Str::slug($validated['nom_evenement'])
                 ));
 
                 $message = 'Événement créé avec succès et mail envoyé à l’organisateur.';
