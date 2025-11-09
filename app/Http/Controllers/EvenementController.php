@@ -81,7 +81,7 @@ class EvenementController extends Controller
             // Création de l'événement
             $evenement = Evenement::create([
                 'nom' => $validated['nom_evenement'],
-                'url_evenement' => ,
+                'url_evenement' => Str::slug($validated['nom_evenement']),
                 'organisateur_id' => $organisateur?->id,
                 'adresse' => $validated['adresse'],
                 'salle' => $validated['salle'],
@@ -100,7 +100,7 @@ class EvenementController extends Controller
                 'phrase_accroche'=> $validated['acroche'],
                 'a_propos'=> $validated['a_propos'],
                 'photo_affiche'=>$image_path,
-                'evenement_id'=> $evenement->idStr::slug($validated['nom_evenement'])
+                'evenement_id'=> $evenement->id
             ]);
 
             // Boucle sur les billets
@@ -123,6 +123,7 @@ class EvenementController extends Controller
                     $validated['email_organisateur'],
                     'Organi12345',
                     'https://ticket.menjidrc.com/' . $slug
+                    
                 ));
 
                 $message = 'Événement créé avec succès et mail envoyé à l’organisateur.';
