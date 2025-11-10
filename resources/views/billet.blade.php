@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{{-- <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -118,7 +118,14 @@
 </aside>
 
 <!-- Contenu principal -->
-<main class="flex-1 p-8 ml-80 bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 min-h-screen">
+
+</body>
+</html> --}}
+
+@extends('layouts.main')
+@section('content')
+
+
   <!-- En-tête -->
   <div class="flex justify-between items-center mb-8">
     <div>
@@ -355,6 +362,5 @@
     </div>
   </div>
 
-</main>
-</body>
-</html>
+
+@endsection

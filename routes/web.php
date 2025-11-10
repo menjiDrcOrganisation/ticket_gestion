@@ -6,20 +6,22 @@ use App\Http\Controllers\EvenementController;
 use App\Http\Controllers\EvenementBilletTypeBilletController;
 
 
+
 Route::get('/', function () {
     return view('resume');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+
+// Route::get('/dashboard', function () {
+//     return view('dashboard');
+// })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-Route::get('resume/', [EvenementBilletTypeBilletController::class,  'index'])->name('da');
+Route::get('/dashboard', [EvenementBilletTypeBilletController::class,  'index'])->name('dashboard');
 
 require __DIR__.'/auth.php';
 require __DIR__ . '/evenement.php';
