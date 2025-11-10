@@ -71,110 +71,11 @@
       </div>
     </div>
 
-    <div class="stat-card group">
-      <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-orange-500/10 to-amber-500/10 rounded-full -mr-4 -mt-4"></div>
-      <div class="flex items-center justify-between mb-4">
-        <div class="h-12 w-12 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center text-white">
-          <i class="fas fa-chart-line text-lg"></i>
-        </div>
-        <span class="text-sm font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">
-          <i class="fas fa-arrow-up mr-1"></i>5%
-        </span>
-      </div>
-      <p class="text-sm text-gray-500 mb-2">Taux de Remplissage</p>
-      <h3 class="text-3xl font-bold text-gray-900 mb-2">{{ $tauxRemplissage }}%</h3>
-      <div class="w-full bg-gray-200 rounded-full h-1.5">
-        <div class="bg-gradient-to-r from-orange-500 to-amber-500 h-1.5 rounded-full" style="width: {{ $tauxRemplissage }}%"></div>
-      </div>
-    </div>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
-    <!-- Événements populaires -->
-    <div class="dashboard-card">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-xl font-bold text-gray-900">Événements Populaires</h3>
-        <button class="text-indigo-600 hover:text-indigo-700 text-sm font-medium flex items-center gap-2">
-          Voir tout <i class="fas fa-arrow-right text-xs"></i>
-        </button>
-      </div>
-      <div class="space-y-4">
-        @forelse ($evenementsPopulaires as $index => $pop)
-        <div class="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-100 hover:border-indigo-200 transition-all group">
-          <div class="flex items-center gap-4">
-            <div class="h-12 w-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center text-white font-bold text-sm">
-              {{ $index + 1 }}
-            </div>
-            <div>
-              <p class="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
-                {{ $pop->evenement->nom ?? 'Inconnu' }}
-              </p>
-              <p class="text-xs text-gray-500">{{ $pop->total }} billets vendus</p>
-            </div>
-          </div>
-          <div class="text-right">
-            <span class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs px-3 py-1.5 rounded-full font-medium">
-              {{ round(($pop->total / $billetsVendus) * 100, 1) }}%
-            </span>
-          </div>
-        </div>
-        @empty
-        <div class="text-center py-8">
-          <i class="fas fa-calendar-times text-4xl text-gray-300 mb-3"></i>
-          <p class="text-gray-500">Aucun événement enregistré</p>
-        </div>
-        @endforelse
-      </div>
-    </div>
-
-    <!-- Graphique simple -->
-    <div class="dashboard-card">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-xl font-bold text-gray-900">Performance des Ventes</h3>
-        <select class="text-sm border border-gray-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400">
-          <option>7 derniers jours</option>
-          <option>30 derniers jours</option>
-          <option>3 derniers mois</option>
-        </select>
-      </div>
-      <div class="h-64 flex items-end justify-between gap-2 pt-8">
-        <!-- Barres du graphique simplifié -->
-        <div class="flex-1 flex flex-col items-center">
-          <div class="w-full bg-gradient-to-t from-indigo-500 to-purple-400 rounded-t-lg transition-all hover:from-indigo-600 hover:to-purple-500" style="height: 60%"></div>
-          <span class="text-xs text-gray-500 mt-2">Lun</span>
-        </div>
-        <div class="flex-1 flex flex-col items-center">
-          <div class="w-full bg-gradient-to-t from-indigo-500 to-purple-400 rounded-t-lg transition-all hover:from-indigo-600 hover:to-purple-500" style="height: 80%"></div>
-          <span class="text-xs text-gray-500 mt-2">Mar</span>
-        </div>
-        <div class="flex-1 flex flex-col items-center">
-          <div class="w-full bg-gradient-to-t from-indigo-500 to-purple-400 rounded-t-lg transition-all hover:from-indigo-600 hover:to-purple-500" style="height: 45%"></div>
-          <span class="text-xs text-gray-500 mt-2">Mer</span>
-        </div>
-        <div class="flex-1 flex flex-col items-center">
-          <div class="w-full bg-gradient-to-t from-indigo-500 to-purple-400 rounded-t-lg transition-all hover:from-indigo-600 hover:to-purple-500" style="height: 90%"></div>
-          <span class="text-xs text-gray-500 mt-2">Jeu</span>
-        </div>
-        <div class="flex-1 flex flex-col items-center">
-          <div class="w-full bg-gradient-to-t from-indigo-500 to-purple-400 rounded-t-lg transition-all hover:from-indigo-600 hover:to-purple-500" style="height: 75%"></div>
-          <span class="text-xs text-gray-500 mt-2">Ven</span>
-        </div>
-        <div class="flex-1 flex flex-col items-center">
-          <div class="w-full bg-gradient-to-t from-green-500 to-emerald-400 rounded-t-lg transition-all hover:from-green-600 hover:to-emerald-500" style="height: 95%"></div>
-          <span class="text-xs text-gray-500 mt-2">Sam</span>
-        </div>
-        <div class="flex-1 flex flex-col items-center">
-          <div class="w-full bg-gradient-to-t from-green-500 to-emerald-400 rounded-t-lg transition-all hover:from-green-600 hover:to-emerald-500" style="height: 70%"></div>
-          <span class="text-xs text-gray-500 mt-2">Dim</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Derniers achats -->
   <div class="dashboard-card">
     <div class="flex justify-between items-center mb-6">
-      <h3 class="text-xl font-bold text-gray-900">Derniers Achats</h3>
+      <h3 class="text-xl font-bold text-gray-900">Mes billets</h3>
       <button class="text-indigo-600 hover:text-indigo-700 text-sm font-medium flex items-center gap-2">
         Voir tout <i class="fas fa-arrow-right text-xs"></i>
       </button>

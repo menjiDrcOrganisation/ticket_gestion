@@ -17,3 +17,4 @@ require __DIR__.'/auth.php';
 require __DIR__ . '/evenement.php';
 require __DIR__.'/dmd_event.php';
 require __DIR__.'/dashboard.php';
+require __DIR__.'/scanne.php';
