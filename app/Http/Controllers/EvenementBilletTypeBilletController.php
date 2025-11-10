@@ -81,7 +81,7 @@ class EvenementBilletTypeBilletController extends Controller
         // Debug ou affichage
         // dd($achats, $totalPaye, $totalCDF, $totalUSD);
 
-        return view('achat', compact('achats', 'totalPaye', 'totalCDF', 'totalUSD'));
+        return view('organisateurs.achat', compact('achats', 'totalPaye', 'totalCDF', 'totalUSD'));
 
     } catch (\Throwable $th) {
         return redirect()->back()->with('error', 'Erreur lors de la récupération des billets : ' . $th->getMessage());
@@ -125,7 +125,7 @@ class EvenementBilletTypeBilletController extends Controller
         // Achats récents
         $derniersAchats = $achats->sortByDesc('date_achat')->take(5);
 
-        return view('resume', compact(
+        return view('organisateurs.resume', compact(
             'evenement',
             'totalBilletsVendus',
             'revenusCDF',
