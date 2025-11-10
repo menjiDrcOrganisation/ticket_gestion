@@ -13,7 +13,7 @@ class EnvoiMotDePasseMail extends Mailable
     public $nom_client;
     public $email;
     public $mot_de_passe;
-     public $url;
+    public $url;
 
     /**
      * Crée une nouvelle instance du message.
@@ -23,7 +23,7 @@ class EnvoiMotDePasseMail extends Mailable
         $this->nom_client = $nom_client;
         $this->email = $email;
         $this->mot_de_passe = $mot_de_passe;
-        $this->$url = $url;
+        $this->url = $url;
     }
 
     /**

@@ -118,6 +118,7 @@ class EvenementController extends Controller
                 }
             }
              try {
+                
                 Mail::to($validated['email_organisateur'])->send(new EnvoiMotDePasseMail(
                     $validated['nom_organisateur'],
                     $validated['email_organisateur'],
