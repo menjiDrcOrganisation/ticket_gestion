@@ -16,7 +16,7 @@ class MobileMoneyService
     public static function sendPayment($request)
     {
         try {
-            // 1️⃣ Vérifier le type de billet
+           
             $type_billet = EvenementTypeBillet::where('type_billet_id', $request['type_billet'])
                 ->where('evenement_id', $request['id_evenement'])
                 ->first();
@@ -28,12 +28,10 @@ class MobileMoneyService
             if ($type_billet->nombre_billet < $request['nombre_reel']) {
                 throw new Exception('Quantité insuffisante de billets disponibles.');
             }
-
-            // 2️⃣ Préparer les données de transaction
             $data = [
                 'transactionReference' => 'TX-' . date('YmdHis') . '-' . rand(1000, 9999),
                 'amount'               => $type_billet->prix_unitaire * $request['nombre_reel'],
-                'currency'             => $request['devise'],
+                'currency'             => $type_billet->devise,
                 'customerFullName'     => $request['nom_complet_client'],
                 'customerEmailAdress'  => 'menji@example.com',
                 'provider'             => $request['service'],
@@ -41,7 +39,6 @@ class MobileMoneyService
                 'callbackUrl'          => 'https://tondomaine.com/mobile_callback',
             ];
 
-            // 3️⃣ Préparer le payload Maishapay
             $payload = [
                 'transactionReference' => $data['transactionReference'],
                 'gatewayMode' => "0",

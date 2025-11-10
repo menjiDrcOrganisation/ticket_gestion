@@ -14,13 +14,11 @@ class BilletController extends Controller
             $validated = $request->validate([
                 'type_billet' => 'required|string',
                 'nombre_reel' => 'required|integer|min:1',
-                'devise' => 'required|string',
                 'nom_complet_client' => 'required|string',
                 'numero_client' => 'required|string',
                 'service' => 'required|string',
                 'id_evenement' => 'required|string'
             ]);
-
 
             $result = MobileMoneyService::sendPayment( $validated);
 
