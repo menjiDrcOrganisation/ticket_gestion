@@ -29,14 +29,14 @@ Route::get('achat/billet/', [DemandeEvenementController::class, 'achatBillet'])-
 Route::post('achat/billet/', [DemandeEvenementController::class, 'processAchatBillet'])->name('billets.index');
 
 
-// Route pour générer le billet PDF
-Route::get('resume/', [EvenementBilletTypeBilletController::class,  'index'])->name('billet.generatePDF');
-
-Route::get('achatbillet/{evenementId}', [EvenementBilletTypeBilletController::class,  'achatbillet'])->name('billets.index');
+// // Route pour générer le billet PDF
+// Route::get('resume/', [EvenementBilletTypeBilletController::class,  'index'])->name('billet.generatePDF');
 
 
+// Route::get('achatbillet/{evenementId}', [EvenementBilletTypeBilletController::class,  'achatbillet'])->name('billets.index');
 
-Route::get('dashboard_event/{id}', [EvenementBilletTypeBilletController::class, 'show'])
-    ->name('achatbillet.show');
+
+// Route::get('dashboard_event/{id}', [EvenementBilletTypeBilletController::class, 'show'])
+//   ->name('achatbillet.show');
 
 ?>
