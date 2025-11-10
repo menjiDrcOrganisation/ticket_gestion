@@ -27,8 +27,6 @@ Route::post('demandeEvenement/{demandeEvenement}/change-status', [DemandeEveneme
 Route::get('achat/billet/', [DemandeEvenementController::class, 'achatBillet'])->name('achats.index');
 Route::post('achat/billet/', [DemandeEvenementController::class, 'processAchatBillet'])->name('billets.index');
 
-
-
 Route::get('achatbillet/{evenementId}', [EvenementBilletTypeBilletController::class,  'achatbillet'])->name('billets.index');
 
 ?>

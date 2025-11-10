@@ -8,11 +8,9 @@
     <ul>
       <li><strong>Email :</strong> {{ $email }}</li>
       <li><strong>Mot de passe :</strong> {{ $mot_de_passe }}</li>
-
       <li><strong>le lien de votre site pour acheter le  billet :
         <a href="{{ $url }}">{{ $url }}</a>
     </ul>
-
     <p>Nous vous recommandons de modifier votre mot de passe après votre première connexion.</p>
     <p>Merci d’utiliser nos services.</p>
 
