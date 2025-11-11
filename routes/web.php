@@ -3,6 +3,8 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EvenementController;
+use App\Http\Controllers\EvenementBilletTypeBilletController;
+
 
 
 Route::get('/test-mail', function () {
@@ -34,8 +36,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-
 require __DIR__.'/auth.php';
 require __DIR__ . '/evenement.php';
 require __DIR__.'/dmd_event.php';
 require __DIR__.'/dashboard.php';
+require __DIR__.'/organisateur.php';
+require __DIR__.'/scanneur.php';
