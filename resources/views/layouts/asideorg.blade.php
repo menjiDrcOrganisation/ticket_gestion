@@ -23,21 +23,16 @@
       <span class="flex-1 text-sm">Tableau de bord</span>
     </a>
     
-    <a href="{{ route('evenements.index') }}" class="sidebar-link">
-      <div class="sidebar-icon h-9 w-9 rounded-lg bg-purple-50">
-        <i class="fas fa-calendar-plus text-purple-600 text-sm"></i>
-      </div>
-      <span class="flex-1 text-sm">Événements</span>
-    </a>
+  
     
-    <a href="{{ route('billets.index') }}" class="sidebar-link">
+    <a href="{{ route('event_billets.org') }}" class="sidebar-link">
       <div class="sidebar-icon h-9 w-9 rounded-lg bg-green-50">
         <i class="fas fa-ticket-alt text-green-600 text-sm"></i>
       </div>
-      <span class="flex-1 text-sm">Billets</span>
+      <span class="flex-1 text-sm">Événement & Billets</span>
     </a>
     
-    <a href="{{ route('achats.index') }}" class="sidebar-link active">
+    <a href="{{ route('achatbillet') }}" class="sidebar-link active">
       <div class="sidebar-icon h-9 w-9 rounded-lg bg-indigo-50">
         <i class="fas fa-shopping-cart text-indigo-600 text-sm"></i>
       </div>

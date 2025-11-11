@@ -39,6 +39,13 @@ class OrganisateurController extends Controller
         
       }  
     }
+    public function users_organisateur()
+    {
+        $organisateurs = Organisateur::with('user')->get();
+        
+        return view('organisateurs.index', compact('organisateurs'));
+    }
+
     public function index()
     {
         //

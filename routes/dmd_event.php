@@ -29,6 +29,6 @@ Route::post('achat/billet/', [DemandeEvenementController::class, 'processAchatBi
 
 
 
-Route::get('achatbillet/{evenementId}', [EvenementBilletTypeBilletController::class,  'achatbillet'])->name('billets.index');
+
 
 ?>

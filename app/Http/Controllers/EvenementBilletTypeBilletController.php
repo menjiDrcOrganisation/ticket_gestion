@@ -53,9 +53,14 @@ class EvenementBilletTypeBilletController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function achatbillet(Request $request, $evenementId)
+    public function achatbillet()
 {
     try {
+        $user = auth()->user();
+        if (!$user->organisateur) {
+            return redirect()->back()->with('error', 'Aucun profil organisateur associé.');
+        }
+        $evenementId = $user->organisateur->evenements->first()->id;
         // Récupère tous les achats pour l'événement
         $achats = EvenementBilletTypeBillet::with(['type_billet', 'evenement'])
             ->where('evenement_id', $evenementId)
@@ -87,6 +92,29 @@ class EvenementBilletTypeBilletController extends Controller
         return redirect()->back()->with('error', 'Erreur lors de la récupération des billets : ' . $th->getMessage());
     }
 }
+    public function event_billets()
+    {
+        try {
+           $user = auth()->user();
+
+    if (!$user->organisateur) {
+        return redirect()->back()->with('error', 'Aucun profil organisateur associé.');
+    }
+
+    $evenement = $user->organisateur->evenements->first();
+
+    if (!$evenement) {
+        return redirect()->back()->with('info', 'Aucun événement trouvé.');
+    }
+
+            
+            return view('organisateurs.event_billet', compact('evenement'));
+
+        } catch (\Throwable $th) {
+            dd($th->getMessage());
+            return redirect()->back()->with('error', 'Erreur lors de la récupération des événements : ' . $th->getMessage());
+        }
+    }
 
     public function create()
     {
