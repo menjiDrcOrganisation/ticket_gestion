@@ -54,6 +54,13 @@
             <img src="{{ asset('icons/add.png') }}" class="w-5 h-5" >
             <span> Users Organisateurs</span>
         </a>
+
+         <a href="{{ route('retraits.index') }}"
+           class="flex items-center gap-3 px-4 py-2 font-roboto font-light rounded-lg text-sm transition-colors
+                  {{ request()->routeIs('retraits.*') ? 'bg-gradient-to-r from-green-200 to-green-200/70 text-white' : 'text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-green-200 hover:to-green-200/70 transition-all duration-300' }}">
+            <img src="{{ asset('icons/add.png') }}" class="w-5 h-5" >
+            <span> Retrait</span>
+        </a>
         <!-- Profil -->
         <a href="{{ route('profile.edit') }}"
            class="flex items-center gap-3 px-4 py-2 font-roboto font-light rounded-lg text-sm transition-colors

@@ -73,9 +73,13 @@ body {
             <p class="text-gray-500 mt-1">Tous les achats de billets pour vos événements</p>
           </div>
           <div class="mt-4 md:mt-0">
-            <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg">
+            {{-- <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg">
               <i class="fas fa-plus"></i> Nouvel achat
-            </button>
+            </button> --}}
+            <button id="openModalBtn" 
+                class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg shadow transition">
+            + Nouveau Retrait
+        </button>
           </div>
         </div>
         
@@ -344,6 +348,60 @@ body {
   </div>
 </div>
 @endforeach
+
+{{-- MODAL : Ajouter un nouveau retrait --}}
+<div id="createModal" class="fixed inset-0 hidden bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative">
+        <button id="closeModalBtn" class="absolute top-3 right-3 text-gray-400 hover:text-gray-700">✖</button>
+        <h2 class="text-xl font-bold mb-4 text-gray-800">➕ Nouveau Retrait</h2>
+
+        <form action="{{ route('retraits.store') }}" method="POST" class="space-y-4">
+            @csrf
+
+            {{-- <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Organisateur</label>
+                <select name="organisateur_id" required
+                    class="w-full border-gray-300 rounded-lg focus:ring-blue-500">
+                    @foreach($organisateurs as $org)
+                        <option value="{{ $org->id }}">{{ $org->user->email }}</option>
+                    @endforeach
+                </select>
+            </div> --}}
+          <input type="hidden" name="organisateur_id" value="{{ auth()->user()->organisateur->id }}">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nom du détenteur</label>
+                <input type="text" name="nom_detenteur" class="w-full border-gray-300 rounded-lg" required>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Montant (FC)</label>
+                <input type="number" name="montant" class="w-full border-gray-300 rounded-lg" required>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                <input type="date" name="date" class="w-full border-gray-300 rounded-lg" required>
+            </div>
+
+            <div class="flex justify-end">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg">
+                    Enregistrer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Script du modal --}}
+<script>
+    const modal = document.getElementById('createModal');
+    const openBtn = document.getElementById('openModalBtn');
+    const closeBtn = document.getElementById('closeModalBtn');
+
+    openBtn.addEventListener('click', () => modal.classList.remove('hidden'));
+    closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+    window.addEventListener('click', e => { if(e.target === modal) modal.classList.add('hidden') });
+</script>
 
 <script>
 function toggleSidebar(){
