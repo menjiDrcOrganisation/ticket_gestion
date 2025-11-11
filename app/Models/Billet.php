@@ -9,7 +9,7 @@ class Billet extends Model
 {
     /** @use HasFactory<\Database\Factories\BilletFactory> */
     use HasFactory;
-    protected     $fillable = [
+    protected   $fillable = [
        'date_achat',
        'nom_auteur',
        'numero',
@@ -17,4 +17,21 @@ class Billet extends Model
        'code_billet'
     
     ];
+
+    public function evenements()
+    {
+        return $this->belongsToMany(Evenement::class, 'evenement_billet_type_billets')
+                    ->withPivot('type_billet_id', 'quantite')
+                    ->withTimestamps();
+    }
+
+    public function type_billet()
+    {
+        return $this->belongsToMany(TypeBillet::class, 'evenement_billet_type_billets')
+                    ->withPivot('type_billet_id', 'quantite')
+                    ->withTimestamps();
+    }
+
+
+
 }

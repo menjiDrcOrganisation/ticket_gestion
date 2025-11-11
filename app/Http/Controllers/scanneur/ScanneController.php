@@ -1,16 +1,17 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\scanneur;
 
 use Illuminate\Http\Request;
+
+use App\Http\Controllers\Controller; 
 
 class ScanneController extends Controller
 {
       
   public function showScanner()
     {
-        
-        return view('scanne.scanner');
+        return view('scanneur.scanner');
     }
 
     // Méthode pour traiter le résultat du scan

@@ -18,3 +18,4 @@ require __DIR__ . '/evenement.php';
 require __DIR__.'/dmd_event.php';
 require __DIR__.'/organisateur.php';
 require __DIR__.'/scanneur.php';
+require __DIR__.'/dashboard.php';

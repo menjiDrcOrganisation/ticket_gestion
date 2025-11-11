@@ -44,4 +44,14 @@ class Evenement extends Model
         return $this->hasMany(Ressource::class);
     }
 
+    public function billets()
+    {
+        return $this->belongsToMany(Billet::class, 'evenement_billet_type_billet')
+                    ->withPivot('type_billet_id', 'nombre_billet')
+                    ->withTimestamps();
+    }
+
+
+
+
 }

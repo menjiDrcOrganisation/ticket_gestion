@@ -24,7 +24,7 @@
 
 
   <header class="bg-orange-600 text-white p-4 shadow flex justify-between items-center flex-wrap gap-2 w-full">
-    <a href="{{ route('billet.index') }}" 
+    <a href="" 
        class="bg-white text-red-600 px-4 py-2 rounded shadow hover:bg-gray-100 transition text-sm md:text-base">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left-icon lucide-arrow-left"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
     </a>
@@ -65,7 +65,7 @@ const okBtn = document.getElementById('okBtn');
   const select = document.getElementById('cameraList');
   const id_camera=document.getElementById('id_camera')
   const startBtn = document.getElementById('startBtn');
-  const verifyUrl = "{{ route('billet.verify') }}";
+  const verifyUrl = "";
   const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
 
   let html5QrCode;
