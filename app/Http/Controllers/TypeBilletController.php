@@ -12,7 +12,10 @@ class TypeBilletController extends Controller
      */
     public function index()
     {
-        //
+        $typeBillets = TypeBillet::all();
+        
+        return view('type_billets.index', compact('typeBillets'));
+
     }
 
     /**
@@ -28,7 +31,19 @@ class TypeBilletController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try {
+            $validatedData = $request->validate([
+                'nom_type' => 'required|string|max:255',
+                
+            ]);
+    
+            TypeBillet::create($validatedData);
+    
+            return redirect()->back()->with('success', 'Type de billet créé avec succès.');
+        } catch (\Throwable $th) {
+            return redirect()->back()->with('error', 'Erreur lors de la création du type de billet : ' . $th->getMessage());
+
+        }
     }
 
     /**
@@ -36,7 +51,7 @@ class TypeBilletController extends Controller
      */
     public function show(TypeBillet $typeBillet)
     {
-        //
+        
     }
 
     /**
@@ -52,7 +67,19 @@ class TypeBilletController extends Controller
      */
     public function update(Request $request, TypeBillet $typeBillet)
     {
-        //
+        try {
+            $validatedData = $request->validate([
+                'nom_type' => 'required|string|max:255',
+                
+            ]);
+    
+            $typeBillet->update($validatedData);
+    
+            return redirect()->back()->with('success', 'Type de billet mis à jour avec succès.');
+        } catch (\Throwable $th) {
+            return redirect()->back()->with('error', 'Erreur lors de la mise à jour du type de billet : ' . $th->getMessage());
+
+        }
     }
 
     /**
@@ -60,6 +87,13 @@ class TypeBilletController extends Controller
      */
     public function destroy(TypeBillet $typeBillet)
     {
-        //
+        try {
+            $typeBillet->delete();
+    
+            return redirect()->back()->with('success', 'Type de billet supprimé avec succès.');
+        } catch (\Throwable $th) {
+            return redirect()->back()->with('error', 'Erreur lors de la suppression du type de billet : ' . $th->getMessage());
+
+        }
     }
 }
