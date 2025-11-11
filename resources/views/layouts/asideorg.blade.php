@@ -16,7 +16,7 @@
   <nav class="flex-1 p-4 space-y-1">
     <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Navigation principale</div>
     
-    <a href="{{ route('dashboard') }}" class="sidebar-link">
+    <a href="{{ route('dashboard_admin.show') }}" class="sidebar-link">
       <div class="sidebar-icon h-9 w-9 rounded-lg bg-blue-50">
         <i class="fas fa-chart-pie text-blue-600 text-sm"></i>
       </div>
