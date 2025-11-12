@@ -19,9 +19,9 @@
     <!-- Menu -->
     <nav class="px-3 py-6 space-y-1">
         <!-- Tableau de bord -->
-        <a href="{{ route('dashboard') }}"
+        <a href="{{ route('dashboard_admin.show') }}"
            class="flex items-center gap-3 px-4 py-2 rounded-lg font-roboto font-light text-sm transition-colors
-                  {{ request()->routeIs('dashboard') ? 'bg-gradient-to-r from-green-200 to-green-200/70 text-white' : 'text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-green-200 hover:to-green-200/70 transition-all duration-300' }}">
+                  {{ request()->routeIs('dashboard_admin') ? 'bg-gradient-to-r from-green-200 to-green-200/70 text-white' : 'text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-green-200 hover:to-green-200/70 transition-all duration-300' }}">
             <img src="{{ asset('icons/dashboard.png') }}" class="w-5 h-5" alt="Dashboard">
             <span>Tableau de bord</span>
         </a>

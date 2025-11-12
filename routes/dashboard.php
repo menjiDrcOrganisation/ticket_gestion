@@ -12,7 +12,7 @@ Route::get('dashboard/admin', [AdminDashboardController::class, 'index'])
 Route::get('dashboard/organisateur', [OrganisateurDashboardController::class, 'index'])
     ->name('dashboard_orginasateur.show')->middleware(['auth']);
 
-    
+ 
     
 
 

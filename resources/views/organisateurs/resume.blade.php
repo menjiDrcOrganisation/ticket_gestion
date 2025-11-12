@@ -1,4 +1,4 @@
-@extends('layouts.main')
+@extends('layouts.org')
  @section('content')
    <!-- Header -->
     <div class="bg-white shadow-sm border-b border-gray-200 px-8 py-6">
