@@ -57,6 +57,7 @@
 </head>
 
 <body class="min-h-screen flex">
+
     <!-- ==================== SIDEBAR ==================== -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 w-80 bg-white border-r border-gray-200 flex flex-col shadow-lg z-50">
 
@@ -75,7 +76,7 @@
 
         <!-- Navigation -->
         <nav class="flex-1 p-6 space-y-2">
-            <a href="{{ route('dashboard_admin.show') }}" class="sidebar-link flex items-center justify-around {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            <a href="{{ route('dashboard_admin.show') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                 <div class="h-10 w-10 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center">
                     <i class="fas fa-chart-pie text-indigo-600 text-lg"></i>
                 </div>
@@ -85,25 +86,25 @@
                 @endif
             </a>
 
-            <a href="{{ route('evenements.index') }}" class="sidebar-link flex items-center justify-around {{ request()->routeIs('evenements.*') ? 'active' : '' }}">
+            <a href="{{ route('evenements.index') }}" class="sidebar-link {{ request()->routeIs('evenements.*') ? 'active' : '' }}">
                 <div class="h-10 w-10 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl flex items-center justify-center">
                     <i class="fas fa-calendar-plus text-purple-600 text-lg"></i>
                 </div>
                 <span class="flex-1 text-base font-medium">Événements</span>
             </a>
 
-            <a href="" class="sidebar-link flex items-center justify-around {{ request()->routeIs('billets.*') ? 'active' : '' }}">
+            <a href="{{ route('billets.index') }}" class="sidebar-link {{ request()->routeIs('billets.*') ? 'active' : '' }}">
                 <div class="h-10 w-10 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl flex items-center justify-center">
                     <i class="fas fa-ticket-alt text-green-600 text-lg"></i>
                 </div>
-                <span class="flex-1 text-base font-medium">Mes billets</span>
+                <span class="flex-1 text-base font-medium">Billets</span>
             </a>
 
-             <a href="{{route('scanneur.showScanner')}}" class="sidebar-link flex items-center justify-around {{ request()->routeIs('achats.*') ? 'active' : '' }}">
+            <a href="{{ route('achats.index') }}" class="sidebar-link {{ request()->routeIs('achats.*') ? 'active' : '' }}">
                 <div class="h-10 w-10 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl flex items-center justify-center">
                     <i class="fas fa-shopping-cart text-blue-600 text-lg"></i>
-            </div>
-                <span class="flex-1 text-base font-medium">Scanner</span>
+                </div>
+                <span class="flex-1 text-base font-medium">Achats</span>
             </a>
         </nav>
 
@@ -135,9 +136,73 @@
         </div>
     </aside>
 
+    
     <main class="flex-1 p-8 ml-80 bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 min-h-screen">
         @yield('content')
     </main>
+     <!-- JS Sidebar -->
+    <script>
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const toggle = document.getElementById('sidebarToggle');
+        const closeBtn = document.getElementById('sidebarClose');
+        function openSidebar(){sidebar.classList.remove('-translate-x-full');overlay.classList.remove('hidden');}
+        function closeSidebar(){sidebar.classList.add('-translate-x-full');overlay.classList.add('hidden');}
+        toggle?.addEventListener('click', openSidebar);
+        closeBtn?.addEventListener('click', closeSidebar);
+        overlay?.addEventListener('click', closeSidebar);
+    </script>
+    <!-- Scripts -->
+    <script src="{{ asset('assets/js/plugins/chartjs.min.js') }}" async></script>
+    <script src="{{ asset('assets/js/plugins/perfect-scrollbar.min.js') }}" async></script>
+    <script src="{{ asset('assets/js/argon-dashboard-tailwind.js?v=1.0.1') }}" async></script>
+
+    <script>
+        // Initialisation des icônes Lucide
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
+        // Gestion de la sidebar
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const toggle = document.getElementById('sidebarToggle');
+        const closeBtn = document.getElementById('sidebarClose');
+
+        function openSidebar() {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+            toggle?.setAttribute('aria-expanded', 'true');
+        }
+
+        function closeSidebar() {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+            toggle?.setAttribute('aria-expanded', 'false');
+        }
+
+        toggle?.addEventListener('click', () => {
+            const expanded = toggle.getAttribute('aria-expanded') === 'true';
+            expanded ? closeSidebar() : openSidebar();
+        });
+
+        closeBtn?.addEventListener('click', closeSidebar);
+        overlay?.addEventListener('click', closeSidebar);
+
+        // Ferme la sidebar sur les écrans larges si nécessaire
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.add('hidden');
+                toggle?.setAttribute('aria-expanded', 'true');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+                toggle?.setAttribute('aria-expanded', 'false');
+            }
+        });
+    </script>
 
 </body>
 </html>

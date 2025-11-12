@@ -11,11 +11,11 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-Route::get('/dashboard', [EvenementBilletTypeBilletController::class,  'index'])->name('dashboard');
 
 require __DIR__.'/auth.php';
 require __DIR__ . '/evenement.php';
 require __DIR__.'/dmd_event.php';
+require __DIR__.'/dashboard.php';
 require __DIR__.'/organisateur.php';
 require __DIR__.'/scanneur.php';
 require __DIR__.'/dashboard.php';
