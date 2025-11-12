@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\scanneur;
 
 use Illuminate\Http\Request;
-
+use App\Models\Billet;
+use App\Models\TypeBillet;
+use App\Models\EvenementBilletTypeBillet;
 use App\Http\Controllers\Controller; 
 
 class ScanneController extends Controller
@@ -16,24 +18,54 @@ class ScanneController extends Controller
 
     // Méthode pour traiter le résultat du scan
     public function processScan(Request $request)
-    {
-        $data = $request->input('scan_data'); // Les données récupérées par le scan
+{
+        try {
+            $code = $request->input('code');
 
-        // Logique pour traiter les données scannées
-        // Par exemple, chercher un produit ou un événement correspondant
-        $result = SomeModel::where('code', $data)->first();
+            $billet = Billet::where('code_billet', $code)->first();
+            if (!$billet) {
+                return response()->json([
+                    'valid' => false,
+                    'message' => 'Code invalide'
+                ], 404);
+            }
 
-        if ($result) {
+            $evenementBilletTypeBillet = EvenementBilletTypeBillet::where('billet_id', $billet->id)->first();
+
+            if (!$evenementBilletTypeBillet) {
+                return response()->json([
+                    'valid' => false,
+                    'message' => 'Aucune correspondance trouvée pour ce billet'
+                ], 404);
+            }
+
+            if ($evenementBilletTypeBillet->quantite_fictif > 1) {
+                $evenementBilletTypeBillet->decrement('quantite_fictif');
+                $message = 'Billet validé';
+            } else {
+                $evenementBilletTypeBillet->update([
+                    'quantite_fictif' => 0
+                ]);
+                $billet->update([
+                    'statut_billet' => 'used'
+                ]);
+                $message = 'Dernier billet utilisé';
+            }
+
             return response()->json([
-                'success' => true,
-                'message' => 'Donnée trouvée',
-                'data' => $result
+                'valid' => true,
+                'nom' => $billet->nom_auteur ?? '',
+                'quantite_fictif' => $evenementBilletTypeBillet->quantite_fictif,
+                'message' => $message
             ]);
-        } else {
+        } catch (\Throwable $th) {
             return response()->json([
-                'success' => false,
-                'message' => 'Donnée non trouvée'
-            ]);
+                'valid' => false,
+                'error' => $th->getMessage(),
+                'nom' => '',
+                'quantite_fictif' => ''
+            ], 500);
         }
-    }
+}
+
 }

@@ -93,7 +93,7 @@ class MobileMoneyService
 
                 // Lier billet et événement
                 EvenementBilletTypeBillet::create([
-                    'statut'=>"paye",
+                    'statut'=>"valide",
                     'billet_id' => $billet->id,
                     'evenement_id' => $request['id_evenement'],
                     'type_billet_id' => $request['type_billet'],

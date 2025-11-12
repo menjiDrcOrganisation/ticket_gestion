@@ -92,7 +92,7 @@
                 <span class="flex-1 text-base font-medium">Événements</span>
             </a>
 
-            <a href="{{ route('billets.index') }}" class="sidebar-link flex items-center justify-around {{ request()->routeIs('billets.*') ? 'active' : '' }}">
+            <a href="" class="sidebar-link flex items-center justify-around {{ request()->routeIs('billets.*') ? 'active' : '' }}">
                 <div class="h-10 w-10 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl flex items-center justify-center">
                     <i class="fas fa-ticket-alt text-green-600 text-lg"></i>
                 </div>

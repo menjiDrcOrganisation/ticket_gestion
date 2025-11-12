@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('billet/achat/{evenementId}', [EvenementBilletTypeBilletController::class,  'achatbillet'])->name('billets.index');
 
-Route::get('billet/{evenementId}', [BilletController::class,  'index'])->name('b.index');
+Route::get('billet/{evenementId}', [BilletController::class,  'index'])->name('billet.all');
 
 Route::get('dashboard/organisateur', [OrganisateurDashboardController::class, 'index'])
     ->name('dashboard_orginasateur.show')->middleware(['auth']);

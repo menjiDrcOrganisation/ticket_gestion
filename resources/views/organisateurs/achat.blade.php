@@ -169,7 +169,7 @@
                 <td class="px-6 py-4 text-center font-medium">{{$total   }} {{ $devise }} </td>
                 <td class="px-6 py-4 text-center">
                   <span class="status-badge {{ strtolower($achat->statut)=='payé' ? 'bg-green-100 text-green-800' : (strtolower($achat->statut)=='en attente' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-700') }}">
-                    {{ $achat->statut }}
+                    {{ $achat->statut_billet }}
                   </span>
                 </td>
                 <td class="px-6 py-4 text-center text-sm text-gray-500">{{ $achat->created_at->format('d/m/Y') }}</td>
@@ -221,6 +221,8 @@
   $prixUnitaire = $typeBillet?->pivot->prix_unitaire ?? 0;
   $devise = $typeBillet?->pivot->devise ?? 'FC';
   $total = $prixUnitaire * $achat->quantite;
+  $code_billet = $achat->code_billet;
+
 @endphp
 
 <!-- Modal Réenvoyer -->
@@ -252,6 +254,17 @@
       <div class="flex justify-between"><span class="text-gray-600">Quantité:</span><span>{{ $quantite}}</span></div>
       <div class="flex justify-between"><span class="text-gray-600">Prix unitaire:</span><span>{{ number_format($prixUnitaire, 2, ',', ' ') }} {{ $devise }}</span></div>
       <div class="flex justify-between"><span class="text-gray-600">Total:</span><span class="font-bold">{{ number_format($total, 2, ',', ' ') }} {{ $devise }}</span></div>
+    <div class="flex flex-col items-center mt-3">
+      <span class="text-gray-600 mb-2">QR Code :</span>
+      <div id="qrcode-{{ $achat->id }}" class="border p-2 rounded-md bg-white"></div>
+      <div class="flex justify-center mt-3">
+    <button onclick="downloadQRCode('{{ $achat->id }}')" 
+            class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg shadow">
+        <i class="fas fa-download mr-1"></i> Télécharger le QR Code
+    </button>
+</div>
+  </div>
+
       <div class="flex justify-between"><span class="text-gray-600">Statut:</span><span class="status-badge {{ strtolower($achat->statut)=='payé' ? 'bg-green-100 text-green-800' : (strtolower($achat->statut)=='en attente' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-700') }}">{{ $achat->statut }}</span></div>
       <div class="flex justify-between"><span class="text-gray-600">Date:</span><span>{{ $achat->created_at->format('d/m/Y') }}</span></div>
     </div>
@@ -290,5 +303,55 @@ function closeModal(id) {
     document.getElementById(id).classList.add('hidden');
 }
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // ✅ Initialiser le tableau global
+    window.qrcodes = {};
+
+    @foreach($achats as $achat)
+        // Génération du QR code
+        const qrContainer{{ $achat->id }} = document.getElementById("qrcode-{{ $achat->id }}");
+        const qr{{ $achat->id }} = new QRCode(qrContainer{{ $achat->id }}, {
+            text: "{{ $achat->code_billet }}",
+            width: 120,
+            height: 120,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+
+        // ✅ Enregistrer le QR code dans l’objet global pour le télécharger plus tard
+        window.qrcodes[{{ $achat->id }}] = qr{{ $achat->id }};
+    @endforeach
+});
+
+// ✅ Fonction pour télécharger un QR code en image PNG
+function downloadQRCode(id) {
+    const qrContainer = document.getElementById("qrcode-" + id);
+
+    if (!qrContainer) {
+        alert("QR Code introuvable !");
+        return;
+    }
+
+    // Trouver le canvas généré par QRCode.js
+    const canvas = qrContainer.querySelector("canvas");
+
+    if (!canvas) {
+        alert("Erreur : QR code non généré ou introuvable.");
+        return;
+    }
+
+    // Convertir en image et déclencher le téléchargement
+    const link = document.createElement("a");
+    link.download = "qrcode_billet_" + id + ".png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+}
+</script>
+
 
 @endsection
