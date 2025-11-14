@@ -8,8 +8,6 @@ use App\Models\Evenement;
 use App\Models\User;
 use App\Models\TypeBillet;
 use App\Models\Admin;
-
-
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;

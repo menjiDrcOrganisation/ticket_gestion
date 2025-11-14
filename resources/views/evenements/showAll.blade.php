@@ -35,6 +35,7 @@
         </div>
     </div>
 
+
     <!-- Recherche -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-3">
         <input type="text"
@@ -46,6 +47,8 @@
             <option value="fermé">Fermé</option>
             <option value="à venir">À venir</option>
         </select>
+
+        <a href="{{route('evenements.create')}}"><button class="border text-black border-gray-300 bg-blue-500 rounded-lg px-4 py-2 w-full md:w-auto" type="button"> nouvelle evenement</button></a>
     </div>
 
     <!-- Tableau responsive amélioré -->
