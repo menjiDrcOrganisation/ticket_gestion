@@ -93,18 +93,19 @@
                 <span class="flex-1 text-base font-medium">Événements</span>
             </a>
 
-            <a href="{{ route('billets.index') }}" class="sidebar-link {{ request()->routeIs('billets.*') ? 'active' : '' }}">
-                <div class="h-10 w-10 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl flex items-center justify-center">
-                    <i class="fas fa-ticket-alt text-green-600 text-lg"></i>
-                </div>
-                <span class="flex-1 text-base font-medium">Billets</span>
-            </a>
-
-            <a href="{{ route('achats.index') }}" class="sidebar-link {{ request()->routeIs('achats.*') ? 'active' : '' }}">
+        
+            <a href="{{ route('type_billet.index') }}" class="sidebar-link {{ request()->routeIs('achats.*') ? 'active' : '' }}">
                 <div class="h-10 w-10 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl flex items-center justify-center">
                     <i class="fas fa-shopping-cart text-blue-600 text-lg"></i>
                 </div>
-                <span class="flex-1 text-base font-medium">Achats</span>
+                <span class="flex-1 text-base font-medium">Type billet</span>
+            </a>
+
+             <a href="{{ route('demandeEvenement.index') }}" class="sidebar-link {{ request()->routeIs('achats.*') ? 'active' : '' }}">
+                <div class="h-10 w-10 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-shopping-cart text-blue-600 text-lg"></i>
+                </div>
+                <span class="flex-1 text-base font-medium">Demande evenement</span>
             </a>
         </nav>
 

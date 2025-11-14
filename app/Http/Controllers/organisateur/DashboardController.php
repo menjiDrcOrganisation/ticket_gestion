@@ -19,7 +19,6 @@ class DashboardController extends Controller
             return redirect()->back()->with('error', 'Aucun événement trouvé pour cet organisateur.');
         }
 
-       
         $achats = EvenementBilletTypeBillet::where('evenement_id', $evenement->id)->get();
         $typesBillets = EvenementTypeBillet::where('evenement_id', $evenement->id)
             ->with('type_billet')
@@ -39,7 +38,7 @@ class DashboardController extends Controller
         $derniersAchats = $achats->sortByDesc('date_achat')->take(5);
 
      
-        return view('resume', compact(
+        return view('organisateurs.resume', compact(
             'evenement',
             'totalBilletsVendus',
             'revenusCDF',

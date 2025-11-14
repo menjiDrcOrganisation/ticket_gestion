@@ -77,7 +77,7 @@ class MobileMoneyService
                 $start1978 = strtotime('1978-01-01 00:00:00');
                 $secondsSince1978 = $now - $start1978;
                 $raw_code = 'Ticket-' . $request['nom_complet_client'] . '-' . $secondsSince1978 . '-' . uniqid();
-                $code = Hash::make($raw_code);
+                $code = $raw_code;
 
                 // Enregistrer le billet
                 $billet = Billet::create([

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-
 use App\Models\Evenement;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -17,13 +16,31 @@ use Illuminate\Support\Facades\Mail;
 
 class EvenementController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    
+     
+   public function index()
     {
-        $evenements = Evenement::with(['organisateur.user','typeBillets'])->latest()->get();
-        return view('evenements.showAll',compact('evenements'));
+        $evenements = Evenement::with(['organisateur.user', 'typeBillets'])
+            ->latest()
+            ->paginate(10);
+
+        $evenementsEncours= Evenement::where('statut', 'encours')
+        ->with(['organisateur.user', 'typeBillets'])
+        ->latest()
+        ->get()->count();
+
+         $evenementsPasse= Evenement::where('statut', 'ferme')
+        ->with(['organisateur.user', 'typeBillets'])
+        ->latest()
+        ->get()->count();
+
+       
+
+        
+        
+
+        return view('evenements.showAll', compact('evenements','evenementsEncours',
+    'evenementsPasse'));
     }
 
     public function create()
@@ -37,7 +54,8 @@ class EvenementController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        try {
+            $validated = $request->validate([
             'nom_evenement' => 'required|string|max:255',
             'nom_organisateur' => 'nullable|string|max:255',
             'email_organisateur' => 'nullable|string|max:255',
@@ -56,10 +74,6 @@ class EvenementController extends Controller
             'a_propos'=> 'required',
             'photo_affiche'=> 'required'
         ]);
-
-       
-
-        try {
           
             if (!empty($validated['nom_organisateur'])) {
                 $user = User::create([
@@ -128,6 +142,8 @@ class EvenementController extends Controller
 
                 $message = 'Événement créé avec succès et mail envoyé à l’organisateur.';
             } catch (\Exception $e) {
+
+                
                
                 $message = 'Événement créé avec succès, mais le mail n’a pas pu être envoyé. Erreur : ' . $e->getMessage();
             }
