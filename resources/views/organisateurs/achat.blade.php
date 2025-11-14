@@ -195,7 +195,6 @@
                   <div class="flex justify-center gap-2">
                     <button onclick="openModal('resendModal{{ $achat->id }}')" class="action-btn bg-blue-100 text-blue-700 hover:bg-blue-200 w-8 h-8 rounded-full flex items-center justify-center"><i class="fas fa-paper-plane text-xs"></i></button>
                     <button onclick="openModal('detailsModal{{ $achat->id }}')" class="action-btn bg-gray-100 text-gray-700 hover:bg-gray-200 w-8 h-8 rounded-full flex items-center justify-center"><i class="fas fa-eye text-xs"></i></button>
-                    <button onclick="openModal('deleteModal{{ $achat->id }}')" class="action-btn bg-red-100 text-red-700 hover:bg-red-200 w-8 h-8 rounded-full flex items-center justify-center"><i class="fas fa-trash text-xs"></i></button>
                   </div>
                 </td>
               </tr>
