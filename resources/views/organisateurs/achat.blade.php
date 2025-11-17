@@ -3,7 +3,6 @@
 
 <!-- Overlay mobile -->
 <div id="overlay" class="fixed inset-0 bg-black/50 hidden z-40 md:hidden" onclick="toggleSidebar()"></div>
-
 <!-- Main content -->
 <main class="flex-1 md:ml-0 min-h-screen overflow-auto">
   <div class="p-4 md:p-6 mt-14 md:mt-0">
@@ -333,9 +332,8 @@ function closeModal(id) {
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    // ✅ Initialiser le tableau global
+  
     window.qrcodes = {};
-
     @foreach($achats as $achat)
         // Vérifier si le code billet existe avant de générer le QR code
         @if(!empty($achat->code_billet))
@@ -350,14 +348,14 @@ document.addEventListener("DOMContentLoaded", function() {
                     correctLevel: QRCode.CorrectLevel.H
                 });
 
-                // ✅ Enregistrer le QR code dans l'objet global pour le télécharger plus tard
+       
                 window.qrcodes[{{ $achat->id }}] = qr{{ $achat->id }};
             }
         @endif
     @endforeach
 });
 
-// ✅ Fonction pour télécharger un QR code en image PNG
+
 function downloadQRCode(id) {
     const qrContainer = document.getElementById("qrcode-" + id);
 
