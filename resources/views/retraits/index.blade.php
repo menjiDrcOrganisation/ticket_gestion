@@ -84,7 +84,7 @@
         <form action="{{ route('retraits.store') }}" method="POST" class="space-y-4">
             @csrf
 
-            <div>
+            {{-- <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Organisateur</label>
                 <select name="organisateur_id" required
                     class="w-full border-gray-300 rounded-lg focus:ring-blue-500">
@@ -92,7 +92,7 @@
                         <option value="{{ $org->id }}">{{ $org->user->email }}</option>
                     @endforeach
                 </select>
-            </div>
+            </div> --}}
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Nom du détenteur</label>

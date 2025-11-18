@@ -6,3 +6,12 @@ use Illuminate\Support\Facades\Route;
 Route::get('/retrait', 
     [RetraitController::class, 'index'])
     ->name('retrait.index')->middleware(['auth']);
+Route::post('/retrait', 
+    [RetraitController::class, 'store'])
+    ->name('retraits.store');
+Route::put('/retrait/{retrait}', 
+    [RetraitController::class, 'update'])
+    ->name('retraits.update');
+Route::delete('/retrait/{retrait}', 
+    [RetraitController::class, 'destroy'])
+    ->name('retraits.destroy');  
