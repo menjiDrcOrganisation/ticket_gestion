@@ -48,7 +48,7 @@ class User extends Authenticatable
     }
     function admin()
     {
-        return $this->hasOne(Admin::class);
+        return $this->hasOne(Admin::class, 'user_id', 'id');
     }   
     function organisateur()
     {

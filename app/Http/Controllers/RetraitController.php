@@ -14,7 +14,8 @@ class RetraitController extends Controller
     public function index()
     {
          
-        $userOrganisateur  = auth()->user()->organisateur;
+        $userOrganisateur  = auth()->user()->admin;
+        dd($userOrganisateur->id);
         $retraits = Retrait::with('organisateur')->where('organisateur_id', $userOrganisateur->id)->get();
         return view('retraits.index', compact('retraits'));
     }
