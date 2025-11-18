@@ -12,10 +12,41 @@ class DemandeRetraitAdminController extends Controller
      * Display a listing of the resource.
      */
     public function index()
+
     {
+
+        //totale de retraits demandés
+        $totaldmd = Retrait::count();
+        //montant total des retraits demandés
+        $totalmontantdmd = Retrait::sum('montant');
+        //montage total des retraits demandés approuves
+        $totalmontantdmdapprouve = Retrait::where('statut', 'approuve')->sum('montant');
+       //
+        
+        //montant total des retraits demandés en attente
+        $totalmontantdmdenattente = Retrait::where('statut', 'en_attente')->sum('montant');
+        //montant total des retraits demandés refusés
+        $totalmontantdmdrefuse = Retrait::where('statut', 'refuse')->sum('montant');
+$stats = [
+    'totaldmd' => Retrait::count(),
+
+    'totalmontantdmd' => Retrait::sum('montant'),
+
+    'totalmontantdmdapprouve' => Retrait::where('statut', 'approuve')
+                ->sum('montant'),
+
+    'totalmontantdmdenattente' => Retrait::where('statut', 'en attente')
+                ->sum('montant'),
+
+    'totalmontantdmdrefuse' => Retrait::where('statut', 'refuse')
+                ->sum('montant'),
+];
         $retraits = Retrait::with('organisateur.user')->get();
         $organisateurs = Organisateur::with('user')->get();
-        return view('dmd_retraits.index', compact('retraits', 'organisateurs'));
+
+        return view('dmd_retraits.index', compact('retraits', 'organisateurs', 'totaldmd',
+         'totalmontantdmd', 'totalmontantdmdapprouve',
+          'totalmontantdmdenattente', 'totalmontantdmdrefuse', 'stats'));
     }
 
     public function updateStatut(Request $request, $id)

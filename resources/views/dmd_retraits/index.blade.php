@@ -9,6 +9,42 @@
             Nouveau Retrait
         </button>
     </div>
+    {{-- des gid pour indicateur --}}
+    {{-- 'totaldmd', 'totalmontantdmd', 'totalmontantdmdapprouve', 'totalmontantdmdenattente', 'totalmontantdmdrefuse' --}}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+
+    {{-- <div class="p-6 bg-white rounded-xl shadow">
+        <h3 class="font-bold text-lg">Total Demandes</h3>
+        <p class="text-2xl font-extrabold">{{ $stats['totaldmd'] }}</p>
+    </div> --}}
+
+    {{-- <div class="p-6 bg-white rounded-xl shadow">
+        <h3 class="font-bold text-lg">Montant Total</h3>
+        <p class="text-2xl font-extrabold">{{ number_format($stats['totalmontantdmd']) }} FC</p>
+    </div> --}}
+
+    <div class="p-6 bg-white rounded-xl shadow">
+        <h3 class="font-bold text-lg">Montant Approuvé</h3>
+        <p class="text-2xl font-extrabold text-green-600">
+            {{ number_format($stats['totalmontantdmdapprouve']) }} FC
+        </p>
+    </div>
+
+    <div class="p-6 bg-white rounded-xl shadow">
+        <h3 class="font-bold text-lg">Montant en Attente</h3>
+        <p class="text-2xl font-extrabold text-yellow-500">
+            {{ number_format($stats['totalmontantdmdenattente']) }} FC
+        </p>
+    </div>
+
+    <div class="p-6 bg-white rounded-xl shadow">
+        <h3 class="font-bold text-lg">Montant Refusé</h3>
+        <p class="text-2xl font-extrabold text-red-600">
+            {{ number_format($stats['totalmontantdmdrefuse']) }} FC
+        </p>
+    </div>
+
+</div>
 
     {{-- Tableau des retraits --}}
     <div class="overflow-x-auto bg-white shadow-lg rounded-lg border border-gray-200">
@@ -29,7 +65,7 @@
                 @forelse($retraits as $retrait)
                     <tr class="hover:bg-gray-50 transition">
                         <td class="py-3 px-6">{{ $retrait->id }}</td>
-                        <td class="py-3 px-6">{{ $retrait->organisateur->name ?? 'Inconnu' }}</td>
+                        <td class="py-3 px-6">{{ $retrait->organisateur->user->email ?? 'Inconnu' }}</td>
                         <td class="py-3 px-6 font-medium text-gray-800">{{ $retrait->nom_detenteur }}</td>
                         <td class="py-3 px-6 text-green-700 font-semibold">
                             {{ number_format($retrait->montant, 2, ',', ' ') }} FC
