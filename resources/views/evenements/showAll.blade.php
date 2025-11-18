@@ -1,38 +1,19 @@
 @extends('layouts.main')
 @section('content')
-<div class="max-w-7xl mx-auto bg-gray-50 p-6 rounded-2xl shadow-sm">
+<div class="max-w-7xl mx-auto bg-gray-50 p-6 rounded-2xl shadow-sm mb-4">
 
     <!-- Statistiques -->
     <div class="grid md:grid-cols-3 gap-6 mb-8">
-        <div class="bg-white p-6 rounded-2xl shadow">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h3 class="text-sm text-gray-500">Total Événements</h3>
-                    <p class="text-2xl font-bold text-gray-800 mt-1">{{ $evenements->count() ?? 0 }}</p>
-                </div>
-                <i data-lucide="calendar" class="w-8 h-8 text-gray-400"></i>
-            </div>
-        </div>
 
-        <div class="bg-white p-6 rounded-2xl shadow">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h3 class="text-sm text-gray-500">Événements en cours</h3>
-                    <p class="text-2xl font-bold text-gray-800 mt-1">{{ $evenementsEncours ?? 0 }}</p>
-                </div>
-                <i data-lucide="clock" class="w-8 h-8 text-gray-400"></i>
-            </div>
-        </div>
+        <x-indic-dashboard :value="$evenements->count()" title="total des evenements">
+        </x-indic-dashboard>
 
-        <div class="bg-white p-6 rounded-2xl shadow">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h3 class="text-sm text-gray-500">Événements passés</h3>
-                    <p class="text-2xl font-bold text-gray-800 mt-1">{{ $evenementsPasses ?? 0 }}</p>
-                </div>
-                <i data-lucide="archive" class="w-8 h-8 text-gray-400"></i>
-            </div>
-        </div>
+         <x-indic-dashboard :value="$evenementsEncours" title="Événements en cours">
+        </x-indic-dashboard>
+
+         <x-indic-dashboard :value="$evenementsPasse" title="Événements passés">
+        </x-indic-dashboard>
+    </div>
     </div>
 
 
@@ -319,5 +300,8 @@ document.addEventListener('keydown', function(event) {
 .fixed {
     transition: opacity 0.3s ease;
 }
+
+   
+
 </style>
 @endsection

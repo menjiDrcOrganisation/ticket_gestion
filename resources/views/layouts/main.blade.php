@@ -76,7 +76,7 @@
 
         <!-- Navigation -->
         <nav class="flex-1 p-6 space-y-2">
-            <a href="{{ route('dashboard_admin.show') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            <a href="{{ route('dashboard.admin.viewDash') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                 <div class="h-10 w-10 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center">
                     <i class="fas fa-chart-pie text-indigo-600 text-lg"></i>
                 </div>
