@@ -17,7 +17,8 @@ class DashboardController extends Controller
 
      public function index()
     {
-           
+        try {
+        
         $evenementsPopulaires = EvenementTypeBillet::select('evenement_id')
             ->selectRaw('SUM(nombre_billet) as total_billets')
             ->groupBy('evenement_id')
@@ -25,7 +26,6 @@ class DashboardController extends Controller
             ->take(5)
             ->with('evenement') 
             ->get();
-
 
         $demandeEvenements=DemandeEvenement::all()->count();
 
@@ -58,5 +58,9 @@ class DashboardController extends Controller
                 'eventsPerMonth',
                 'evenementsPopulaires'
             ));
+
+            } catch (\Throwable $th) {
+            //throw $th;
+        }
     }
 }

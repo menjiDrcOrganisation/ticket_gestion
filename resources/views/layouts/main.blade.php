@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Tableau de bord') - TicketMaster</title>
+    <title>@yield('title', 'Tableau de bord') - Kimia ticket</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-
+   
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
@@ -75,7 +75,7 @@
         </div>
 
         <!-- Navigation -->
-        <nav class="flex-1 p-6 space-y-2">
+        <nav class="flex-1 p-6 space-y-2  overflow-y-auto">
             <a href="{{ route('dashboard.admin.viewDash') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                 <div class="h-10 w-10 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center">
                     <i class="fas fa-chart-pie text-indigo-600 text-lg"></i>
@@ -106,6 +106,13 @@
                     <i class="fas fa-shopping-cart text-blue-600 text-lg"></i>
                 </div>
                 <span class="flex-1 text-base font-medium">Demande evenement</span>
+            </a>
+
+            <a href="{{ route('portefeulle.showMontantEvent') }}" class="sidebar-link {{ request()->routeIs('achats.*') ? 'active' : '' }}">
+                <div class="h-10 w-10 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-shopping-cart text-blue-600 text-lg"></i>
+                </div>
+                <span class="flex-1 text-base font-medium">Portefeuilles</span>
             </a>
         </nav>
 
