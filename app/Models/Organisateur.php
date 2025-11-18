@@ -23,4 +23,8 @@ class Organisateur extends Model
     {
         return $this->hasMany(Evenement::class);
     }
+    public function retraits()
+    {
+        return $this->hasMany(Retrait::class);
+    }
 }

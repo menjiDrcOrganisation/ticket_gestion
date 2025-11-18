@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Organisateur;
 use App\Models\Retrait;
 use Illuminate\Http\Request;
 
@@ -12,9 +13,20 @@ class DemandeRetraitAdminController extends Controller
      */
     public function index()
     {
-        $dmd_retraits = Retrait::all();
-        return view('dmd_retraits.index', compact('dmd_retraits'));
+        $retraits = Retrait::with('organisateur.user')->get();
+        $organisateurs = Organisateur::with('user')->get();
+        return view('dmd_retraits.index', compact('retraits', 'organisateurs'));
     }
+
+    public function updateStatut(Request $request, $id)
+    {
+        $retrait = Retrait::findOrFail($id);
+        $retrait->statut = $request->input('statut');
+        $retrait->save();
+
+        return redirect()->back()
+                         ->with('success', 'Statut du retrait mis à jour avec succès.');
+    }   
 
     /**
      * Show the form for creating a new resource.
@@ -31,6 +43,7 @@ class DemandeRetraitAdminController extends Controller
     {
         //
     }
+
 
     /**
      * Display the specified resource.

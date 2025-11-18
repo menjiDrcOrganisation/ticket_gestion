@@ -16,3 +16,12 @@ Route::put('/demande-retrait/{demandeRetrait}',
 Route::delete('/demande-retrait/{demandeRetrait}', 
     [DemandeRetraitAdminController::class, 'destroy'])
     ->name('dmd_retrait.destroy');
+
+Route::patch('/demande-retrait/{id}/statut', 
+    [DemandeRetraitAdminController::class, 'updateStatut'])
+    ->name('dmd_retrait.updateStatut');
+Route::get('/demande-retrait/{id}/edit', 
+    [DemandeRetraitAdminController::class, 'show'])
+    ->name('dmd_retrait.show');
+
+?>

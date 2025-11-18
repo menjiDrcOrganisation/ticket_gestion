@@ -1,112 +1,131 @@
-
 @extends('layouts.main')
+
 @section('content')
-<div class="bg-white w-full px-6 py-6 mx-auto mt-6">
-    <div class="flex flex-wrap -mx-3">
-        <div class="flex-none w-full max-w-full px-3">
-            <div class="relative flex flex-col mb-6 bg-white shadow-xl rounded-2xl">
-                <div class="p-6 border-b rounded-t-2xl flex items-center justify-between">
-                    <h6 class="text-xl font-semibold">Demandes de retraits</h6>
-                </div>
+<div class="container mx-auto px-6 py-10">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-extrabold text-gray-800">Gestion des Retraits</h1>
+        <button id="openModalBtn" 
+                class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg shadow transition">
+            Nouveau Retrait
+        </button>
+    </div>
 
-                <div class="flex-auto px-0 pt-4 pb-2">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full border-collapse text-gray-800">
-                            <thead>
-                                <tr class="bg-gray-100">
-                                    <th class="px-6 py-3 text-left text-xs font-bold uppercase">N°</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold uppercase">Utilisateur</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold uppercase">Montant</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold uppercase">Moyen</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold uppercase">Statut</th>
-                                    <th class="px-6 py-3 text-center text-xs font-bold uppercase">Date</th>
-                                    <th class="px-6 py-3 text-center text-xs font-bold uppercase">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($dmd_retraits as $withdrawal)
-                                    <tr class="border-b hover:bg-gray-50">
-                                        <td class="px-6 py-4">{{ $loop->iteration }}</td>
-                                        <td class="px-6 py-4">{{ $withdrawal->user->name ?? $withdrawal->user_name ?? '—' }}</td>
-                                        <td class="px-6 py-4">{{ number_format($withdrawal->amount, 2, ',', ' ') }} €</td>
-                                        <td class="px-6 py-4">{{ $withdrawal->method ?? '—' }}</td>
-                                        <td class="px-6 py-4">{{ ucfirst($withdrawal->status) }}</td>
-                                        <td class="px-6 py-4 text-center">{{ $withdrawal->created_at->format('d/m/Y H:i') }}</td>
-                                        <td class="px-6 py-4 text-center">
-                                            <button type="button" onclick="showModal('viewWithdraw{{ $withdrawal->id }}')" class="px-3 py-1 bg-indigo-600 text-white rounded text-sm">Voir</button>
-                                            @if($withdrawal->status === 'pending')
-                                                <form action="{{ route('withdrawals.update', $withdrawal->id) }}" method="POST" class="inline">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <input type="hidden" name="status" value="approved">
-                                                    <button type="submit" class="px-3 py-1 bg-green-600 text-white rounded text-sm ml-2">Approuver</button>
-                                                </form>
-                                                <button type="button" onclick="showModal('rejectWithdraw{{ $withdrawal->id }}')" class="px-3 py-1 bg-red-600 text-white rounded text-sm ml-2">Refuser</button>
-                                            @endif
-                                        </td>
-                                    </tr>
+    {{-- Tableau des retraits --}}
+    <div class="overflow-x-auto bg-white shadow-lg rounded-lg border border-gray-200">
+        <table class="min-w-full text-sm text-gray-700">
+            <thead class="bg-gray-100 text-gray-700 uppercase text-xs font-semibold">
+                <tr>
+                    <th class="py-3 px-6 text-left">#</th>
+                    <th class="py-3 px-6 text-left">Organisateur</th>
+                    <th class="py-3 px-6 text-left">Nom du détenteur</th>
+                    <th class="py-3 px-6 text-left">Montant</th>
+                    <th class="py-3 px-6 text-left">Date</th>
+                    <th class="py-3 px-6 text-left">Statut</th>
+                    <th class="py-3 px-6 text-center">Actions</th>
+                </tr>
+            </thead>
 
-                                    <!-- View Modal -->
-                                    <div id="viewWithdraw{{ $withdrawal->id }}" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                                        <div class="bg-white rounded-lg shadow-lg w-96 p-6">
-                                            <h3 class="text-lg font-semibold mb-3">Détails du retrait</h3>
-                                            <p><strong>Utilisateur :</strong> {{ $withdrawal->user->name ?? $withdrawal->user_name ?? '—' }}</p>
-                                            <p><strong>Montant :</strong> {{ number_format($withdrawal->amount, 2, ',', ' ') }} €</p>
-                                            <p><strong>Méthode :</strong> {{ $withdrawal->method ?? '—' }}</p>
-                                            <p class="mb-4"><strong>Statut :</strong> {{ ucfirst($withdrawal->status) }}</p>
-                                            <div class="flex justify-end gap-2">
-                                                <button type="button" onclick="hideModal('viewWithdraw{{ $withdrawal->id }}')" class="px-4 py-2 bg-gray-300 rounded">Fermer</button>
-                                                @if($withdrawal->status === 'pending')
-                                                    <form action="{{ route('withdrawals.update', $withdrawal->id) }}" method="POST" class="inline">
-                                                        @csrf
-                                                        @method('PUT')
-                                                        <input type="hidden" name="status" value="approved">
-                                                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded">Approuver</button>
-                                                    </form>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
+            <tbody class="divide-y divide-gray-200">
+                @forelse($retraits as $retrait)
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="py-3 px-6">{{ $retrait->id }}</td>
+                        <td class="py-3 px-6">{{ $retrait->organisateur->name ?? 'Inconnu' }}</td>
+                        <td class="py-3 px-6 font-medium text-gray-800">{{ $retrait->nom_detenteur }}</td>
+                        <td class="py-3 px-6 text-green-700 font-semibold">
+                            {{ number_format($retrait->montant, 2, ',', ' ') }} FC
+                        </td>
+                        <td class="py-3 px-6">
+                            {{ \Carbon\Carbon::parse($retrait->date)->format('d/m/Y') }}
+                        </td>
 
-                                    <!-- Reject Modal -->
-                                    <div id="rejectWithdraw{{ $withdrawal->id }}" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                                        <div class="bg-white rounded-lg shadow-lg w-96 p-6">
-                                            <h3 class="text-lg font-semibold mb-3">Refuser la demande</h3>
-                                            <form action="{{ route('withdrawals.update', $withdrawal->id) }}" method="POST">
-                                                @csrf
-                                                @method('PUT')
-                                                <input type="hidden" name="status" value="rejected">
-                                                <label class="block mb-2 text-sm">Motif (optionnel)</label>
-                                                <textarea name="reason" rows="3" class="w-full border rounded px-3 py-2 mb-4" placeholder="Raison du refus"></textarea>
-                                                <div class="flex justify-end gap-2">
-                                                    <button type="button" onclick="hideModal('rejectWithdraw{{ $withdrawal->id }}')" class="px-4 py-2 bg-gray-300 rounded">Annuler</button>
-                                                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded">Confirmer le refus</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
+                        {{-- Statut modifiable --}}
+                        <td class="py-3 px-6">
+                            <form action="{{ route('dmd_retrait.updateStatut', $retrait->id) }}" method="POST">
+                                @csrf
+                                @method('PATCH')
+                                <select name="statut" onchange="this.form.submit()"
+                                    class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-blue-400">
+                                    <option value="en attente" @selected($retrait->statut === 'en attente')>En attente</option>
+                                    <option value="approuvé" @selected($retrait->statut === 'approuvé')>Approuvé</option>
+                                    <option value="refusé" @selected($retrait->statut === 'refusé')>Refusé</option>
+                                </select>
+                            </form>
+                        </td>
 
-                                @empty
-                                    <tr>
-                                        <td colspan="7" class="text-center py-4 text-gray-500">Aucune demande de retrait.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+                        <td class="py-3 px-6 text-center space-x-4">
+                            <a href="{{ route('dmd_retrait.show', $retrait->id) }}" 
+                               class="text-blue-600 hover:text-blue-800 font-medium transition">👁️ Voir</a>
+                            <form action="{{ route('dmd_retrait.destroy', $retrait->id) }}" 
+                                  method="POST" class="inline"
+                                  onsubmit="return confirm('Supprimer ce retrait ?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" 
+                                        class="text-red-600 hover:text-red-800 font-medium transition">🗑️ Supprimer</button>
+                            </form>
+                        </td>
+                    </tr>
+                @empty
+                    <tr><td colspan="7" class="py-6 text-center text-gray-500 italic">
+                        Aucun retrait enregistré pour le moment.
+                    </td></tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 </div>
 
+{{-- MODAL : Ajouter un nouveau retrait --}}
+<div id="createModal" class="fixed inset-0 hidden bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative">
+        <button id="closeModalBtn" class="absolute top-3 right-3 text-gray-400 hover:text-gray-700">✖</button>
+        <h2 class="text-xl font-bold mb-4 text-gray-800">Nouveau Retrait</h2>
+
+        <form action="{{ route('dmd_retrait.store') }}" method="POST" class="space-y-4">
+            @csrf
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Organisateur</label>
+                <select name="organisateur_id" required
+                    class="w-full border-gray-300 rounded-lg focus:ring-blue-500">
+                    @foreach($organisateurs as $org)
+                        <option value="{{ $org->id }}">{{ $org->user->email ?? " " }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nom du détenteur</label>
+                <input type="text" name="nom_detenteur" class="w-full border-gray-300 rounded-lg" required>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Montant (FC)</label>
+                <input type="number" name="montant" class="w-full border-gray-300 rounded-lg" required>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                <input type="date" name="date" class="w-full border-gray-300 rounded-lg" required>
+            </div>
+
+            <div class="flex justify-end">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg">
+                    Enregistrer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Script du modal --}}
 <script>
-    function showModal(id) {
-        const el = document.getElementById(id);
-        if (el) el.classList.remove('hidden');
-    }
-    function hideModal(id) {
-        const el = document.getElementById(id);
-        if (el) el.classList.add('hidden');
-    }
+    const modal = document.getElementById('createModal');
+    const openBtn = document.getElementById('openModalBtn');
+    const closeBtn = document.getElementById('closeModalBtn');
+
+    openBtn.addEventListener('click', () => modal.classList.remove('hidden'));
+    closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+    window.addEventListener('click', e => { if(e.target === modal) modal.classList.add('hidden') });
 </script>
+@endsection

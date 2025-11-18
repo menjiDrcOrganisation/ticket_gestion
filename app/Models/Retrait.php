@@ -16,4 +16,8 @@ class Retrait extends Model
         'date',
         'statut',
     ];
+    public function organisateur()
+    {
+        return $this->belongsTo(Organisateur::class);
+    }
 }
