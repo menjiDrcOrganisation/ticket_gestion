@@ -21,7 +21,7 @@
                     <th class="py-3 px-6 text-left">Montant</th>
                     <th class="py-3 px-6 text-left">Date</th>
                     <th class="py-3 px-6 text-left">Statut</th>
-                    <th class="py-3 px-6 text-center">Actions</th>
+                    
                 </tr>
             </thead>
 
@@ -40,30 +40,11 @@
 
                         {{-- Statut modifiable --}}
                         <td class="py-3 px-6">
-                            <form action="{{ route('retraits.updateStatut', $retrait->id) }}" method="POST">
-                                @csrf
-                                @method('PATCH')
-                                <select name="statut" onchange="this.form.submit()"
-                                    class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-blue-400">
-                                    <option value="en attente" @selected($retrait->statut === 'en attente')>En attente</option>
-                                    <option value="approuvé" @selected($retrait->statut === 'approuvé')>Approuvé</option>
-                                    <option value="refusé" @selected($retrait->statut === 'refusé')>Refusé</option>
-                                </select>
-                            </form>
+                        
+                           {{ $retrait->statut }}
                         </td>
 
-                        <td class="py-3 px-6 text-center space-x-4">
-                            <a href="{{ route('retraits.show', $retrait->id) }}" 
-                               class="text-blue-600 hover:text-blue-800 font-medium transition">👁️ Voir</a>
-                            <form action="{{ route('retraits.destroy', $retrait->id) }}" 
-                                  method="POST" class="inline"
-                                  onsubmit="return confirm('Supprimer ce retrait ?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" 
-                                        class="text-red-600 hover:text-red-800 font-medium transition">🗑️ Supprimer</button>
-                            </form>
-                        </td>
+                      
                     </tr>
                 @empty
                     <tr><td colspan="7" class="py-6 text-center text-gray-500 italic">
@@ -79,21 +60,12 @@
 <div id="createModal" class="fixed inset-0 hidden bg-black bg-opacity-50 flex items-center justify-center z-50">
     <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative">
         <button id="closeModalBtn" class="absolute top-3 right-3 text-gray-400 hover:text-gray-700">✖</button>
-        <h2 class="text-xl font-bold mb-4 text-gray-800">➕ Nouveau Retrait</h2>
+        <h2 class="text-xl font-bold mb-4 text-gray-800"> Nouveau Retrait</h2>
 
         <form action="{{ route('retraits.store') }}" method="POST" class="space-y-4">
             @csrf
-
-            {{-- <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Organisateur</label>
-                <select name="organisateur_id" required
-                    class="w-full border-gray-300 rounded-lg focus:ring-blue-500">
-                    @foreach($organisateurs as $org)
-                        <option value="{{ $org->id }}">{{ $org->user->email }}</option>
-                    @endforeach
-                </select>
-            </div> --}}
-
+            <input type="hidden" name="organisateur_id" value="{{ Auth::user()->organisateur->id ?? '11' }}">
+            <input type="hidden" name="statut" value="en attente">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Nom du détenteur</label>
                 <input type="text" name="nom_detenteur" class="w-full border-gray-300 rounded-lg" required>

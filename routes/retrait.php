@@ -15,3 +15,9 @@ Route::put('/retrait/{retrait}',
 Route::delete('/retrait/{retrait}', 
     [RetraitController::class, 'destroy'])
     ->name('retraits.destroy');  
+Route::get('/retrait/{retrait}/edit', 
+    [RetraitController::class, 'updateStatut'])
+    ->name('retraits.updateStatut');
+Route::get('/retrait/create', 
+    [RetraitController::class, 'show'])
+    ->name('retraits.show');

@@ -43,13 +43,15 @@ class RetraitController extends Controller
                 'montant' => 'required|numeric',
                 'date' => 'required|date',
                 'statut' => 'required|string|max:50',
+                
             ]);
-
+                
             Retrait::create($validatedData);
 
             return redirect()->back()
                              ->with('success', 'Retrait créé avec succès.');
         } catch (\Exception $e) {
+            dd($e->getMessage());
             return redirect()->back()
                              ->with('error', 'Une erreur est survenue lors de la création du retrait.');
         }
