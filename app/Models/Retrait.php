@@ -9,4 +9,11 @@ class Retrait extends Model
 {
     /** @use HasFactory<\Database\Factories\RetraitFactory> */
     use HasFactory;
+    protected $fillable = [
+        'organisateur_id',
+        'montant',
+        'nom_detenteur',
+        'date',
+        'statut',
+    ];
 }
