@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Admin;
 use App\Models\Retrait;
 use Illuminate\Http\Request;
 
@@ -12,7 +13,10 @@ class RetraitController extends Controller
      */
     public function index()
     {
-        //
+         
+        $userOrganisateur  = auth()->user()->organisateur;
+        $retraits = Retrait::with('organisateur')->where('organisateur_id', $userOrganisateur->id)->get();
+        return view('retraits.index', compact('retraits'));
     }
 
     /**

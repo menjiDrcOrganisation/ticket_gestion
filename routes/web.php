@@ -22,3 +22,4 @@ require __DIR__.'/dashboard.php';
 require __DIR__.'/organisateur.php';
 require __DIR__.'/scanneur.php';
 require __DIR__.'/type_billet.php';
+require __DIR__.'/retrait.php';
