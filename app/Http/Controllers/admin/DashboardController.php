@@ -19,8 +19,8 @@ class DashboardController extends Controller
     {
         try {
         
-        $evenementsPopulaires = EvenementTypeBillet::select('evenement_id')
-            ->selectRaw('SUM(nombre_billet) as total_billets')
+        $evenementsPopulaires = EvenementBilletTypeBillet::select('evenement_id')
+            ->selectRaw('SUM(quantite) as total_billets')
             ->groupBy('evenement_id')
             ->orderByDesc('total_billets')
             ->take(5)
