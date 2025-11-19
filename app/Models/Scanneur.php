@@ -9,4 +9,20 @@ class Scanneur extends Model
 {
     /** @use HasFactory<\Database\Factories\ScanneurFactory> */
     use HasFactory;
+    protected $fillable = [
+        'user_id',
+        'telephone',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function evenement()
+    {
+        return $this->hasOne(Evenement::class);
+    }
+
+
 }

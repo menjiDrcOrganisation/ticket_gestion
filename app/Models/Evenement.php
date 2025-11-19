@@ -51,6 +51,11 @@ class Evenement extends Model
                     ->withTimestamps();
     }
 
+    public function scanneur()
+    {
+        return $this->belongsTo(Scanneur::class);
+    }
+
 
 
 
