@@ -49,7 +49,7 @@ class BilletController extends Controller
                         'devise' => $evenement_type_billet->devise,
                         'type' =>$typeBillet->nom_type,
                         'quantite' => $typeBillet->pivot->quantite,
-                        'quantite_fictif' => $typeBillet->quantite_fictif,
+                        'quantite_fictif' => $typeBillet->pivot->quantite_fictif,
                         'prix_unitaire' => $evenement_type_billet->prix_unitaire,
                         'total' => $evenement_type_billet->prix_unitaire*$typeBillet->pivot->quantite,
                         'date' => $billet->date_achat,

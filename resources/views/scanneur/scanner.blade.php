@@ -14,17 +14,33 @@
 
   <!-- MODAL RÉSULTAT -->
   <div id="resultModal" class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-60 z-50">
-    <div class="bg-white rounded-xl p-6 max-w-md mx-auto text-center">
-      <h2 class="text-2xl font-bold mb-4">Résultat du scan</h2>
-      <p id="resultMessage" class="text-lg mb-4 text-gray-700"></p>
+    <form id="scanForm">
+      @csrf
+      <div class="bg-white rounded-xl p-6 max-w-md mx-auto text-center">
+        <h2 class="text-2xl font-bold mb-4">Résultat du scan</h2>
+        <p id="resultMessage" class="text-lg mb-4 text-gray-700"></p>
 
-      <!-- Détails du billet -->
-      <div id="billetDetails" class="text-left text-gray-700"></div>
+        <!-- Détails du billet -->
+        <div id="billetDetails" class="text-left text-gray-700"></div>
 
-      <div class="mt-6 flex justify-center gap-3">
-        <button id="okBtn" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">OK</button>
+        <!-- Boutons du formulaire (cachés initialement après validation) -->
+        <div id="formButtons" class="mt-6 flex justify-center gap-3">
+          <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            Valider
+          </button>
+          <button type="button" id="cancelBtn" class="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+            Annuler
+          </button>
+        </div>
+
+        <!-- Bouton de fermeture après validation -->
+        <div id="closeButton" class="mt-6 hidden justify-center">
+          <button type="button" id="closeModalBtn" class="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+            Fermer
+          </button>
+        </div>
       </div>
-    </div>
+    </form>
   </div>
 
   <!-- ENTÊTE -->
@@ -51,7 +67,7 @@
       <div id="reader" class="w-64 h-64 sm:w-72 sm:h-72 bg-white rounded-lg shadow-md overflow-hidden"></div>
     </div>
 
-    <!-- Boutons d’action -->
+    <!-- Boutons d'action -->
     <div class="flex flex-col sm:flex-row gap-3 mt-4">
       <button id="startBtn"
               class="bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg px-5 py-2 w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-blue-400">
@@ -68,20 +84,26 @@
 
   <!-- SCRIPT PRINCIPAL -->
   <script>
-    const verifyUrl = "{{ url('/scanneur/scanne') }}";
+    const verifyUrl = "{{ url('/scanneur/scanne-preview') }}";
+    const storeUrl = "{{ route('scanneur.processScan') }}";
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
 
     let html5QrCode = null;
     let isShowingResult = false;
+    let currentScanData = null;
 
     const resultModal = document.getElementById('resultModal');
     const resultMessage = document.getElementById('resultMessage');
     const billetDetails = document.getElementById('billetDetails');
-    const okBtn = document.getElementById('okBtn');
+    const scanForm = document.getElementById('scanForm');
+    const cancelBtn = document.getElementById('cancelBtn');
     const startBtn = document.getElementById('startBtn');
     const uploadBtn = document.getElementById('uploadBtn');
     const fileInput = document.getElementById('fileInput');
     const id_camera = document.getElementById('id_camera');
+    const formButtons = document.getElementById('formButtons');
+    const closeButton = document.getElementById('closeButton');
+    const closeModalBtn = document.getElementById('closeModalBtn');
 
     // Charger la caméra
     Html5Qrcode.getCameras().then(cameras => {
@@ -129,7 +151,7 @@
         const result = await scanner.scanFile(file, true);
         handleScan(result);
       } catch (err) {
-        alert("Impossible de lire le QR Code dans l’image sélectionnée !");
+        alert("Impossible de lire le QR Code dans l'image sélectionnée !");
         console.error(err);
       }
     });
@@ -138,6 +160,17 @@
     function handleScan(decodedText) {
       if (isShowingResult) return;
       isShowingResult = true;
+
+      // Arrêter le scanner
+      if (html5QrCode) {
+        html5QrCode.stop().catch(() => {});
+        startBtn.disabled = false;
+      }
+
+      // Réinitialiser l'état du modal
+      formButtons.classList.remove('hidden');
+      closeButton.classList.add('hidden');
+      billetDetails.innerHTML = '';
 
       fetch(verifyUrl, {
         method: "POST",
@@ -157,8 +190,10 @@
       .then(data => {
         const nomAuteur = data.nom || "N/A";
         const quantiteRestante = data.quantite_fictif ?? 0;
+        const code = data.code ?? 0;
 
         resultMessage.textContent = data.message || "✅ Code scanné avec succès !";
+        resultMessage.className = "text-lg mb-4 text-gray-700";
 
         billetDetails.innerHTML = `
             <div class="mt-3 space-y-2">
@@ -166,8 +201,9 @@
                 <p><strong>Quantité restante :</strong> ${quantiteRestante}</p>
                 <label class="block mt-3">
                     <span class="text-gray-700">Quantité à utiliser :</span>
-                    <input type="number" value="${quantiteRestante}" id="quantiteInput" min="1" max="${quantiteRestante}" placeholder="Entrez la quantité"
-                        class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-blue-300">
+                    <input type="hidden" name="code" value="${code}">
+                    <input type="number" name="quantite" value="1" id="quantiteInput" min="1" max="${quantiteRestante}" 
+                           class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-blue-300">
                 </label>
             </div>
         `;
@@ -177,18 +213,102 @@
       .catch(err => {
         console.error("Erreur serveur :", err);
         resultMessage.textContent = "❌ Erreur de communication avec le serveur.";
+        resultMessage.className = "text-lg mb-4 text-red-600";
         billetDetails.innerHTML = "";
         resultModal.classList.replace("hidden", "flex");
+        isShowingResult = false;
       });
     }
 
-    // Fermer modal
-    okBtn.addEventListener('click', () => {
+    // Soumission du formulaire via AJAX
+    scanForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      
+      // Désactiver le bouton pendant l'envoi
+      const submitBtn = this.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Traitement...';
+      
+      fetch(storeUrl, {
+        method: "POST",
+        headers: {
+          "X-CSRF-TOKEN": csrfToken,
+          "Accept": "application/json"
+        },
+        body: formData
+      })
+      .then(async response => {
+        const data = await response.json();
+        
+        if (response.ok) {
+          // Succès
+          resultMessage.textContent = data.message || "✅ Opération réussie !";
+          resultMessage.className = "text-lg mb-4 text-green-600 font-semibold";
+          
+          // Masquer les détails du billet
+          billetDetails.innerHTML = "";
+          
+          // Changer les boutons
+          formButtons.classList.add('hidden');
+          closeButton.classList.remove('hidden');
+          
+        } else {
+          // Erreur
+          resultMessage.textContent = data.message || "❌ Erreur lors du traitement";
+          resultMessage.className = "text-lg mb-4 text-red-600";
+          
+          // Réactiver le bouton en cas d'erreur
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Valider';
+        }
+      })
+      .catch(error => {
+        console.error("Erreur:", error);
+        resultMessage.textContent = "❌ Erreur de communication avec le serveur";
+        resultMessage.className = "text-lg mb-4 text-red-600";
+        
+        // Réactiver le bouton en cas d'erreur
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Valider';
+      });
+    });
+
+    // Fermer le modal avec le bouton de fermeture
+    closeModalBtn.addEventListener('click', () => {
+      closeModal();
+    });
+
+    // Annuler
+    cancelBtn.addEventListener('click', () => {
+      closeModal();
+    });
+
+    // Fermer modal en cliquant en dehors
+    resultModal.addEventListener('click', (e) => {
+      if (e.target === resultModal) {
+        closeModal();
+      }
+    });
+
+    // Fonction pour fermer le modal
+    function closeModal() {
       resultModal.classList.add("hidden");
       resultModal.classList.remove("flex");
       billetDetails.innerHTML = "";
       isShowingResult = false;
-    });
+      scanForm.reset();
+      
+      // Réinitialiser l'état des boutons
+      formButtons.classList.remove('hidden');
+      closeButton.classList.add('hidden');
+      
+      // Réactiver le bouton de soumission
+      const submitBtn = scanForm.querySelector('button[type="submit"]');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Valider';
+    }
   </script>
 
 </body>

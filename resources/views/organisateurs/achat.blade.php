@@ -89,7 +89,9 @@
                 <th class="px-6 py-4 text-left font-medium">Client</th>
                 <th class="px-6 py-4 text-left font-medium">Type</th>
                   <th class="px-6 py-4 text-left font-medium">Prix unitaire</th>
-                <th class="px-6 py-4 text-center font-medium">Quantité</th>
+                <th class="px-6 py-4 text-center font-medium">Quantité acheté</th>
+                <th class="px-6 py-4 text-center font-medium">Quantité restant</th>
+                
                 <th class="px-6 py-4 text-center font-medium">Total</th>
                 <th class="px-6 py-4 text-center font-medium">Statut</th>
                 <th class="px-6 py-4 text-center font-medium">Date</th>
@@ -105,6 +107,9 @@
                 <td class="px-6 py-4">{{ $billet["type"] }}</td>
                 <td class="px-6 py-4">{{ $billet["prix_unitaire"] }} {{ $billet["devise"] }}</td>
                 <td class="px-6 py-4 text-center">{{ $billet["quantite"] }}</td>
+                <td class="px-6 py-4 text-center">{{ $billet["quantite_fictif"] }}</td>
+
+                
                 <td class="px-6 py-4 text-center">{{ $billet["total"] }}  {{ $billet['devise'] }}</td>
 
                 <td class="px-6 py-4 text-center">
