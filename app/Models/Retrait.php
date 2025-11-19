@@ -11,8 +11,8 @@ class Retrait extends Model
     use HasFactory;
     protected $fillable = [
         'organisateur_id',
-        'nom_detenteur',
         'montant',
+        'nom_detenteur',
         'date',
         'statut',
     ];
