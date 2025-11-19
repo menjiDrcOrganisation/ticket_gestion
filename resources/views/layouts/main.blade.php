@@ -59,7 +59,7 @@
 <body class="min-h-screen flex">
 
     <!-- ==================== SIDEBAR ==================== -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 w-80 bg-white border-r border-gray-200 flex flex-col shadow-lg z-50">
+    <aside id="sidebar" class="fixed inset-y-0 left-0 w-80  bg-white border-r border-gray-200 flex flex-col shadow-lg z-50">
 
         <!-- Logo & titre -->
         <div class="p-6 border-b border-gray-100">
@@ -75,7 +75,7 @@
         </div>
 
         <!-- Navigation -->
-        <nav class="flex-1 p-6 space-y-2">
+        <nav class="flex-1 p-6 space-y-2 overflow-y-auto">
             <a href="{{ route('dashboard_admin.show') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                 <div class="h-10 w-10 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center">
                     <i class="fas fa-chart-pie text-indigo-600 text-lg"></i>
