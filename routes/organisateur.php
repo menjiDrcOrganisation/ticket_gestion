@@ -9,9 +9,8 @@ use App\Http\Controllers\organisateur\DashboardController as OrganisateurDashboa
 use Illuminate\Support\Facades\Route;
 
 
-Route::get('billet/achat/{evenementId}', [EvenementBilletTypeBilletController::class,  'achatbillet'])->name('billets.index');
 
 Route::get('billet', [BilletController::class,  'index'])->name('billet.all')->middleware(['auth']);
 
-Route::get('dashboard/organisateur', [BilletController::class, 'index'])
+Route::get('dashboard/organisateur', [OrganisateurDashboardController::class, 'index'])
     ->name('dashboard_orginasateur.show')->middleware(['auth']);

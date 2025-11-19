@@ -34,11 +34,6 @@ class EvenementController extends Controller
         ->latest()
         ->get()->count();
 
-       
-
-        
-        
-
         return view('evenements.showAll', compact('evenements','evenementsEncours',
     'evenementsPasse'));
     }

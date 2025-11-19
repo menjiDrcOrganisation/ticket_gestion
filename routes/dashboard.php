@@ -5,8 +5,8 @@ use App\Http\Controllers\admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\EvenementBilletTypeBilletController;
 use App\Http\Controllers\EvenementController;
 
-Route::get('dashboard/admin', [EvenementController::class, 'index'])
-    ->name('dashboard_admin.show')->middleware(['auth']);
+Route::get('dashboard/admin', [AdminDashboardController::class, 'index'])
+    ->name('dashboard.admin.viewDash')->middleware(['auth']);
 
     
     
