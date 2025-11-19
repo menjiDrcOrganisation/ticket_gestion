@@ -24,10 +24,13 @@ class PortefeulleController extends Controller
             $typeBillet = $billet->type_billet->first();
             $evenement=$billet->evenements->first();
 
-            dd($billet);
+            if (!$typeBillet) {
+                continue; // passe au billet suivant
+            }
 
-            
-
+              if (!$evenement) {
+                continue; // passe au billet suivant
+            }
            $evenement_type_billet= $evenement->typeBillets->first()->pivot;
 
            
