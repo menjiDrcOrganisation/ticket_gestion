@@ -10,6 +10,10 @@ class PortefeulleController extends Controller
     public function showMontantEvent()
     {
         // Récupération des billets avec le type et les événements
+
+        try {
+            //code...
+       
         $achats = Billet::with('type_billet','evenements')->paginate(10);
 
         $montantParEvenement = [];
@@ -20,7 +24,11 @@ class PortefeulleController extends Controller
             $typeBillet = $billet->type_billet->first();
             $evenement=$billet->evenements->first();
 
+            
+            dd($evenement->typeBillets);
            $evenement_type_billet= $evenement->typeBillets->first()->pivot;
+
+           
 
             if (!isset($montantParEvenement[$evenement->id])) {
                     $montantParEvenement[$evenement->id] = [
@@ -58,5 +66,9 @@ class PortefeulleController extends Controller
             'totalEnCdf',
             'totalEnUsd'
         ));
+
+         } catch (\Throwable $th) {
+            return "une erreur est survenu".$th;
+        }
     }
 }
