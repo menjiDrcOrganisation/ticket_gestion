@@ -23,4 +23,5 @@ require __DIR__.'/organisateur.php';
 require __DIR__.'/scanneur.php';
 require __DIR__.'/type_billet.php';
 require __DIR__.'/portefeulle.php';
+require __DIR__.'/user.php';
 
