@@ -50,6 +50,7 @@ class EvenementController extends Controller
     public function store(Request $request)
     {
         try {
+            $code_organi = (string) Str::uuid();
             $validated = $request->validate([
             'nom_evenement' => 'required|string|max:255',
             'nom_organisateur' => 'nullable|string|max:255',
@@ -71,12 +72,15 @@ class EvenementController extends Controller
         ]);
           
             if (!empty($validated['nom_organisateur'])) {
-                $user = User::create([
-                    'name' => $validated['nom_organisateur'],
-                    'email' => $validated['email_organisateur'],
-                    'password' => Hash::make('Organi12345'),
-                    'role' => 'organisateur',
-                ]);
+
+                $user = User::firstOrCreate(
+                    ['email' => $validated['email_organisateur']], // condition
+                    [
+                        'name' => $validated['nom_organisateur'],
+                        'password' => Hash::make($code_organi),
+                        'role' => 'organisateur',
+                    ]
+                );
 
                 $organisateur = Organisateur::create([
                     'user_id' => $user->id,
@@ -131,7 +135,7 @@ class EvenementController extends Controller
                 Mail::to($validated['email_organisateur'])->send(new EnvoiMotDePasseMail(
                     $validated['nom_organisateur'],
                     $validated['email_organisateur'],
-                    'Organi12345',
+                    $code_organi,
                     'https://ticket.menjidrc.com/'.Str::slug($validated['nom_evenement'])
                 ));
 
