@@ -186,9 +186,20 @@ class EvenementController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Evenement $evenement)
+    public function update(Request $request, $id)
     {
-        //
+
+         try {
+            $evenement =Evenement::find($id);
+            $evenement->update($request->all());
+    
+            return redirect()->back()->with('success', 'Evenement modifier avec  succces.');
+        } catch (\Throwable $th) {
+            dd($th);
+            return redirect()->back()->with('error', 'Erreur lors de la mise à jour de l evenement : ' . $th->getMessage());
+
+        }
+        
     }
 
     /**

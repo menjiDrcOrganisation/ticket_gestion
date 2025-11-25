@@ -9,7 +9,7 @@
         <x-indic-dashboard :value="$evenementsEncours" title="Événements en cours">
         </x-indic-dashboard>
         
-        <x-indic-dashboard :value="$evenementsPasses" title="Événements passés">
+        <x-indic-dashboard :value="$evenementsPasses" title="Événements fermé">
         </x-indic-dashboard>
 
         <x-indic-dashboard :value="$demandeEvenements" title="demande d'evenements">

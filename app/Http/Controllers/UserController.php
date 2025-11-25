@@ -15,7 +15,7 @@ class UserController extends Controller
        try {
         if(auth()->user()->id !== 1 && auth()->user()->role !== 'admin'){
              return view('users.index', compact('users'));}
-           $users = User::all();
+           $users = User::where('role','admin')->get();
            return view('users.superAdmin', compact('users'));
        } catch (\Exception $e) {
            return redirect()->back()->with('error', 'Une erreur est survenue lors de la récupération des utilisateurs.');

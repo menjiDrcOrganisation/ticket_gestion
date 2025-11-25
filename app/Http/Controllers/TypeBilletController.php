@@ -34,7 +34,6 @@ class TypeBilletController extends Controller
         try {
             $validatedData = $request->validate([
                 'nom_type' => 'required|string|max:255',
-                
             ]);
     
             TypeBillet::create($validatedData);

@@ -4,14 +4,13 @@
 
     <!-- Statistiques -->
     <div class="grid md:grid-cols-3 gap-6 mb-8">
-
         <x-indic-dashboard :value="$evenements->count()" title="total des evenements">
         </x-indic-dashboard>
 
          <x-indic-dashboard :value="$evenementsEncours" title="Événements en cours">
         </x-indic-dashboard>
 
-         <x-indic-dashboard :value="$evenementsPasse" title="Événements passés">
+         <x-indic-dashboard :value="$evenementsPasse" title="Événements fermé">
         </x-indic-dashboard>
     </div>
     </div>
@@ -24,12 +23,12 @@
             class="w-full md:w-1/3 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black">
         <select class="border border-gray-300 rounded-lg px-4 py-2 w-full md:w-auto">
             <option value="">Tous les statuts</option>
-            <option value="actif">Actif</option>
-            <option value="fermé">Fermé</option>
+            <option value="encours">encours</option>
+            <option value="ferme">Fermé</option>
             <option value="à venir">À venir</option>
         </select>
 
-        <a href="{{route('evenements.create')}}"><button class="border text-black border-gray-300 bg-blue-500 rounded-lg px-4 py-2 w-full md:w-auto" type="button"> nouvelle evenement</button></a>
+        <a href="{{route('evenements.create')}}"><button class="border border-gray-300 text-white bg-blue-500 rounded-lg px-4 py-2 w-full md:w-auto" type="button"> nouvelle evenement</button></a>
     </div>
 
     <!-- Tableau responsive amélioré -->
@@ -51,13 +50,14 @@
                 @forelse ($evenements as $evenement)
                 <tr class="hover:bg-gray-50 transition">
                     <td class="px-4 py-4 font-medium whitespace-nowrap">{{ $evenement->nom }}</td>
-                    <td class="px-4 py-4 whitespace-nowrap hidden md:table-cell">{{ $evenement->organisateur->user->name ?? '—' }}</td>
+                    <td class="px-4 py-4 whitespace-nowrap hidden md:table-cell">{{ $evenement->organisateur->user->name ?? '—' }} <br>
+                    {{ $evenement->organisateur->user->email ?? '—' }}</td>
                     <td class="px-4 py-4 whitespace-nowrap">{{ \Carbon\Carbon::parse($evenement->date_debut)->format('d/m/Y') }}</td>
                     <td class="px-4 py-4 whitespace-nowrap hidden lg:table-cell">{{ $evenement->adresse }}</td>
                     <td class="px-4 py-4 whitespace-nowrap hidden lg:table-cell">{{ $evenement->salle }}</td>
                     <td class="px-4 py-4 whitespace-nowrap">
                         @if($evenement->statut === 'encours')
-                            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">Actif</span>
+                            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">encours</span>
                         @elseif($evenement->statut === 'ferme')
                             <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs">Fermé</span>
                         @else
@@ -84,11 +84,13 @@
                             </button>
 
                             <!-- Modifier -->
-                            <a href="{{ route('evenements.edit', $evenement) }}" 
-                               class="text-yellow-500 hover:text-yellow-700 transition p-1 rounded hover:bg-yellow-50" 
-                               title="Modifier l'événement">
+                           <button 
+                                onclick="openModal('edit-modal-{{ $evenement->id }}')" 
+                                class="text-yellow-500 hover:text-yellow-700 transition p-1 rounded hover:bg-yellow-50"
+                                title="Modifier">
                                 <i data-lucide="edit-3" class="w-4 h-4"></i>
-                            </a>
+                            </button>
+
 
                             <!-- Supprimer -->
                             <form action="{{ route('evenements.destroy', $evenement) }}" 
@@ -192,15 +194,6 @@
                                             </div>
                                         </div>
 
-                                        @if($evenement->prix)
-                                        <div class="flex items-start gap-3">
-                                            <i data-lucide="tag" class="w-4 h-4 text-gray-400 mt-0.5"></i>
-                                            <div>
-                                                <p class="font-medium text-gray-700">Prix</p>
-                                                <p class="text-gray-600">{{ $evenement->prix }} €</p>
-                                            </div>
-                                        </div>
-                                        @endif
 
                                         @if($evenement->capacite_max)
                                         <div class="flex items-start gap-3">
@@ -230,14 +223,85 @@
                                     class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
                                 Fermer
                             </button>
-                            <a href="{{ route('evenements.edit', $evenement) }}" 
-                               class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
-                                <i data-lucide="edit-3" class="w-4 h-4"></i>
-                                Modifier
-                            </a>
                         </div>
                     </div>
                 </div>
+                <!-- Modal Modifier -->
+                <div id="edit-modal-{{ $evenement->id }}" 
+                    class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50 p-4">
+
+                    <div class="bg-white rounded-xl shadow-lg w-full max-w-xl p-6 relative">
+
+                        <!-- Close button -->
+                        <button onclick="closeModal('edit-modal-{{ $evenement->id }}')" 
+                                class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition p-2 rounded-full hover:bg-gray-100">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+
+                        <h2 class="text-xl font-bold mb-4 text-gray-800">Modifier l'événement</h2>
+
+                        <form action="{{ route('evenements.update', $evenement->id) }}" method="POST">
+                            @csrf
+                            @method('PUT')
+
+                            <div class="grid gap-4">
+
+                                <div>
+                                    <label class="text-sm text-gray-600">Nom événement</label>
+                                    <input type="text" name="nom" value="{{ $evenement->nom }}" 
+                                        class="w-full border rounded-lg p-2">
+                                </div>
+
+                                <div>
+                                    <label class="text-sm text-gray-600">Date début</label>
+                                    <input type="datetime-local" name="date_debut" 
+                                        value="{{ date('Y-m-d\TH:i', strtotime($evenement->date_debut)) }}"
+                                        class="w-full border rounded-lg p-2">
+                                </div>
+
+                                <div>
+                                    <label class="text-sm text-gray-600">Date fin</label>
+                                    <input type="datetime-local" name="date_fin"
+                                        value="{{ $evenement->date_fin ? date('Y-m-d\TH:i', strtotime($evenement->date_fin)) : '' }}"
+                                        class="w-full border rounded-lg p-2">
+                                </div>
+
+                                <div>
+                                    <label class="text-sm text-gray-600">Adresse</label>
+                                    <input type="text" name="adresse" value="{{ $evenement->adresse }}"
+                                        class="w-full border rounded-lg p-2">
+                                </div>
+
+                                <div>
+                                    <label class="text-sm text-gray-600">Salle</label>
+                                    <input type="text" name="salle" value="{{ $evenement->salle }}"
+                                        class="w-full border rounded-lg p-2">
+                                </div>
+
+                                <div>
+                                    <label class="text-sm text-gray-600">Url de l'evenement</label>
+                                    <input type="text" name="url_evenement" value="{{ $evenement->url_evenement }}"
+                                        class="w-full border rounded-lg p-2">
+                                </div>
+
+                            </div>
+
+                            <div class="flex justify-end mt-6 gap-3">
+                                <button type="button" onclick="closeModal('edit-modal-{{ $evenement->id }}')"
+                                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                                    Annuler
+                                </button>
+
+                                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                    Enregistrer
+                                </button>
+                            </div>
+
+                        </form>
+
+                    </div>
+                </div>
+
 
                 @empty
                 <tr>
