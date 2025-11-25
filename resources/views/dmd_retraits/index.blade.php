@@ -2,13 +2,6 @@
 
 @section('content')
 <div class="container mx-auto px-6 py-10">
-    <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-extrabold text-gray-800">Gestion des Retraits</h1>
-        <button id="openModalBtn" 
-                class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg shadow transition">
-            Nouveau Retrait
-        </button>
-    </div>
     {{-- des gid pour indicateur --}}
     {{-- 'totaldmd', 'totalmontantdmd', 'totalmontantdmdapprouve', 'totalmontantdmdenattente', 'totalmontantdmdrefuse' --}}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -108,49 +101,6 @@
                 @endforelse
             </tbody>
         </table>
-    </div>
-</div>
-
-{{-- MODAL : Ajouter un nouveau retrait --}}
-<div id="createModal" class="fixed inset-0 hidden bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative">
-        <button id="closeModalBtn" class="absolute top-3 right-3 text-gray-400 hover:text-gray-700">✖</button>
-        <h2 class="text-xl font-bold mb-4 text-gray-800">Nouveau Retrait</h2>
-
-        <form action="{{ route('dmd_retrait.store') }}" method="POST" class="space-y-4">
-            @csrf
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Organisateur</label>
-                <select name="organisateur_id" required
-                    class="w-full border-gray-300 rounded-lg focus:ring-blue-500">
-                    @foreach($organisateurs as $org)
-                        <option value="{{ $org->id }}">{{ $org->user->email ?? " " }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nom du détenteur</label>
-                <input type="text" name="nom_detenteur" class="w-full border-gray-300 rounded-lg" required>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Montant (FC)</label>
-                <input type="number" name="montant" class="w-full border-gray-300 rounded-lg" required>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                <input type="date" name="date" class="w-full border-gray-300 rounded-lg" required>
-            </div>
-
-            <div class="flex justify-end">
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg">
-                    Enregistrer
-                </button>
-            </div>
-        </form>
     </div>
 </div>
 

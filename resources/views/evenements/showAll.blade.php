@@ -258,6 +258,7 @@
 <script>
     lucide.createIcons();
 </script>
+
 <script>
 function openModal(id) {
     document.getElementById(id).classList.remove('hidden');
@@ -277,15 +278,7 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// Fermer le modal avec la touche Échap
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        const openModal = document.querySelector('.fixed:not(.hidden)');
-        if (openModal) {
-            closeModal(openModal.id);
-        }
-    }
-});
+
 </script>
 
 <style>
