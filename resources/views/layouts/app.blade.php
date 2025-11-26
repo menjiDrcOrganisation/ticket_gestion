@@ -116,9 +116,10 @@
             <div class="p-6 border-b border-gray-100">
                 <div class="flex items-center gap-4">
                     <div
-                        class="h-14 w-14 gradient-bg rounded-2xl flex items-center justify-center text-white shadow-lg"
+                        class="h-14 w-14 border-gray-200  rounded-2xl flex items-center justify-center text-white shadow-lg"
                     >
-                        <i class="fas fa-ticket-alt text-xl"></i>
+        
+                        <img src="{{ asset('icons/Icone_Kimia.png') }}"  class="h-10 w-6">
                     </div>
                     <div>
                         <h1 class="font-bold text-2xl text-gray-900">

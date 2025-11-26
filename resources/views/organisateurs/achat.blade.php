@@ -15,11 +15,6 @@
                     <p class="text-gray-500 mt-1">Tous les achats de billets pour vos événements</p>
                 </div>
 
-                <div class="mt-4 md:mt-0">
-                    <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg">
-                        <i class="fas fa-plus"></i> Nouvel achat
-                    </button>
-                </div>
             </div>
 
             <!-- Stats cards -->
@@ -74,6 +69,35 @@
             </div>
         </div>
 
+        <!-- Search and controls -->
+        <div class="mb-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <!-- Search input -->
+                <div class="relative flex-1 max-w-md">
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        placeholder="Rechercher par nom..." 
+                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                    >
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                </div>
+
+                <!-- Items per page selector -->
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-gray-600">Afficher :</span>
+                    <select id="itemsPerPage" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
         <!-- Main content card -->
         <div class="bg-white w-full p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
 
@@ -94,9 +118,9 @@
                         </tr>
                     </thead>
 
-                    <tbody class="divide-y divide-gray-100">
+                    <tbody class="divide-y divide-gray-100" id="tableBody">
                         @foreach($detailleParBillet as $billet)
-                        <tr class="hover:bg-gray-50 transition">
+                        <tr class="hover:bg-gray-50 transition" data-client="{{ strtolower($billet['auteur'] ?? '') }}">
                             <td class="px-6 py-4">{{ $billet["auteur"] ?? "N/A" }}</td>
                             <td class="px-6 py-4">{{ $billet["type"] }}</td>
                             <td class="px-6 py-4">{{ $billet["prix_unitaire"] }} {{ $billet["devise"] }}</td>
@@ -124,9 +148,9 @@
             </div>
 
             <!-- Mobile cards -->
-            <div class="md:hidden space-y-4">
+            <div class="md:hidden space-y-4" id="mobileCards">
                 @foreach($detailleParBillet as $billet)
-                <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition">
+                <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition" data-client="{{ strtolower($billet['auteur'] ?? '') }}">
                     <div class="flex justify-between items-start mb-3">
                         <div>
                             <h3 class="font-semibold text-gray-800">{{ $billet["auteur"] ?? "N/A" }}</h3>
@@ -167,6 +191,27 @@
                     </div>
                 </div>
                 @endforeach
+            </div>
+
+            <!-- Pagination -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-6 border-t border-gray-200">
+                <div class="text-sm text-gray-600">
+                    Affichage de <span id="startItem">1</span> à <span id="endItem">10</span> sur <span id="totalItems">{{ count($detailleParBillet) }}</span> résultats
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <button id="prevPage" class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    
+                    <div id="paginationNumbers" class="flex gap-1">
+                        <!-- Les numéros de page seront générés ici par JavaScript -->
+                    </div>
+                    
+                    <button id="nextPage" class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
             </div>
 
         </div>
@@ -231,6 +276,12 @@
 
 <!-- JS -->
 <script>
+// Variables globales pour la pagination
+let currentPage = 1;
+let itemsPerPage = 10;
+let filteredData = [];
+let allData = [];
+
 function openModal(id){ 
     document.getElementById(id).classList.remove('hidden'); 
     document.body.style.overflow = 'hidden';
@@ -248,12 +299,25 @@ document.addEventListener('click', function(e) {
         document.body.style.overflow = 'auto';
     }
 });
-</script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+    // Stocker toutes les données initiales
+    const tableRows = document.querySelectorAll('#tableBody tr');
+    const mobileCards = document.querySelectorAll('#mobileCards > div');
+    
+    allData = Array.from(tableRows).map((row, index) => ({
+        element: row,
+        mobileElement: mobileCards[index],
+        client: row.getAttribute('data-client')
+    }));
 
-<script>
-document.addEventListener("DOMContentLoaded", function() {
+    filteredData = [...allData];
+    
+    initializePagination();
+    setupEventListeners();
+    
+    // Générer les QR codes
     @foreach($detailleParBillet as $billet)
         @if(!empty($billet["code"]))
             new QRCode(document.getElementById("qrcode-{{ $billet['id'] }}"), {
@@ -264,9 +328,164 @@ document.addEventListener("DOMContentLoaded", function() {
         @endif
     @endforeach
 });
-</script>
 
-<script>
+function setupEventListeners() {
+    // Recherche
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase().trim();
+        filterData(searchTerm);
+    });
+
+    // Items par page
+    document.getElementById('itemsPerPage').addEventListener('change', function(e) {
+        itemsPerPage = parseInt(e.target.value);
+        currentPage = 1;
+        updateDisplay();
+    });
+
+    // Boutons précédent/suivant
+    document.getElementById('prevPage').addEventListener('click', function() {
+        if (currentPage > 1) {
+            currentPage--;
+            updateDisplay();
+        }
+    });
+
+    document.getElementById('nextPage').addEventListener('click', function() {
+        const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            updateDisplay();
+        }
+    });
+}
+
+function filterData(searchTerm) {
+    if (searchTerm === '') {
+        filteredData = [...allData];
+    } else {
+        filteredData = allData.filter(item => 
+            item.client.includes(searchTerm)
+        );
+    }
+    
+    currentPage = 1;
+    updateDisplay();
+}
+
+function initializePagination() {
+    updateDisplay();
+}
+
+function updateDisplay() {
+    const totalItems = filteredData.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    
+    // Calculer les indices de début et fin
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+    
+    // Masquer tous les éléments
+    allData.forEach(item => {
+        item.element.style.display = 'none';
+        if (item.mobileElement) {
+            item.mobileElement.style.display = 'none';
+        }
+    });
+    
+    // Afficher seulement les éléments de la page courante
+    for (let i = startIndex; i < endIndex; i++) {
+        if (filteredData[i]) {
+            filteredData[i].element.style.display = '';
+            if (filteredData[i].mobileElement) {
+                filteredData[i].mobileElement.style.display = '';
+            }
+        }
+    }
+    
+    // Mettre à jour les informations de pagination
+    document.getElementById('startItem').textContent = totalItems === 0 ? 0 : startIndex + 1;
+    document.getElementById('endItem').textContent = endIndex;
+    document.getElementById('totalItems').textContent = totalItems;
+    
+    // Mettre à jour les boutons de pagination
+    document.getElementById('prevPage').disabled = currentPage === 1;
+    document.getElementById('nextPage').disabled = currentPage === totalPages || totalPages === 0;
+    
+    // Générer les numéros de page
+    generatePaginationNumbers(totalPages);
+}
+
+function generatePaginationNumbers(totalPages) {
+    const paginationContainer = document.getElementById('paginationNumbers');
+    paginationContainer.innerHTML = '';
+    
+    if (totalPages === 0) return;
+    
+    // Afficher maximum 5 pages autour de la page courante
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, currentPage + 2);
+    
+    // Ajuster si on est près du début
+    if (currentPage <= 3) {
+        endPage = Math.min(5, totalPages);
+    }
+    
+    // Ajuster si on est près de la fin
+    if (currentPage >= totalPages - 2) {
+        startPage = Math.max(1, totalPages - 4);
+    }
+    
+    // Bouton première page
+    if (startPage > 1) {
+        const firstPageBtn = createPageButton(1);
+        paginationContainer.appendChild(firstPageBtn);
+        
+        if (startPage > 2) {
+            const ellipsis = document.createElement('span');
+            ellipsis.className = 'px-3 py-2 text-gray-500';
+            ellipsis.textContent = '...';
+            paginationContainer.appendChild(ellipsis);
+        }
+    }
+    
+    // Boutons des pages
+    for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = createPageButton(i);
+        paginationContainer.appendChild(pageBtn);
+    }
+    
+    // Bouton dernière page
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            const ellipsis = document.createElement('span');
+            ellipsis.className = 'px-3 py-2 text-gray-500';
+            ellipsis.textContent = '...';
+            paginationContainer.appendChild(ellipsis);
+        }
+        
+        const lastPageBtn = createPageButton(totalPages);
+        paginationContainer.appendChild(lastPageBtn);
+    }
+}
+
+function createPageButton(pageNumber) {
+    const button = document.createElement('button');
+    button.className = `px-3 py-2 border rounded-lg transition ${
+        pageNumber === currentPage 
+            ? 'bg-blue-600 text-white border-blue-600' 
+            : 'border-gray-300 hover:bg-gray-50 text-gray-700'
+    }`;
+    button.textContent = pageNumber;
+    
+    button.addEventListener('click', function() {
+        currentPage = pageNumber;
+        updateDisplay();
+    });
+    
+    return button;
+}
+
 function downloadQRCode(id){
     const canvas = document.querySelector("#qrcode-" + id + " canvas");
     if(!canvas) return alert("QR Code introuvable");
@@ -276,5 +495,7 @@ function downloadQRCode(id){
     link.click();
 }
 </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 @endsection

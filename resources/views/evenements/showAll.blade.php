@@ -186,10 +186,10 @@
                                             <i data-lucide="link" class="w-4 h-4 text-gray-400 mt-0.5"></i>
                                             <div>
                                                 <p class="font-medium text-gray-700">URL de l'événement</p>
-                                                <a href="https://ticket.menjidrc.com/{{ $evenement->url_evenement }}" 
+                                                <a href="https://kimiaticket.com/{{ $evenement->url_evenement }}" 
                                                    target="_blank" 
                                                    class="text-blue-600 hover:underline break-all text-sm">
-                                                    https://ticket.menjidrc.com/{{ $evenement->url_evenement }}
+                                                    https://kimiaticket.com/{{ $evenement->url_evenement }}
                                                 </a>
                                             </div>
                                         </div>

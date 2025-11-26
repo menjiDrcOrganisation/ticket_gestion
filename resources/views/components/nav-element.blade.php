@@ -9,7 +9,7 @@ $classe = $isActive
 <a href="{{$action}}" class="sidebar-link {{$classe}}  justify-between w-full gap-2  ">
     <div class="items-center" >
         <div class="h-10 w-10 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl flex items-center justify-center">
-            <i class="fas fa-calendar-plus text-purple-600 text-lg"></i>
+        
         </div>
     </div>
     <span class="flex-1 text-base font-medium">{{$title}}</span>

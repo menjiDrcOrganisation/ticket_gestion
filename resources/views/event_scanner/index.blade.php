@@ -70,7 +70,7 @@
         <h2 class="text-xl font-bold text-gray-700 mb-2">🔗 Lien public</h2>
         <a href="/event/{{ $evenement->url_evenement }}"
            class="text-blue-600 font-semibold underline">
-            /event/{{ $evenement->url_evenement }}
+            https://kimiaticket.com/{{ $evenement->url_evenement }}
         </a>
     </div>
 
