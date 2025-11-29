@@ -15,7 +15,7 @@ class UserController extends Controller
        try {
         if(auth()->user()->id !== 1 && auth()->user()->role !== 'admin'){
              return view('users.index', compact('users'));}
-           $users = User::where('role','admin')->get();
+           $users = User::paginate(10);
            return view('users.superAdmin', compact('users'));
        } catch (\Exception $e) {
            return redirect()->back()->with('error', 'Une erreur est survenue lors de la récupération des utilisateurs.');
@@ -82,9 +82,10 @@ class UserController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email,' . $user->id,
                 'role' => 'nullable|string|in:admin,organisateur,scanneur,user',
+                'password' => 'nullable|string|min:8',
             ]);
 
-            $user->update($request->only('name', 'email', 'role'));
+            $user->update($request->only('name', 'email', 'role','password'));
 
             return redirect()->back()->with('success', 'Utilisateur mis à jour avec succès.');
         } catch (\Exception $e) {
