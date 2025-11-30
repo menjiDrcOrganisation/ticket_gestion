@@ -2,8 +2,15 @@
 <html lang="fr">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>@yield('title', 'Tableau de bord') - TicketMaster</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>@yield('title', 'Tableau de bord') - TicketMaster</title>
+
+<!-- Favicon : logo dans l'onglet -->
+<link rel="icon" href="{{ asset('icons/Icone_Kimia.png') }}" type="image/png" />
+
+<!-- Optionnel : favicon pour Apple touch (iPhone/iPad) -->
+<link rel="apple-touch-icon" href="{{ asset('icons/Icone_Kimia.png') }}" />
+
 
         <!-- Tailwind CSS -->
         <script src="https://cdn.tailwindcss.com"></script>
