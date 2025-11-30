@@ -29,7 +29,7 @@
                 @forelse($retraits as $retrait)
                     <tr class="hover:bg-gray-50 transition">
                         <td class="py-3 px-6">{{ $retrait->id }}</td>
-                        <td class="py-3 px-6">{{ $retrait->organisateur->name ?? 'Inconnu' }}</td>
+                        <td class="py-3 px-6">{{ $retrait->organisateur->user->name ?? 'Inconnu' }}</td>
                         <td class="py-3 px-6 font-medium text-gray-800">{{ $retrait->nom_detenteur }}</td>
                         <td class="py-3 px-6 text-green-700 font-semibold">
                             {{ number_format($retrait->montant, 2, ',', ' ') }} FC
