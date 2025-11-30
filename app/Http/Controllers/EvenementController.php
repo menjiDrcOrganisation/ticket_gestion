@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Organisateur;
 use App\Models\EvenementTypeBillet;
 use App\Models\TypeBillet;
+use App\Models\Scanneur;
 use App\Models\Ressource;
 
 use App\Mail\EnvoiMotDePasseMail;
@@ -47,35 +48,23 @@ class EvenementController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\StoreEvenementRequest $request)
     {
+
         try {
             $code_organi = (string) Str::uuid();
-            $validated = $request->validate([
-            'nom_evenement' => 'required|string|max:255',
-            'nom_organisateur' => 'nullable|string|max:255',
-            'email_organisateur' => 'nullable|string|max:255',
-            'adresse' => 'required|string|max:255',
-            'salle' => 'required|string|max:255',
-            'date_debut' => 'required|date',
-            'date_fin' => 'required|date|after_or_equal:date_debut',
-            'heure_debut' => 'required',
-            'heure_fin' => 'required',
-            'ticket_type_id' => 'required|array',
-            'quantite' => 'required|array',
-            'prix' => 'required|array',
-            'telephone' => 'required',
-            'nom_artiste'=> 'required',
-            'acroche'=> 'required',
-            'a_propos'=> 'required',
-            'photo_affiche'=> 'required'
-        ]);
-          
+
+            $uuid = Str::uuid();          // Génère un UUID complet
+            $code_scanneur = substr($uuid, 0, 8);
+
+            $validated = $request->validated(); 
+
             if (!empty($validated['nom_organisateur'])) {
 
-                $user = User::firstOrCreate(
-                    ['email' => $validated['email_organisateur']], // condition
-                    [
+                //organisateur
+                $user = User::create(
+                     // condition
+                    ['email' => $validated['email_organisateur'],
                         'name' => $validated['nom_organisateur'],
                         'password' => Hash::make($code_organi),
                         'role' => 'organisateur',
@@ -86,6 +75,21 @@ class EvenementController extends Controller
                     'user_id' => $user->id,
                     'telephone' => $validated['telephone'],
                 ]);
+
+                // scanneur
+
+                 $user = User::create(['email' => $validated['nom_evenement']."scanneur",
+                        'name' => "Scanneur",
+                        'password' => Hash::make($code_scanneur),
+                        'role' => 'scanneur',
+                    ]
+                );
+
+                $scanneur = Scanneur::create([
+                    'user_id' => $user->id
+                ]);
+
+
                
             } else {
                 $organisateur = null;
@@ -96,6 +100,7 @@ class EvenementController extends Controller
                 'nom' => $validated['nom_evenement'],
                 'url_evenement' => Str::slug($validated['nom_evenement']),
                 'organisateur_id' => $organisateur?->id,
+                'scanneur_id' => $scanneur?->id,
                 'adresse' => $validated['adresse'],
                 'salle' => $validated['salle'],
                 'date_debut' => $validated['date_debut'],
@@ -109,41 +114,43 @@ class EvenementController extends Controller
             $image_path = $photo_affiche->store("affiches","public");
 
             Ressource::create([
-                  'nom_artiste' => $validated['nom_artiste'],
+                'nom_artiste' => $validated['nom_artiste'],
                 'phrase_accroche'=> $validated['acroche'],
                 'a_propos'=> $validated['a_propos'],
                 'photo_affiche'=>$image_path,
                 'evenement_id'=> $evenement->id
             ]);
 
-            // Boucle sur les billets
+            // Boucle sur type les billets
             foreach ($validated['ticket_type_id'] as $index => $typeId) {
                 $quantite = $validated['quantite'][$index] ?? 0;
                 $prix = $validated['prix'][$index] ?? 0;
+                $devise = $validated['devise'][$index];
 
-                if ($quantite > 0) {
+                if ($quantite > 0 && $prix  > 0) {
                     EvenementTypeBillet::create([
                         'evenement_id' => $evenement->id,
                         'type_billet_id' => $typeId,
                         'nombre_billet' => $quantite,
                         'prix_unitaire' => $prix,
+                        'devise'=> $devise
                     ]);
                 }
             }
              try {
                 
-                Mail::to($validated['email_organisateur'])->send(new EnvoiMotDePasseMail(
+               $error= Mail::to($validated['email_organisateur'])->send(new EnvoiMotDePasseMail(
                     $validated['nom_organisateur'],
                     $validated['email_organisateur'],
                     $code_organi,
-                    'https://ticket.menjidrc.com/'.Str::slug($validated['nom_evenement'])
+                    'https://kimiaticket.com/'.Str::slug($validated['nom_evenement']),
+                    $validated['nom_evenement']."scanneur",
+                    $code_scanneur
                 ));
-
+            
                 $message = 'Événement créé avec succès et mail envoyé à l’organisateur.';
             } catch (\Exception $e) {
 
-                
-               
                 $message = 'Événement créé avec succès, mais le mail n’a pas pu être envoyé. Erreur : ' . $e->getMessage();
             }
 
