@@ -16,9 +16,21 @@ class DashboardController extends Controller
         $user = Auth::user();
 
         // Récupérer l'événement de l'organisateur
+        if ($user->role === 'organisateur') {
+
+    // Cherche l'événement de cet organisateur
         $evenement = Evenement::where('organisateur_id', $user->organisateur->id)->first();
-        if (!$evenement) {
-            return redirect()->back()->with('error', 'Aucun événement trouvé pour cet organisateur.');
+
+        } elseif ($user->role === 'scanneur') {
+
+        
+
+            // Cherche l'événement lié au scanneur
+            $evenement = Evenement::where('scanneur_id', $user->scanneur->id)->first();
+        } else {
+
+            // Rôle non géré
+            return redirect()->back()->with('error', 'Type d’utilisateur inconnu.');
         }
 
         // Récupérer tous les billets liés à cet événement

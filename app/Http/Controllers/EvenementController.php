@@ -56,8 +56,10 @@ class EvenementController extends Controller
 
             $uuid = Str::uuid();          // Génère un UUID complet
             $code_scanneur = substr($uuid, 0, 8);
-
+        
             $validated = $request->validated(); 
+            $email_scanneur=uniqid()
+        . '@gmail.com';
 
             if (!empty($validated['nom_organisateur'])) {
 
@@ -78,7 +80,7 @@ class EvenementController extends Controller
 
                 // scanneur
 
-                 $user = User::create(['email' => $validated['nom_evenement']."scanneur",
+                 $user = User::create(['email' => $email_scanneur,
                         'name' => "Scanneur",
                         'password' => Hash::make($code_scanneur),
                         'role' => 'scanneur',
@@ -89,8 +91,8 @@ class EvenementController extends Controller
                     'user_id' => $user->id
                 ]);
 
+                
 
-               
             } else {
                 $organisateur = null;
             }
@@ -144,7 +146,7 @@ class EvenementController extends Controller
                     $validated['email_organisateur'],
                     $code_organi,
                     'https://kimiaticket.com/'.Str::slug($validated['nom_evenement']),
-                    $validated['nom_evenement']."scanneur",
+                    $email_scanneur,
                     $code_scanneur
                 ));
             

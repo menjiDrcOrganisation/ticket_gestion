@@ -12,6 +12,7 @@ class Evenement extends Model
 
      protected $fillable = [
         'organisateur_id',
+        'scanneur_id',
         'nom',
         'url_evenement',
         'date_debut',
