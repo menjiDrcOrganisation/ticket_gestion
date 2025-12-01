@@ -34,6 +34,9 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('dashboard.admin.viewDash');
         } elseif ($user->role === 'organisateur') {
             return redirect()->route('dashboard_orginasateur.show');
+            
+        } elseif ($user->role === 'scanneur') {
+            return redirect()->route('dashboard_orginasateur.show');
         } 
 
     }

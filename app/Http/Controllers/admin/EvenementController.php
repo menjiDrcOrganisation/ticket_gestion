@@ -159,7 +159,6 @@ class EvenementController extends Controller
                
                 $message = 'Événement créé avec succès, mais le mail n’a pas pu être envoyé. Erreur : ' . $e->getMessage();
             }
-
             return redirect()->route('evenements.index')->with('success', $message);
         } catch (\Throwable $th) {
             return $th;
@@ -167,7 +166,6 @@ class EvenementController extends Controller
     }
 
 
-    
     public function show($url_evenement)
     {
         try {

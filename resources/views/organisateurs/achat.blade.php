@@ -119,7 +119,7 @@
                     </thead>
 
                     <tbody class="divide-y divide-gray-100" id="tableBody">
-                        @foreach($detailleParBillet as $billet)
+                        @forelse($detailleParBillet as $billet)
                         <tr class="hover:bg-gray-50 transition" data-client="{{ strtolower($billet['auteur'] ?? '') }}">
                             <td class="px-6 py-4">{{ $billet["auteur"] ?? "N/A" }}</td>
                             <td class="px-6 py-4">{{ $billet["type"] }}</td>
@@ -142,14 +142,21 @@
                                 </div>
                             </td>
                         </tr>
-                        @endforeach
+                         @empty
+                        <tr>
+                            <td colspan="9" class="py-6 text-center text-gray-500">
+                                Aucun achat trouvé.
+                            </td>
+                        </tr>
+                        @endforelse
+                       
                     </tbody>
                 </table>
             </div>
 
             <!-- Mobile cards -->
             <div class="md:hidden space-y-4" id="mobileCards">
-                @foreach($detailleParBillet as $billet)
+                @forelse($detailleParBillet as $billet)
                 <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition" data-client="{{ strtolower($billet['auteur'] ?? '') }}">
                     <div class="flex justify-between items-start mb-3">
                         <div>
@@ -190,7 +197,14 @@
                         </div>
                     </div>
                 </div>
-                @endforeach
+                @empty
+                        <tr>
+                            <td colspan="9" class="py-6 text-center text-gray-500">
+                                Aucun achat trouvé.
+                            </td>
+                        </tr>
+                @endforelse
+               
             </div>
 
             <!-- Pagination -->
@@ -222,7 +236,7 @@
      MODALS POUR CHAQUE BILLET
 ============================ -->
 
-@foreach($detailleParBillet as $billet)
+@forelse($detailleParBillet as $billet)
 
 <!-- Modal Réenvoyer -->
 <div id="resendModal{{ $billet['id'] }}" class="hidden fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4">
@@ -272,7 +286,13 @@
     </div>
 </div>
 
-@endforeach
+   @empty
+                        <tr>
+                            <td colspan="9" class="py-6 text-center text-gray-500">
+                                Aucun achat trouvé.
+                            </td>
+                        </tr>
+                @endforelse
 
 <!-- JS -->
 <script>
@@ -318,15 +338,15 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
     
     // Générer les QR codes
-    @foreach($detailleParBillet as $billet)
-        @if(!empty($billet["code"]))
-            new QRCode(document.getElementById("qrcode-{{ $billet['id'] }}"), {
-                text: "{{ $billet['code'] }}",
-                width: 120,
-                height: 120
-            });
-        @endif
-    @endforeach
+    // @foreach($detailleParBillet as $billet)
+    //     @if(!empty($billet["code"]))
+    //         new QRCode(document.getElementById("qrcode-{{ $billet['id'] }}"), {
+    //             text: "{{ $billet['code'] }}",
+    //             width: 120,
+    //             height: 120
+    //         });
+    //     @endif
+    // @endforeach
 });
 
 function setupEventListeners() {

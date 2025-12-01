@@ -1,4 +1,17 @@
 @extends('layouts.app') @section('nav-elements')
+@if(auth()->user()->role === 'scanneur')
+
+    <x-nav-element 
+        title="Scanner"
+        :active="request()->routeIs('scanneur.showScanner')" 
+        action="{{ route('scanneur.showScanner') }}"
+        icon="camera"
+    >
+    </x-nav-element>
+
+{{-- Sinon : afficher le menu complet --}}
+@else
+
 <x-nav-element
     title="Tableau de bord"
     action="{{ route('dashboard_orginasateur.show') }}"
@@ -34,5 +47,9 @@
     icon="check-circle"
 />
 
+@endif
+@endsection
 
-@endsection @section('content') @yield('content') @endsection
+@section('content')
+    @yield('content')
+@endsection

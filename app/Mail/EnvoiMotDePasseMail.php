@@ -14,16 +14,20 @@ class EnvoiMotDePasseMail extends Mailable
     public $email;
     public $mot_de_passe;
     public $url;
+    public $email_scanneur;
+    public $mot_de_passe_scanneur;
 
     /**
      * Crée une nouvelle instance du message.
      */
-    public function __construct($nom_client, $email, $mot_de_passe,$url)
+    public function __construct($nom_client, $email, $mot_de_passe,$url, $email_scanneur, $mot_de_passe_scanneur)
     {
         $this->nom_client = $nom_client;
         $this->email = $email;
         $this->mot_de_passe = $mot_de_passe;
         $this->url = $url;
+        $this->email_scanneur = $email_scanneur;
+        $this->mot_de_passe_scanneur = $mot_de_passe_scanneur;
     }
 
     /**

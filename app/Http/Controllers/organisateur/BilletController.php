@@ -15,6 +15,7 @@ class BilletController extends Controller
         try {
             $totalRestant= 0;
              $totalAchat= 0;
+             $detailleParBillet=[];
              
             $user = Auth::user();
             $evenementId = $user->organisateur->evenements[0]->id;

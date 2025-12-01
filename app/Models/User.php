@@ -54,4 +54,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(Organisateur::class);
     }
+
+     function scanneur()
+    {
+        return $this->hasOne(Scanneur::class);
+    }
 }
