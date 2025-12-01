@@ -1,16 +1,22 @@
+@props(['title', 'action', 'active' => false, 'icon' => 'home'])
 
 @php
-   $isActive = $active ?? false;
-$classe = $isActive
-            ? 'inline-flex items-center py-1 pl-2 bg-blue-200 text-white rounded-xl  border-indigo-400 text-sm font-medium leading-5  focus:outline-none focus:border-indigo-700 transition duration-150 ease-in-out'
-            : 'inline-flex items-center py-1 pl-2   border-transparent text-sm font-medium leading-5  hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out';
+    $iconComponent = "heroicon-o-" . $icon;
+
+    $baseClasses = "flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200";
+
+    $activeClasses = $active
+        ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md scale-[1.02]"
+        : "text-gray-700 hover:bg-gray-100 hover:scale-[1.02]";
 @endphp
 
-<a href="{{$action}}" class="sidebar-link {{$classe}}  justify-between w-full gap-2  ">
-    <div class="items-center" >
-        <div class="h-10 w-10 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl flex items-center justify-center">
-        
-        </div>
+<a href="{{ $action }}" class="{{ $baseClasses }} {{ $activeClasses }}">
+    <div class="h-8 w-8 bg-white/20 rounded-lg flex items-center justify-center">
+        <x-dynamic-component :component="$iconComponent" class="h-5 w-5 
+            {{ $active ? 'text-white' : 'text-purple-700' }}" />
     </div>
-    <span class="flex-1 text-base font-medium">{{$title}}</span>
+
+    <span class="font-medium text-sm">
+        {{ $title }}
+    </span>
 </a>

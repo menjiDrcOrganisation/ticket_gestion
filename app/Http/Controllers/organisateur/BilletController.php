@@ -73,10 +73,6 @@ class BilletController extends Controller
         }
 
         
-
-        
-        
-
         $totalPaye = $totalCDF + $totalUSD;
 
         return view('organisateurs.achat', compact('detailleParBillet', 'totalCDF', 'totalUSD', 'totalPaye','totalAchat','totalRestant'));
