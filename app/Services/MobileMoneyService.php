@@ -68,9 +68,9 @@ class MobileMoneyService
             $responseData = $response->json();
 
             if (
-                $response->status() === 200 &&
+               ( $response->status() === 200 &&
                 isset($responseData['transactionStatus']) &&
-                $responseData['transactionStatus'] === 'SUCCESS'
+                $responseData['transactionStatus'] === 'SUCCESS')
             ) {
                 // Générer un code de billet unique
                 $now = time();
@@ -86,7 +86,8 @@ class MobileMoneyService
                     'code_billet' => $code,
                     'date_achat' => Carbon::now(),
                 ]);
-
+                // formatage billet
+             
                 // Diminuer le stock
                 $type_billet->nombre_billet -= $request['nombre_reel'];
                 $type_billet->save();
@@ -105,7 +106,7 @@ class MobileMoneyService
                     'status' => true,
                     'message' => 'Paiement effectué avec succès.',
                     'data' => $responseData,
-                    'billet' => $billet,
+                    'billet' => $billet->load(['evenements', 'type_billet.evenements']),
                 ];
             }
 
