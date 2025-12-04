@@ -106,7 +106,7 @@ class MobileMoneyService
                     'status' => true,
                     'message' => 'Paiement effectué avec succès.',
                     'data' => $responseData,
-                    'billet' => $billet->load(['evenements', 'type_billet.evenements']),
+                    'billet' => $billet->load(['evenements.ressource', 'type_billet.evenements',]),
                 ];
             }
 

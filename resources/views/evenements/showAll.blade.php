@@ -28,7 +28,7 @@
             <option value="à venir">À venir</option>
         </select>
 
-        <a href="{{route('evenements.create')}}"><button class="border border-gray-300 text-white bg-blue-500 rounded-lg px-4 py-2 w-full md:w-auto" type="button"> nouvelle evenement</button></a>
+        <a href="{{route('evenements.create')}}"><button class="border border-gray-300 text-white bg-blue-500 rounded-lg px-4 py-2 w-full md:w-auto" type="button"> creer un evenement</button></a>
     </div>
 
     <!-- Tableau responsive amélioré -->
