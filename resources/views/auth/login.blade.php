@@ -62,13 +62,7 @@
                 Se connecter
             </button>
 
-            <!-- Register -->
-            @if (Route::has('register'))
-                <p class="mt-6 text-center text-sm text-gray-600">
-                    Pas encore de compte ?
-                    <a href="{{ route('register') }}" class="text-blue-600 hover:underline font-medium">Créer un compte</a>
-                </p>
-            @endif
+           
         </form>
     </div>
 

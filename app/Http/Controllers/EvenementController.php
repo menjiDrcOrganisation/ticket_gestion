@@ -52,7 +52,8 @@ class EvenementController extends Controller
     {
 
         try {
-            $code_organi = (string) Str::uuid();
+            $uuid = Str::uuid(); 
+            $code_organi = substr($uuid, 0, 10);
 
             $uuid = Str::uuid();          // Génère un UUID complet
             $code_scanneur = substr($uuid, 0, 8);

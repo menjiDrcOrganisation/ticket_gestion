@@ -5,7 +5,7 @@
 
     <!-- Titre -->
     <h1 class="text-4xl font-extrabold text-gray-800 mb-8">
-        🎉 Événement : {{ $evenement->nom ??  " " }}
+         Événement : {{ $evenement->nom ??  " " }}
     </h1>
 
     <!-- Carte principale -->
@@ -43,8 +43,8 @@
             <h3 class="text-xl font-bold text-gray-700 mb-2">🔍 Scanneur</h3>
 
             @if($evenement->scanneur)
-                <p>Nom : {{ $evenement->scanneur->nom }}</p>
-                <p>Téléphone : {{ $evenement->scanneur->telephone }}</p>
+                <p>Email : {{ $evenement->scanneur->user->email }}</p>
+                <p>password : - - - - - </p>
             @else
                 <p class="text-gray-500 italic">Aucun scanneur assigné.</p>
             @endif

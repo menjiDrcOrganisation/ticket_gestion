@@ -12,14 +12,10 @@ public function index()
 
         $organisateur = auth()->user()->organisateur;
          
-       $evenement = Evenement::with(['organisateur.user', 'typeBillets', 'scanneur'])
+       $evenement = Evenement::with(['organisateur.user', 'typeBillets', 'scanneur.user'])
         ->where('organisateur_id', $organisateur->id)
         ->first();
 
-
-
-       
-       
         return view('event_scanner.index', compact('evenement'));
     }
 }
