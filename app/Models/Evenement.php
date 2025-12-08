@@ -47,10 +47,9 @@ class Evenement extends Model
 
     public function billets()
     {
-        return $this->belongsToMany(Billet::class, 'evenement_billet_type_billet')
-                    ->withPivot('type_billet_id', 'nombre_billet')
-                    ->withTimestamps();
+        return $this->hasMany(Billet::class, 'evenement_id');
     }
+
 
     public function scanneur()
     {

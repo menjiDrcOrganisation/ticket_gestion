@@ -79,35 +79,31 @@ class MobileMoneyService
                 $raw_code = 'Ticket-' . $request['nom_complet_client'] . '-' . $secondsSince1978 . '-' . uniqid();
                 $code = $raw_code;
 
-                // Enregistrer le billet
-                $billet = Billet::create([
-                    'nom_auteur' => $request['nom_complet_client'],
-                    'numero' => $request['numero_client'],
-                    'code_billet' => $code,
-                    'date_achat' => Carbon::now(),
-                ]);
-                // formatage billet
-             
                 // Diminuer le stock
                 $type_billet->nombre_billet -= $request['nombre_reel'];
                 $type_billet->save();
 
-                // Lier billet et événement
-                EvenementBilletTypeBillet::create([
-                    'statut'=>"valide",
-                    'billet_id' => $billet->id,
+                // Enregistrer le billet
+
+                $billet = Billet::create([
+                    'nom_auteur' => $request['nom_complet_client'],
+                    'numero' => $request['numero_client'],
+                    'code_billet' => $code,
                     'evenement_id' => $request['id_evenement'],
                     'type_billet_id' => $request['type_billet'],
                     'quantite_fictif' => $request['nombre_reel'],
-                    'quantite' => $request['nombre_reel']
+                    'quantite' => $request['nombre_reel'],
+                    'statut'=>"valide",
+                    'date_achat' => Carbon::now(),
                 ]);
-
+                
                 return [
                     'status' => true,
                     'message' => 'Paiement effectué avec succès.',
-                    'data' => $responseData,
-                    'billet' => $billet->load(['evenements.ressource', 'type_billet.evenements',]),
+                    'data_sup' => $billet->evenementTypeBillet(),
+                    'billet' => $billet->load(['evenement.ressource', 'type_billet']),
                 ];
+
             }
 
             return [

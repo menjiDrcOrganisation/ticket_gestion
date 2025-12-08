@@ -14,25 +14,32 @@ class Billet extends Model
        'nom_auteur',
        'numero',
        'email',
-       'code_billet'
-    
+       'code_billet',
+       'statut',
+       'quantite', 
+       'quantite_fictif',
+       'evenement_id',
+       'type_billet_id'
     ];
 
-    public function evenements()
-    {
-        return $this->belongsToMany(Evenement::class, 'evenement_billet_type_billets')
-                    ->withPivot('type_billet_id', 'quantite','quantite_fictif')
-                    ->withTimestamps();
-    }
+public function evenement()
+{
+    return $this->belongsTo(Evenement::class);
+}
 
-    public function type_billet()
-    {
-        return $this->belongsToMany(TypeBillet::class, 'evenement_billet_type_billets')
-                    ->withPivot('type_billet_id','evenement_id','statut','quantite','quantite_fictif')
-                    ->withTimestamps();
-    }
+public function type_billet()
+{
+    return $this->belongsTo(TypeBillet::class);
+}
 
-    
+
+public function evenementTypeBillet()
+{
+    return EvenementTypeBillet::where('evenement_id', $this->evenement_id)
+        ->where('type_billet_id', $this->type_billet_id)
+        ->first();
+}
+
 
 
 

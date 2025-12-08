@@ -18,7 +18,15 @@ return new class extends Migration
     $table->string('numero');
     $table->string('email')->nullable();
     $table->string('code_billet');
+
+    $table->int('quantite');
+    $table->int('quantite_fictif');
+    $table->enum('statut', ['valide', 'utilisee'])->default('valide');
+
+    $table->foreignId('evenement_id')->constrained('evenements')->onDelete('cascade');
+    $table->foreignId('type_billet_id')->constrained('type_billets')->onDelete('cascade');
     $table->timestamps();
+
 });
 
     }

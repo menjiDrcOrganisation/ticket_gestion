@@ -17,12 +17,15 @@ class EvenementTypeBillet extends Model
          'prix_unitaire',
          'devise'
     ];
-    function evenement()
-    {
-        return $this->belongsTo(Evenement::class, 'evenement_id');
-    }
-    function type_billet()
+    
+   public function typeBillet()
     {
         return $this->belongsTo(TypeBillet::class, 'type_billet_id');
     }
+
+    public function evenement()
+    {
+        return $this->belongsTo(Evenement::class, 'evenement_id');
+    }
+
 }
