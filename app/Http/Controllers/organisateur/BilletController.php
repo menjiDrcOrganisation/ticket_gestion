@@ -14,68 +14,56 @@ class BilletController extends Controller
     {
         try {
             $totalRestant= 0;
-             $totalAchat= 0;
-             $detailleParBillet=[];
+            $totalAchat= 0;
+            $detailleParBillet=[];
+            $totalCDF = 0;
+            $totalUSD = 0;
+
              
             $user = Auth::user();
             $evenementId = $user->organisateur->evenements[0]->id;
 
-            $achats = Billet::with(['evenements', 'type_billet'])
-            ->whereHas('evenements', function($query) use ($evenementId) {
-                $query->where('evenements.id', $evenementId);
-            })
+            $billets = Billet::with('evenement','type_billet')
+            ->where('evenement_id', $evenementId)
             ->paginate(10);
+            
 
-              $totalBilletsVendus=0;
-                $totalCDF = 0;
-                $totalUSD = 0;
-
-
-
-        foreach ($achats as $billet) {
-           
-
-            $typeBillet = $billet->type_billet->first();
-            $evenement=$billet->evenements->first();
-            $evenement_type_billet= $evenement->typeBillets->first()->pivot;
-             $totalAchat+= $typeBillet->pivot->quantite;
-             $totalRestant+=  $evenement_type_billet->nombre_billet;
-
-
+        foreach ($billets as $billet) {
+        
              if (!isset($detailleParBillet[$billet->id])) {
                     $detailleParBillet[$billet->id] = [
                         'id' =>$billet->id,
                         'auteur' =>$billet->nom_auteur,
                         'numero_auteur' =>$billet->nom_auteur,
-                        'devise' => $evenement_type_billet->devise,
-                        'type' =>$typeBillet->nom_type,
-                        'quantite' => $typeBillet->pivot->quantite,
-                        'quantite_fictif' => $typeBillet->pivot->quantite_fictif,
-                        'prix_unitaire' => $evenement_type_billet->prix_unitaire,
-                        'total' => $evenement_type_billet->prix_unitaire*$typeBillet->pivot->quantite,
+                        'devise' => $billet->evenementTypeBillet()->devise ,
+                        'type' =>$billet->type_billet->nom_type,
+                        'quantite' => $billet->quantite,
+                        'quantite_fictif' => $billet->quantite_fictif,
+                        'prix_unitaire' => $billet->evenementTypeBillet()->prix_unitaire,
+                        'total' => $billet->evenementTypeBillet()->prix_unitaire*$billet->quantite,
                         'date' => $billet->date_achat,
                         'code' => $billet->code_billet,
-                        'statut' => $typeBillet->pivot->statut
+                        'statut' => $billet->statut
                        
                     ];
             }
 
-            $totalBilletsVendus+=$typeBillet->pivot->quantite;
+            $totalAchat+=$billet->quantite;
+
 
                 // Montants par devise
-                if ( $evenement_type_billet->devise === "CDF") {
-                    $totalCDF +=  $evenement_type_billet->prix_unitaire;
+                if ( $billet->evenementTypeBillet()->devise === "CDF") {
+                    $totalCDF +=  $billet->evenementTypeBillet()->prix_unitaire;
                 }
 
-                if ( $evenement_type_billet->devise === "USD") {
-                    $totalUSD +=  $evenement_type_billet->prix_unitaire;
+                if ( $billet->evenementTypeBillet()->devise === "USD") {
+                    $totalUSD +=  $billet->evenementTypeBillet()->prix_unitaire;
                 }
         }
 
         
-        $totalPaye = $totalCDF + $totalUSD;
 
-        return view('organisateurs.achat', compact('detailleParBillet', 'totalCDF', 'totalUSD', 'totalPaye','totalAchat','totalRestant'));
+        return view('organisateurs.achat', compact('detailleParBillet', 'totalCDF', 'totalUSD', 'totalAchat','totalRestant'));
 
         } catch (\Throwable $th) {
             return $th;

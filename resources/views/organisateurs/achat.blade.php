@@ -113,7 +113,7 @@
                             <th class="px-6 py-4 text-center font-medium">Quantité restant</th>
                             <th class="px-6 py-4 text-center font-medium">Total</th>
                             <th class="px-6 py-4 text-center font-medium">Statut</th>
-                            <th class="px-6 py-4 text-center font-medium">Date</th>
+                            <th class="px-6 py-4 text-center font-medium">Date d'achat</th>
                             <th class="px-6 py-4 text-center font-medium">Actions</th>
                         </tr>
                     </thead>
@@ -338,15 +338,15 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
     
     // Générer les QR codes
-    // @foreach($detailleParBillet as $billet)
-    //     @if(!empty($billet["code"]))
-    //         new QRCode(document.getElementById("qrcode-{{ $billet['id'] }}"), {
-    //             text: "{{ $billet['code'] }}",
-    //             width: 120,
-    //             height: 120
-    //         });
-    //     @endif
-    // @endforeach
+     @foreach($detailleParBillet as $billet)
+     @if(!empty($billet["code"]))
+             new QRCode(document.getElementById("qrcode-{{ $billet['id'] }}"), {
+                 text: "{{ $billet['code'] }}",
+                 width: 120,
+                 height: 120
+             });
+         @endif
+     @endforeach
 });
 
 function setupEventListeners() {

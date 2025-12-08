@@ -23,8 +23,6 @@ class DashboardController extends Controller
 
         } elseif ($user->role === 'scanneur') {
 
-        
-
             // Cherche l'événement lié au scanneur
             $evenement = Evenement::where('scanneur_id', $user->scanneur->id)->first();
         } else {
@@ -34,11 +32,9 @@ class DashboardController extends Controller
         }
 
         // Récupérer tous les billets liés à cet événement
-        $achats = Billet::with('type_billet','evenements')
-                        ->whereHas('type_billet.evenements', function($q) use ($evenement) {
-                            $q->where('evenement_id', $evenement->id);
-                        })
-                        ->get();
+        $billets = Billet::with('evenement','type_billet')
+            ->where('evenement_id', $evenement->id)
+            ->get();
 
         $totalBilletsVendus=0;
         $revenusCDF = 0;
@@ -46,38 +42,32 @@ class DashboardController extends Controller
         $typesBillets = [];
         $billetsScannes = 0;
 
-        foreach ($achats as $billet) {
-
-            $typeBillet = $billet->type_billet->first();
-            $evenement=$billet->evenements->first();
-            $evenement_type_billet= $evenement->typeBillets->first()->pivot;
-
-            if (!$typeBillet) continue;
-            $totalBilletsVendus+=$typeBillet->pivot->quantite;
+        foreach ($billets as $billet) {
+            $totalBilletsVendus+=$billet->quantite;
 
                 // Montants par devise
-                if ( $evenement_type_billet->devise === "CDF") {
-                    $revenusCDF +=  $evenement_type_billet->prix_unitaire;
+                if ( $billet->evenementTypeBillet()->devise === "CDF") {
+                    $revenusCDF += $billet->evenementTypeBillet()->prix_unitaire;
                 }
 
-                if ( $evenement_type_billet->devise === "USD") {
-                    $revenusUSD +=  $evenement_type_billet->prix_unitaire;
+                if ( $billet->evenementTypeBillet()->devise === "USD") {
+                    $revenusUSD += $billet->evenementTypeBillet()->prix_unitaire;
                 }
 
                 // Compter billets par type
-                $typeName = $typeBillet->nom_type ?? "Type";
-                $typesBillets[$typeName] = ($typesBillets[$typeName] ?? 0) + $typeBillet->pivot->quantite;
+                
+                $typeName = $billet->type_billet->nom_type ?? "Type";
+                $typesBillets[$typeName] = ($typesBillets[$typeName] ?? 0) + $billet->quantite;
 
                 // Compter billets scannés
-                if ($billet->scanne ?? false) {
-                    $billetsScannes++;
-                }
-
-          
+                
+                $billetsScannes+=$billet->quantite-$billet->quantite_fictif;
+                
         }
 
         // Derniers achats (5 derniers billets)
-        $derniersAchats = $achats->sortByDesc('created_at')->take(5);
+
+        $derniersAchats = $billets->sortByDesc('created_at')->take(5);
 
         return view('organisateurs.dashboard_org', compact(
             'evenement',
