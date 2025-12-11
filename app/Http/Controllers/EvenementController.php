@@ -146,7 +146,7 @@ class EvenementController extends Controller
                     $validated['nom_organisateur'],
                     $validated['email_organisateur'],
                     $code_organi,
-                    'https://kimiaticket.com/'.Str::slug($validated['nom_evenement']),
+                    env('ACHAT_URL', 'https://kimiaticket.com')."/".Str::slug($validated['nom_evenement']),
                     $email_scanneur,
                     $code_scanneur
                 ));

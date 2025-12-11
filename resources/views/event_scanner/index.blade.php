@@ -58,7 +58,9 @@
 
         @forelse($evenement->typeBillets as $billet)
             <div class="p-3 border rounded-lg mb-2">
-                <p class="text-lg font-semibold">{{ $billet->nom_type }}</p>
+                <p class="text-lg font-semibold"> <span>{{ $billet->nom_type }}</span>
+                <span> {{ $billet->pivot->prix_unitaire }} {{ $billet->pivot->devise }}</span></p>
+
             </div>
         @empty
             <p class="text-gray-500 italic">Aucun type de billet ajouté.</p>
@@ -70,7 +72,7 @@
         <h2 class="text-xl font-bold text-gray-700 mb-2">🔗 Lien public</h2>
         <a href="/event/{{ $evenement->url_evenement }}"
            class="text-blue-600 font-semibold underline">
-            https://kimiaticket.com/{{ $evenement->url_evenement }}
+            {{env('ACHAT_URL', '')}}/{{ $evenement->url_evenement }}
         </a>
     </div>
 

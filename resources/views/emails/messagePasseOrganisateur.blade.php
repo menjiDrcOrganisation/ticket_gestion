@@ -4,7 +4,7 @@
     <h2>Bonjour {{ $nom_client }},</h2>
     <p>Bienvenue sur notre plateforme !</p>
     <p>Voici vos identifiants de connexion pour la partie gestion à ce lien :</p>
-    <a href="https://gestionticket.menjidrc.com/">https://gestionticket.menjidrc.com/</a>
+    <a href="{{ request()->getSchemeAndHttpHost() }}">{{ request()->getSchemeAndHttpHost() }}</a>
 
     <ul>
       <li><strong>Email :</strong> {{ $email }}</li>
