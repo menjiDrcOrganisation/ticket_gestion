@@ -80,7 +80,11 @@
                             <button onclick="openModal('updateModal{{ $demande->id }}')" class="text-blue-600 hover:underline">Éditer</button>
                             <button onclick="openModal('deleteModal{{ $demande->id }}')" class="text-red-600 hover:underline">Supprimer</button>
                             @if($demande->affiche)
-                                <a href="{{ asset('storage/'.$demande->affiche) }}" target="_blank" class="text-green-600 hover:underline">Voir l'affiche</a>
+                                <a href="{{ asset(env('COSTUM_URL_IMAGE', 'storage/public/app') . '/' . $demande->affiche) }}" 
+                                target="_blank" 
+                                class="text-green-600 hover:underline">
+                                Voir l'affiche
+                                </a>
                             @endif
                         </td>
                     </tr>
