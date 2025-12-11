@@ -48,16 +48,16 @@ class BilletController extends Controller
                     ];
             }
 
-            $totalAchat+=$billet->quantite;
+            $totalAchat+=$billet->quantite ;
 
 
                 // Montants par devise
                 if ( $billet->evenementTypeBillet()->devise === "CDF") {
-                    $totalCDF +=  $billet->evenementTypeBillet()->prix_unitaire;
+                    $totalCDF +=  $billet->evenementTypeBillet()->prix_unitaire * $billet->quantite;
                 }
 
                 if ( $billet->evenementTypeBillet()->devise === "USD") {
-                    $totalUSD +=  $billet->evenementTypeBillet()->prix_unitaire;
+                    $totalUSD +=  $billet->evenementTypeBillet()->prix_unitaire * $billet->quantite;
                 }
         }
 
