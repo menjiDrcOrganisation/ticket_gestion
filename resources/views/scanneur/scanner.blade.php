@@ -27,10 +27,11 @@
     <div class="bg-white rounded-xl p-6 max-w-md w-full shadow-lg text-center">
       <h2 class="text-2xl font-bold mb-2">Résultat du scan</h2>
       <p id="resultMessage" class="mb-4"></p>
-      <div id="billetDetails" class="text-left text-gray-700 mb-4"></div>
+      
       <form id="scanForm">
+        <div id="billetDetails" class="text-left text-gray-700 mb-4"></div>
         @csrf
-        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg mr-2">Valider</button>
+        <button type="submit" id="valide_code" class="bg-blue-500 text-white px-4 py-2 rounded-lg mr-2">Valider</button>
         <button type="button" id="closeModalBtn" class="bg-gray-200 px-4 py-2 rounded-lg">Fermer</button>
       </form>
     </div>
@@ -139,6 +140,8 @@ function handleScan(decodedText){
     body:JSON.stringify({code:decodedText})
   }).then(res=>res.json())
     .then(data=>{
+      console.log(data);
+      
       resultMessage.textContent=data.message||"✅ Code scanné";
       billetDetails.innerHTML=`
         <p><strong>Auteur :</strong> ${data.nom||"N/A"}</p>
@@ -177,7 +180,12 @@ scanForm.addEventListener('submit',e=>{
     body:formData
   }).then(res=>res.json())
     .then(data=>{
+      console.log(data);
       resultMessage.textContent=data.message||"✅ Billet validé";
+      document.getElementById('valide_code').classList.add('hidden');
+      
+
+      
       billetDetails.innerHTML="";
     }).catch(err=>{
       resultMessage.textContent="❌ Erreur validation";

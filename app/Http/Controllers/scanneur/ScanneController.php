@@ -28,36 +28,29 @@ class ScanneController extends Controller
                 ], 404);
             }
 
-            $evenementBilletTypeBillet = EvenementBilletTypeBillet::where('billet_id', $billet->id)->first();
-
-            if (!$evenementBilletTypeBillet) {
+    
+            if (!$billet) {
                 return response()->json([
                     'valid' => false,
                     'message' => 'Aucune correspondance trouvée pour ce billet'
                 ], 404);
             }
-
-            if ($evenementBilletTypeBillet->quantite_fictif > 1) {
-               
+             if ($billet->quantite_fictif > 1) {
                 $message = 'Billet validé';
             } else {
-                $evenementBilletTypeBillet->update([
-                    'quantite_fictif' => 0
-                ]);
-                $billet->update([
-                    'statut_billet' => 'used'
-                ]);
                 $message = 'Dernier billet utilisé';
             }
 
+           
             return response()->json([
                 'valid' => true,
                 'nom' => $billet->nom_auteur ?? '',
-                'quantite_fictif' => $evenementBilletTypeBillet->quantite_fictif,
+                'quantite_fictif' => $billet->quantite_fictif,
                 "code"=> $code,
                 'message' => $message
             ]);
         } catch (\Throwable $th) {
+
             return response()->json([
                 'valid' => false,
                 'error' => $th->getMessage(),
@@ -74,7 +67,6 @@ class ScanneController extends Controller
             $code = $request->input('code');
             $quantite = $request->input('quantite');
            
-
             $billet = Billet::where('code_billet', $code)->first();
             if (!$billet) {
                 return response()->json([
@@ -83,24 +75,23 @@ class ScanneController extends Controller
                 ], 404);
             }
 
-            $evenementBilletTypeBillet = EvenementBilletTypeBillet::where('billet_id', $billet->id)->first();
-
-            if (!$evenementBilletTypeBillet) {
+  
+            if (!$billet) {
                 return response()->json([
                     'valid' => false,
                     'message' => 'Aucune correspondance trouvée pour ce billet'
                 ], 404);
             }
 
-            if ($evenementBilletTypeBillet->quantite_fictif > 1) {
-                $evenementBilletTypeBillet->decrement('quantite_fictif',$quantite);
+            if ($billet->quantite_fictif > 1) {
+                $billet->decrement('quantite_fictif',$quantite);
                 $message = 'Billet validé';
             } else {
-                $evenementBilletTypeBillet->update([
+                $billet->update([
                     'quantite_fictif' => 0
                 ]);
                 $billet->update([
-                    'statut_billet' => 'used'
+                    'statut' => 'utilisee'
                 ]);
                 $message = 'Dernier billet utilisé';
             }
@@ -108,7 +99,7 @@ class ScanneController extends Controller
             return response()->json([
                 'valid' => true,
                 'nom' => $billet->nom_auteur ?? '',
-                'quantite_fictif' => $evenementBilletTypeBillet->quantite_fictif,
+                'quantite_fictif' => $billet->quantite_fictif,
                 'message' => $message
             ]);
         } catch (\Throwable $th) {
