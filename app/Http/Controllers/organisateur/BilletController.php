@@ -44,12 +44,10 @@ class BilletController extends Controller
                         'date' => $billet->date_achat,
                         'code' => $billet->code_billet,
                         'statut' => $billet->statut
-                       
                     ];
             }
 
             $totalAchat+=$billet->quantite ;
-
 
                 // Montants par devise
                 if ( $billet->evenementTypeBillet()->devise === "CDF") {

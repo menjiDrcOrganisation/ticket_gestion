@@ -39,7 +39,7 @@ class DashboardController extends Controller
         $totalBilletsVendus=0;
         $revenusCDF = 0;
         $revenusUSD = 0;
-        $typesBillets = [];
+        $typesBillets = [[],[],[]];
         $billetsScannes = 0;
 
         foreach ($billets as $billet) {
@@ -47,17 +47,19 @@ class DashboardController extends Controller
 
                 // Montants par devise
                 if ( $billet->evenementTypeBillet()->devise === "CDF") {
-                    $revenusCDF += $billet->evenementTypeBillet()->prix_unitaire;
+                    $revenusCDF += $billet->evenementTypeBillet()->prix_unitaire * $billet->quantite;
                 }
 
                 if ( $billet->evenementTypeBillet()->devise === "USD") {
-                    $revenusUSD += $billet->evenementTypeBillet()->prix_unitaire;
+                    $revenusUSD += $billet->evenementTypeBillet()->prix_unitaire * $billet->quantite;
                 }
 
                 // Compter billets par type
                 
                 $typeName = $billet->type_billet->nom_type ?? "Type";
-                $typesBillets[$typeName] = ($typesBillets[$typeName] ?? 0) + $billet->quantite;
+                $typesBillets[0][$typeName] = ($typesBillets[$typeName] ?? 0) + $billet->quantite;
+                $typesBillets[1][$typeName] = $billet->evenementTypeBillet()->prix_unitaire;
+                $typesBillets[2][$typeName] = $billet->evenementTypeBillet()->devise;
 
                 // Compter billets scannés
                 
