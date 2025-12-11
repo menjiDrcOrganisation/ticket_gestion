@@ -21,7 +21,7 @@ class EvenementController extends Controller
      
    public function index()
     {
-        $evenements = Evenement::with(['organisateur.user', 'typeBillets'])
+        $evenements = Evenement::with(['organisateur.user', 'typeBillets','billets'])
             ->latest()
             ->paginate(10);
 

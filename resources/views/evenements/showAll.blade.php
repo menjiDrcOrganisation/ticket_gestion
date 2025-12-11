@@ -186,11 +186,28 @@
                                             <i data-lucide="link" class="w-4 h-4 text-gray-400 mt-0.5"></i>
                                             <div>
                                                 <p class="font-medium text-gray-700">URL de l'événement</p>
-                                                <a href="https://kimiaticket.com/{{ $evenement->url_evenement }}" 
+                                                <a href="{{env('ACHAT_URL')}}/{{ $evenement->url_evenement }}" 
                                                    target="_blank" 
                                                    class="text-blue-600 hover:underline break-all text-sm">
-                                                    https://kimiaticket.com/{{ $evenement->url_evenement }}
+                                                    {{env('ACHAT_URL')}}/{{ $evenement->url_evenement }}
                                                 </a>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-start gap-3">
+                                            <i data-lucide="link" class="w-4 h-4 text-gray-400 mt-0.5"></i>
+                                            <div>
+                                                <p class="font-medium text-gray-700">Type billet</p>
+                                                <ul>
+                                                   
+                                                @foreach($evenement->typeBillets as $type_billet)
+
+                                                 <li>{{$type_billet->nom_type}} {{$type_billet->pivot->prix_unitaire}} {{$type_billet->pivot->devise}}</li>
+
+                                                @endforeach
+
+                                                
+                                                </ul>
                                             </div>
                                         </div>
 
