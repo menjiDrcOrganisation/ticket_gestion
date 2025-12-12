@@ -9,6 +9,7 @@
 <body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-700 to-orange-500">
 
     <div class="bg-white/95 backdrop-blur-md shadow-2xl rounded-2xl p-8 w-full max-w-md">
+
         <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Réinitialiser le mot de passe</h2>
 
         @if(session('status'))
@@ -17,12 +18,14 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('password.update') }}">
-            @method("Put")
+        <form method="POST" action="{{ route('password.store') }}">
             @csrf
 
-           
-            
+            <!-- 🔥 Token obligatoire -->
+            <input type="hidden" name="token" value="{{ $request->route('token') }}">
+
+            <!-- 🔥 Email obligatoire -->
+            <input type="hidden" name="email" value="{{ $request->email }}">
 
             <!-- Nouveau mot de passe -->
             <div class="mb-4 relative">
@@ -37,7 +40,7 @@
                 @enderror
             </div>
 
-            <!-- Confirmation mot de passe -->
+            <!-- Confirmation -->
             <div class="mb-6 relative">
                 <label for="password_confirmation" class="block text-sm font-medium text-gray-700">Confirmer le mot de passe</label>
                 <input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password"
@@ -56,7 +59,7 @@
                 Réinitialiser
             </button>
 
-            <!-- Lien de connexion -->
+            <!-- Retour -->
             <p class="mt-6 text-center text-sm text-gray-600">
                 Retour à la connexion ?
                 <a href="{{ route('login') }}" class="text-blue-600 hover:underline font-medium">Se connecter</a>
@@ -64,24 +67,21 @@
         </form>
     </div>
 
-    <!-- Script pour afficher/masquer les mots de passe -->
+    <!-- Script toggle password -->
     <script>
         const togglePassword = document.querySelector("#togglePassword");
         const passwordInput = document.querySelector("#password");
-
         const togglePasswordConfirm = document.querySelector("#togglePasswordConfirm");
         const passwordConfirmInput = document.querySelector("#password_confirmation");
 
         togglePassword.addEventListener("click", () => {
-            const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
-            passwordInput.setAttribute("type", type);
-            togglePassword.textContent = type === "password" ? "👁️" : "🙈";
+            const type = passwordInput.type === "password" ? "text" : "password";
+            passwordInput.type = type;
         });
 
         togglePasswordConfirm.addEventListener("click", () => {
-            const type = passwordConfirmInput.getAttribute("type") === "password" ? "text" : "password";
-            passwordConfirmInput.setAttribute("type", type);
-            togglePasswordConfirm.textContent = type === "password" ? "👁️" : "🙈";
+            const type = passwordConfirmInput.type === "password" ? "text" : "password";
+            passwordConfirmInput.type = type;
         });
     </script>
 
