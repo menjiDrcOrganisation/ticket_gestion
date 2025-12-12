@@ -16,11 +16,12 @@
                 <th class="p-3 border text-left">Événement</th>
                 <th class="p-3 border text-left">Date</th>
                 <th class="p-3 border text-left">Billets vendus</th>
+                <th class="p-3 border text-left">Prix unitaire</th>
                 <th class="p-3 border text-left">Montant CDF</th>
                 <th class="p-3 border text-left">Montant USD</th>
                 
                
-                <th class="p-3 border text-left">Billets par type</th>
+                
             </tr>
         </thead>
         <tbody>
@@ -29,15 +30,16 @@
                     <td class="p-3 border">{{ $event['nom'] }}</td>
                     <td class="p-3 border">{{ $event['date'] ?? '-' }}</td>
                     <td class="p-3 border">{{ $event['nb_billets'] }}</td>
+                      <td class="p-3 border">
+                        @foreach ($event['types'] as $type => $count)
+                            {{ $type }}: {{$event['prix_unitaire'][$type]}} {{$event['devise'][$type]}}<br>
+                        @endforeach
+                    </td>
                     <td class="p-3 border">{{ number_format($event['CDF'], 0, ',', ' ') }} CDF</td>
                     <td class="p-3 border">{{ number_format($event['USD'], 0, ',', ' ') }} USD</td>
                   
                     
-                    <td class="p-3 border">
-                        @foreach ($event['types'] as $type => $count)
-                            {{ $type }}: {{ $count }}<br>
-                        @endforeach
-                    </td>
+                  
                 </tr>
             @empty
                 <tr>

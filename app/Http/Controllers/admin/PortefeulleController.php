@@ -18,13 +18,14 @@ class PortefeulleController extends Controller
 
         $montantParEvenement = [];
         $totalEnUsd = 0;
+        $typesBillets = [[],[],[]];
         $totalEnCdf = 0;
 
-        dd($achats);
+    
 
         foreach ($achats as $billet) {
       
-dd($billet->evenement);
+           if($billet->evenement) {
     
             if (!isset($montantParEvenement[$billet->evenement->id])) {
                     $montantParEvenement[$billet->evenement->id] = [
@@ -33,27 +34,32 @@ dd($billet->evenement);
                         'USD' => 0,
                         'nb_billets' => 0,
                         'types' => [],
-                        'date' => $$evenement->date_debut ?? null,
+                        'prix_unitaire' => [],
+                        'devise' => [],
+                        'date' => $billet->evenement->date_debut ?? null,
                     ];
             }
 
             $montantParEvenement[$billet->evenement->id]['nb_billets']+=$billet->quantite;
         
-               if ($billet-> type_billet->pivot->devise === "CDF") {
+               if ($billet->evenementTypeBillet()->devise === "CDF") {
 
-                    $montantParEvenement[$billet->evenement->id]['CDF'] +=$billet->type_billet->pivot->prix_unitaire;
-                    $totalEnCdf += $billet->type_billet->pivot->prix_unitaire;
+                    $montantParEvenement[$billet->evenement->id]['CDF'] +=$billet->evenementTypeBillet()->prix_unitaire * $billet->quantite;
+                    $totalEnCdf += $billet->evenementTypeBillet()->prix_unitaire* $billet->quantite;
                 }
 
-                if ($billet-> type_billet->pivot->devise === "USD") {
-                    $montantParEvenement[$billet->evenement->id]['USD'] +=$billet->type_billet->pivot->prix_unitaire;
-                    $totalEnCdf += $billet->type_billet->pivot->prix_unitaire;
+                if ($billet-> evenementTypeBillet()->devise === "USD") {
+                    $montantParEvenement[$billet->evenement->id]['USD'] +=$billet->evenementTypeBillet()->prix_unitaire* $billet->quantite;
+                    $totalEnUsd += $billet->evenementTypeBillet()->prix_unitaire* $billet->quantite;
                 }
 
                 $typeName = $billet-> type_billet->nom_type ?? "Type";
-                $montantParEvenement[$billet->evenement->id]['types'][$typeName] =
-                ($montantParEvenement[$billet->evenement->id]['types'][$typeName] ?? 0) + + $typeBillet->pivot->quantite;
-
+                $montantParEvenement[$billet->evenement->id]['types'][$typeName] =($montantParEvenement[$billet->evenement->id]['types'][$typeName] ?? 0) + $billet->quantite;
+                $montantParEvenement[$billet->evenement->id]['prix_unitaire'][$typeName] =$billet->evenementTypeBillet()->prix_unitaire;
+                $montantParEvenement[$billet->evenement->id]['devise'][$typeName] =$billet->evenementTypeBillet()->devise;
+            }else{
+                continue;
+            }
         }
 
         return view('portefeulle.showMontantEvent', compact(
