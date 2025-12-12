@@ -27,27 +27,28 @@ class PasswordResetLinkController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'email' => ['required', 'email'],
-        ]);
+    
 
-        $user = \App\Models\User::where('email', $request->email)->first();
+public function store(Request $request): RedirectResponse
+{
+    $request->validate([
+        'email' => ['required', 'email'],
+    ]);
+
+    // Vérifier que l'utilisateur existe
+    $user = \App\Models\User::where('email', $request->email)->first();
 
     if (!$user) {
         return back()->withErrors(['email' => 'Cette adresse e-mail est introuvable.']);
     }
 
-    // Générer un token personnalisé
-    $token = Str::random(64);
+    // 1️⃣ Laravel génère un token sécurisé et l’enregistre dans la base
+    $token = Password::createToken($user);
 
-    
-
-    // Construire le lien de réinitialisation
+    // 2️⃣ Créer le lien officiel de Laravel
     $resetUrl = url('/reset-password/'.$token.'?email='.$user->email);
 
-    // Envoyer le mail via ton Mailable personnalisé
+    // 3️⃣ Envoyer TON e-mail personnalisé
     Mail::to($user->email)->send(new EnvoiMotDePasseOublieMail(
         $user->email,
         $token,
@@ -60,10 +61,7 @@ class PasswordResetLinkController extends Controller
             'logo' => env('APP_URL').'/assets/logo-email.png',
         ]
     ));
-    
 
-    // Retourner le statut (tu peux utiliser un message personnalisé)
     return back()->with('status', 'Un lien de réinitialisation vous a été envoyé par e-mail.');
-
-    }
+}
 }
