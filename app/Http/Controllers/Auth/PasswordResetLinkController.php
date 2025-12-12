@@ -57,8 +57,8 @@ public function store(Request $request): RedirectResponse
             'appName' => 'Kimiaticket',
             'expires' => '60 minutes',
             'supportEmail' => 'support@kimiaticket.com',
-            'supportPhone' => '+243 99 000 0000',
-            'logo' => env('APP_URL').'/assets/logo-email.png',
+            'supportPhone' => '+243 847 473 745',
+            'logo' => env('APP_URL').'/assets/img/logo.png',
         ]
     ));
 

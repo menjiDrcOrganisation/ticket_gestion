@@ -131,35 +131,39 @@ fileInput.addEventListener('change', async e=>{
 });
 
 // Traitement scan
-function handleScan(decodedText){
-  if(!decodedText) return;
-  updateStatus("QR Code détecté...","success");
-  fetch(verifyUrl,{
-    method:'POST',
-    headers:{"Content-Type":"application/json","X-CSRF-TOKEN":csrfToken},
-    body:JSON.stringify({code:decodedText})
-  }).then(res=>res.json())
-    .then(data=>{
-      console.log(data);
-      
-      resultMessage.textContent=data.message||"✅ Code scanné";
-      billetDetails.innerHTML=`
-        <p><strong>Auteur :</strong> ${data.nom||"N/A"}</p>
-        <p><strong>Quantité restante :</strong> ${data.quantite_fictif??0}</p>
-        <div class="mt-2">
-          <label class="block text-gray-700 font-medium mb-1">Quantité à utiliser :</label>
-          <input type="hidden" name="code" value="${data.code??0}">
-          <input type="number" name="quantite" value="1" min="1" max="${data.quantite_fictif??0}" 
-                 class="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-        </div>
-      `;
-      resultModal.classList.remove('hidden');
+function handleScan(decodedText) {
+    if (!decodedText) return;
+    updateStatus("QR Code détecté...", "success");
+
+    // Réafficher le bouton Valider
+    document.getElementById('valide_code').classList.remove('hidden');
+
+    fetch(verifyUrl, {
+        method: 'POST',
+        headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": csrfToken },
+        body: JSON.stringify({ code: decodedText })
     })
-    .catch(err=>{
-      resultMessage.textContent="❌ Erreur serveur";
-      billetDetails.innerHTML="";
-      resultModal.classList.remove('hidden');
-      console.error(err);
+    .then(res => res.json())
+    .then(data => {
+        console.log(data);
+        resultMessage.textContent = data.message || "✓ Code scanné";
+        billetDetails.innerHTML = `
+            <p><strong>Auteur :</strong> ${data.nom || "N/A"}</p>
+            <p><strong>Quantité restante :</strong> ${data.quantite_fictif ?? 0}</p>
+            <div class="mt-2">
+                <label class="block text-gray-700 font-medium mb-1">Quantité à utiliser :</label>
+                <input type="hidden" name="code" value="${data.code ?? 0}">
+                <input type="number" name="quantite" value="1" min="1" max="${data.quantite_fictif ?? 0}" 
+                    class="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+        `;
+        resultModal.classList.remove('hidden');
+    })
+    .catch(err => {
+        resultMessage.textContent = "❌ Erreur serveur";
+        billetDetails.innerHTML = "";
+        resultModal.classList.remove('hidden');
+        console.error(err);
     });
 }
 
