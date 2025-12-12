@@ -122,12 +122,7 @@
             <!-- Logo & titre -->
             <div class="p-6 border-b border-gray-100">
                 <div class="flex items-center gap-4">
-                    <div
-                        class="h-14 w-14 border-gray-200  rounded-2xl flex items-center justify-center text-white shadow-lg"
-                    >
-        
-                        <img src="{{ asset('icons/Icone_Kimia.png') }}"  class="h-10 w-6">
-                    </div>
+                        <img src="{{ asset('icons/Icone_Kimia.png') }}"  class="h-28 w-20">
                     <div>
                         <h1 class="font-bold text-2xl text-gray-900">
                             Kimiaticket
@@ -158,7 +153,7 @@
                         class="flex items-center gap-3 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl"
                     >
                         <div
-                            class="h-12 w-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center text-white font-bold"
+                            class="h-12 w-12 bg-red-500 rounded-xl flex items-center justify-center text-white font-bold"
                         >
                             <i class="fas fa-user text-lg"></i>
                         </div>
@@ -177,7 +172,7 @@
 
                 <button
                     onclick="openModal('deconnexion')"
-                    class="w-full flex items-center justify-center gap-2 px-4 py-2 mt-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:shadow-md transition"
+                    class="w-full flex items-center justify-center gap-2 px-4 py-2 mt-4 bg-red-500 text-white rounded-lg hover:shadow-md transition"
                 >
                     <i class="fas fa-sign-out-alt"></i> Déconnexion
                 </button>
