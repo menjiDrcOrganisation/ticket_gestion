@@ -1,31 +1,57 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.') }}
-    </div>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vérification email | Ticket Gestion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
 
-    @if (session('status') == 'verification-link-sent')
-        <div class="mb-4 font-medium text-sm text-green-600">
-            {{ __('A new verification link has been sent to the email address you provided during registration.') }}
-        </div>
-    @endif
+<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-700 to-orange-500">
 
-    <div class="mt-4 flex items-center justify-between">
-        <form method="POST" action="{{ route('verification.send') }}">
-            @csrf
+    <div class="bg-white/95 backdrop-blur-md shadow-2xl rounded-2xl p-8 w-full max-w-md">
 
-            <div>
-                <x-primary-button>
-                    {{ __('Resend Verification Email') }}
-                </x-primary-button>
+        <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">
+            Vérification de votre adresse email
+        </h2>
+
+        <p class="mb-4 text-sm text-gray-600 leading-relaxed">
+            Merci pour votre inscription !  
+            Avant de commencer, veuillez vérifier votre adresse email en cliquant sur le lien que nous venons de vous envoyer.
+            <br><br>
+            Si vous n’avez pas reçu l’email, vous pouvez en demander un nouveau.
+        </p>
+
+        @if (session('status') == 'verification-link-sent')
+            <div class="mb-4 p-3 text-green-700 bg-green-100 border border-green-300 rounded-lg text-sm">
+                Un nouveau lien de vérification vient d’être envoyé à votre adresse email.
             </div>
-        </form>
+        @endif
 
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
+        <!-- Boutons -->
+        <div class="mt-6 flex items-center justify-between">
 
-            <button type="submit" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                {{ __('Log Out') }}
-            </button>
-        </form>
+            <!-- Bouton renvoyer email -->
+            <form method="POST" action="{{ route('verification.send') }}">
+                @csrf
+                <button type="submit"
+                    class="py-2 px-4 bg-gradient-to-r from-blue-700 to-orange-500 hover:from-blue-800 hover:to-orange-600 text-white font-semibold rounded-lg shadow-md focus:ring-2 focus:ring-blue-400 transition">
+                    Renvoyer l’email
+                </button>
+            </form>
+
+            <!-- Déconnexion -->
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit"
+                    class="underline text-sm text-gray-600 hover:text-gray-900 focus:outline-none">
+                    Se déconnecter
+                </button>
+            </form>
+
+        </div>
+
     </div>
-</x-guest-layout>
+
+</body>
+</html>

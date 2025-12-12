@@ -3,10 +3,14 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\EnvoiMotDePasseOublieMail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\View\View;
+use Pest\Support\Str;
 
 class PasswordResetLinkController extends Controller
 {
@@ -29,16 +33,37 @@ class PasswordResetLinkController extends Controller
             'email' => ['required', 'email'],
         ]);
 
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+        $user = \App\Models\User::where('email', $request->email)->first();
 
-        return $status == Password::RESET_LINK_SENT
-                    ? back()->with('status', __($status))
-                    : back()->withInput($request->only('email'))
-                        ->withErrors(['email' => __($status)]);
+    if (!$user) {
+        return back()->withErrors(['email' => 'Cette adresse e-mail est introuvable.']);
+    }
+
+    // Générer un token personnalisé
+    $token = Str::random(64);
+
+    
+
+    // Construire le lien de réinitialisation
+    $resetUrl = url('/reset-password/'.$token.'?email='.$user->email);
+
+    // Envoyer le mail via ton Mailable personnalisé
+    Mail::to($user->email)->send(new EnvoiMotDePasseOublieMail(
+        $user->email,
+        $token,
+        $resetUrl,
+        [
+            'appName' => 'Kimiaticket',
+            'expires' => '60 minutes',
+            'supportEmail' => 'support@kimiaticket.com',
+            'supportPhone' => '+243 99 000 0000',
+            'logo' => env('APP_URL').'/assets/logo-email.png',
+        ]
+    ));
+    
+
+    // Retourner le statut (tu peux utiliser un message personnalisé)
+    return back()->with('status', 'Un lien de réinitialisation vous a été envoyé par e-mail.');
+
     }
 }
