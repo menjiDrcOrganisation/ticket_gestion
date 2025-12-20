@@ -13,6 +13,7 @@
     </div>
 
     <!-- Informations globales -->
+    
     <div class="bg-white shadow-md rounded-lg p-4 mb-6">
         <h3 class="text-xl font-semibold mb-3">Informations générales</h3>
         <ul class="space-y-2 text-gray-700">
@@ -26,11 +27,9 @@
         <h3 class="text-xl font-semibold mb-3">Billets par catégorie</h3>
         @if(count($typesBillets) > 0)
             <ul class="space-y-2 text-gray-700">
-
                 @foreach ($typesBillets[0] as $type => $quantite)
                 
                         <li>{{ $type }}:{{ $quantite }}, Prix unitaire  {{ $typesBillets[1][$type] }}{{ $typesBillets[2][$type] }}</li>
-
                 @endforeach
             </ul>
         @else
