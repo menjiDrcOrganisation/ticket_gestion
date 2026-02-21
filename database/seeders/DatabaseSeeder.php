@@ -23,12 +23,15 @@ class DatabaseSeeder extends Seeder
 {
     
     User::factory()->state([
-    'role' => 'admin',
-    'password' => Hash::make('Admin12345')])->create();
+              'name' => 'Admin',
+            'email' => 'admin@tick.com',
+            'role' => 'admin',
+            'password' => Hash::make('admin123Kimia'),
+            ])->create();
 
 
 
-    // TypeEvenement::factory(4)->create();
+    // TypeEvenement::factory(4)->create();j
     // Evenement::factory(4)->create();
     // TypeBillet::factory(4)->create();
 
