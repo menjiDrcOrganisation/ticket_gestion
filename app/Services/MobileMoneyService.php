@@ -8,6 +8,7 @@ use App\Models\EvenementBilletTypeBillet;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use App\Services\ExchangeRateService;
 use Carbon\Carbon;
 use Exception;
 
@@ -17,9 +18,23 @@ class MobileMoneyService
     {
         try {
 
-            $type_billet = EvenementTypeBillet::where('type_billet_id', $request['type_billet'])
+           $type_billet = EvenementTypeBillet::where('type_billet_id', $request['type_billet'])
                 ->where('evenement_id', $request['id_evenement'])
                 ->first();
+
+            $taux = app(\App\Services\ExchangeRateService::class)->getUSDtoCDF();
+
+            $montant = $type_billet->prix_unitaire;
+            
+
+            if ($type_billet->devise === "USD" && $request['devise'] === "CDF") {
+                $montant = $montant * $taux;
+            }
+
+            elseif ($type_billet->devise === "CDF" && $request['devise'] === "USD") {
+                $montant = $montant / $taux;
+            }
+           
 
             if (!$type_billet) {
                 throw new Exception('Type de billet introuvable.');
@@ -31,14 +46,16 @@ class MobileMoneyService
 
             $data = [
                 'transactionReference' => 'TX-' . date('YmdHis') . '-' . rand(1000, 9999),
-                'amount'               => $type_billet->prix_unitaire * $request['nombre_reel'],
-                'currency'             => $type_billet->devise,
+                'amount'               => $montant* $request['nombre_reel'],
+                'currency'             => $request['devise'],
                 'customerFullName'     => $request['nom_complet_client'],
                 'customerEmailAdress'  => 'menji@example.com',
                 'provider'             => $request['service'],
                 'walletID'             => $request['numero_client'],
                 'callbackUrl'          => 'https://tondomaine.com/mobile_callback',
             ];
+
+  
 
             $payload = [
                 'transactionReference' => $data['transactionReference'],
