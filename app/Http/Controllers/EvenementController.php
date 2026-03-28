@@ -59,6 +59,7 @@ class EvenementController extends Controller
             $code_scanneur = substr($uuid, 0, 8);
         
             $validated = $request->validated(); 
+            
             $email_scanneur=uniqid()
         . '@gmail.com';
 
@@ -140,6 +141,7 @@ class EvenementController extends Controller
                     ]);
                 }
             }
+            
              try {
                 
                $error= Mail::to($validated['email_organisateur'])->send(new EnvoiMotDePasseMail(
