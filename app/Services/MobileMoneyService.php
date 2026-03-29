@@ -60,8 +60,8 @@ class MobileMoneyService
             $payload = [
                 'transactionReference' => $data['transactionReference'],
                 'gatewayMode' => "0",
-                'publicApiKey' => env('MAISHAPAY_PUBLIC_KEY_TEST'),
-                'secretApiKey' => env('MAISHAPAY_SECRET_KEY_TEST'),
+                'publicApiKey' => env('MAISHAPAY_PUBLIC_KEY_PROD'),
+                'secretApiKey' => env('MAISHAPAY_SECRET_KEY_PROD'),
                 'order' => [
                     'amount' => $data['amount'],
                     'currency' => $data['currency'],
