@@ -1,6 +1,5 @@
 <?php
 namespace App\Services;
-
 use App\Models\Billet;
 use App\Models\Tarif;
 use App\Models\EvenementTypeBillet;
@@ -55,13 +54,11 @@ class MobileMoneyService
                 'callbackUrl'          => 'https://tondomaine.com/mobile_callback',
             ];
 
-  
-
             $payload = [
                 'transactionReference' => $data['transactionReference'],
-                'gatewayMode' => "1",
-                'publicApiKey' => env('MAISHAPAY_PUBLIC_KEY_PROD'),
-                'secretApiKey' => env('MAISHAPAY_SECRET_KEY_PROD'),
+                'gatewayMode' => "0",
+                'publicApiKey' => env('MAISHAPAY_PUBLIC_KEY_TEST'),
+                'secretApiKey' => env('MAISHAPAY_SECRET_KEY_TEST'),
                 'order' => [
                     'amount' => $data['amount'],
                     'currency' => $data['currency'],
@@ -76,7 +73,7 @@ class MobileMoneyService
                 ],
             ];
 
-            $response = Http::timeout(120)->withHeaders([
+            $response = Http::timeout(200)->withHeaders([
                 'Content-Type' => 'application/json',
             ])->withOptions([
                 'verify' => false,
