@@ -1,6 +1,4 @@
- <!-- ENTÊTE -->
- 
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
@@ -17,7 +15,8 @@
     .scanner-corner-tr {top:0;right:0;border-top:4px solid;border-right:4px solid;}
     .scanner-corner-bl {bottom:0;left:0;border-bottom:4px solid;border-left:4px solid;}
     .scanner-corner-br {bottom:0;right:0;border-bottom:4px solid;border-right:4px solid;}
-    .pulse { animation:pulse 2s infinite; } @keyframes pulse {0%{opacity:0.7}50%{opacity:1}100%{opacity:0.7}}
+    .pulse { animation:pulse 2s infinite; } 
+    @keyframes pulse {0%{opacity:0.7}50%{opacity:1}100%{opacity:0.7}}
   </style>
 </head>
 <body class="bg-blue-50 min-h-screen flex flex-col items-center justify-start">
@@ -36,7 +35,8 @@
       </form>
     </div>
   </div>
- <header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-4 shadow-md w-full">
+
+  <header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-4 shadow-md w-full">
     <div class="max-w-4xl mx-auto flex justify-between items-center">
       <a href="{{route('dashboard_orginasateur.show')}}" 
          class="bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-50 transition-all duration-200 text-sm md:text-base flex items-center gap-2 font-medium">
@@ -47,9 +47,10 @@
         Retour
       </a>
       <h1 class="text-xl font-bold"></h1>
-      <div class="w-10"></div> <!-- Élément vide pour équilibrer l'espace -->
+      <div class="w-10"></div> <!-- Équilibrer l'espace -->
     </div>
   </header>
+
   <!-- Scanner -->
   <div class="p-6 w-full max-w-xl mx-auto mt-8 bg-white rounded-2xl shadow-lg">
     <h1 class="text-xl font-bold mb-4 text-center">Scanner un QR Code</h1>
@@ -76,7 +77,6 @@ const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 let html5QrCode = null;
 let currentCameraId = null;
 
-// Elements
 const resultModal = document.getElementById('resultModal');
 const resultMessage = document.getElementById('resultMessage');
 const billetDetails = document.getElementById('billetDetails');
@@ -87,7 +87,6 @@ const fileInput = document.getElementById('fileInput');
 const scannerStatus = document.getElementById('scannerStatus');
 const scanForm = document.getElementById('scanForm');
 
-// Mettre à jour le statut
 function updateStatus(msg,type='info'){
   const colors={info:'blue',success:'green',error:'red'};
   const color=colors[type]||'blue';
@@ -95,7 +94,7 @@ function updateStatus(msg,type='info'){
     <span class="w-2 h-2 rounded-full mr-2 ${type==='info'?'pulse':''} bg-${color}-500"></span>${msg}</span>`;
 }
 
-// Charger caméra
+// Charger caméra pour Android/Desktop
 Html5Qrcode.getCameras().then(cameras=>{
   if(!cameras.length){ updateStatus("Aucune caméra détectée","error"); return;}
   const back=cameras.find(cam=>cam.label.toLowerCase().includes('back')||cam.label.toLowerCase().includes('environment')) || cameras[0];
@@ -103,19 +102,27 @@ Html5Qrcode.getCameras().then(cameras=>{
   updateStatus("Caméra prête. Cliquez sur 'Démarrer scan'");
 }).catch(err=>{updateStatus("Erreur caméra","error"); console.error(err);});
 
-// Démarrer scan
-startBtn.addEventListener('click',()=>{
-  if(!currentCameraId) return updateStatus("Aucune caméra disponible","error");
+// Fonction pour démarrer le scanner
+function startScanner() {
   if(html5QrCode) html5QrCode.stop().catch(()=>{});
   html5QrCode = new Html5Qrcode("reader");
+
+  // Détection iOS Safari
+  const isiOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  const constraints = isiOS 
+                      ? { facingMode: "environment" } 
+                      : { deviceId: { exact: currentCameraId } };
+
   html5QrCode.start(
-    {deviceId:{exact:currentCameraId}},
-    {fps:15, qrbox:250},
+    constraints,
+    { fps: 15, qrbox: 250 },
     handleScan,
-    errorMessage=>{}
+    errorMessage => { console.log(errorMessage); }
   ).then(()=>updateStatus("Recherche QR Code..."))
-  .catch(err=>{updateStatus("Impossible de démarrer scanner","error"); console.error(err);});
-});
+   .catch(err=>{updateStatus("Impossible de démarrer scanner","error"); console.error(err);});
+}
+
+startBtn.addEventListener('click', startScanner);
 
 // Scanner image
 uploadBtn.addEventListener('click',()=>fileInput.click());
@@ -134,8 +141,6 @@ fileInput.addEventListener('change', async e=>{
 function handleScan(decodedText) {
     if (!decodedText) return;
     updateStatus("QR Code détecté...", "success");
-
-    // Réafficher le bouton Valider
     document.getElementById('valide_code').classList.remove('hidden');
 
     fetch(verifyUrl, {
@@ -145,7 +150,6 @@ function handleScan(decodedText) {
     })
     .then(res => res.json())
     .then(data => {
-        console.log(data);
         resultMessage.textContent = data.message || "✓ Code scanné";
         billetDetails.innerHTML = `
             <p><strong>Auteur :</strong> ${data.nom || "N/A"}</p>
@@ -184,12 +188,8 @@ scanForm.addEventListener('submit',e=>{
     body:formData
   }).then(res=>res.json())
     .then(data=>{
-      console.log(data);
       resultMessage.textContent=data.message||"✅ Billet validé";
       document.getElementById('valide_code').classList.add('hidden');
-      
-
-      
       billetDetails.innerHTML="";
     }).catch(err=>{
       resultMessage.textContent="❌ Erreur validation";

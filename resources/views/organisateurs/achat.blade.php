@@ -106,8 +106,8 @@
                 <div class="min-w-[800px]">
                     <table class="min-w-full text-gray-700">
                         <thead class="bg-gray-50 border-b border-gray-100">
-                            <tr>
-                                <th>#</th>
+                             <tr>
+                                <th class="px-6 py-4 text-left font-medium">#</th>
                                 <th class="px-6 py-4 text-left font-medium">Client</th>
                                 <th class="px-6 py-4 text-left font-medium">Type</th>
                                 <th class="px-6 py-4 text-left font-medium">Prix unitaire</th>
@@ -117,12 +117,12 @@
                                 <th class="px-6 py-4 text-center font-medium">Statut</th>
                                 <th class="px-6 py-4 text-center font-medium">Date d'achat</th>
                                 <th class="px-6 py-4 text-center font-medium">Actions</th>
-                            </tr>
+                             </tr>
                         </thead>
 
                         <tbody class="divide-y divide-gray-100" id="tableBody">
                             @forelse($detailleParBillet as $billet)
-                            <tr class="hover:bg-gray-50 transition" data-client="{{ strtolower($billet['auteur'] ?? '') }}">
+                            <tr class="hover:bg-gray-50 transition" data-client="{{ strtolower($billet['auteur'] ?? '') }}" data-item-id="{{ $loop->index }}">
                                 <td class="px-6 py-4">{{ $loop->iteration }}</td>
                                 <td class="px-6 py-4">{{ $billet["auteur"] ?? "N/A" }}</td>
                                 <td class="px-6 py-4">{{ $billet["type"] }}</td>
@@ -166,7 +166,7 @@
             <!-- Mobile cards -->
             <div class="md:hidden space-y-4" id="mobileCards">
                 @forelse($detailleParBillet as $billet)
-                <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition" data-client="{{ strtolower($billet['auteur'] ?? '') }}">
+                <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition" data-client="{{ strtolower($billet['auteur'] ?? '') }}" data-item-id="{{ $loop->index }}">
                     <div class="flex justify-between items-start mb-3">
                         <div>
                             <h3 class="font-semibold text-gray-800">{{ $billet["auteur"] ?? "N/A" }}</h3>
@@ -221,7 +221,7 @@
             <!-- Pagination -->
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-6 border-t border-gray-200">
                 <div class="text-sm text-gray-600">
-                    Affichage de <span id="startItem">1</span> à <span id="endItem">10</span> sur <span id="totalItems">{{ count($detailleParBillet) }}</span> résultats
+                    Affichage de <span id="startItem">0</span> à <span id="endItem">0</span> sur <span id="totalItems">0</span> résultats
                 </div>
 
                 <div class="flex items-center gap-2">
@@ -329,15 +329,28 @@ document.addEventListener('click', function(e) {
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', function() {
-    // Stocker toutes les données initiales
+    // Récupérer tous les éléments
     const tableRows = document.querySelectorAll('#tableBody tr');
-    const mobileCards = document.querySelectorAll('#mobileCards > div:not(.text-center)'); // exclure le message vide
-
-    allData = Array.from(tableRows).map((row, index) => ({
-        element: row,
-        mobileElement: mobileCards[index],
-        client: row.getAttribute('data-client')
-    }));
+    const mobileCards = document.querySelectorAll('#mobileCards > div');
+    
+    // Filtrer les éléments vides (messages "aucun achat")
+    const validTableRows = Array.from(tableRows).filter(row => !row.querySelector('td[colspan]'));
+    const validMobileCards = Array.from(mobileCards).filter(card => !card.classList.contains('text-center'));
+    
+    // Créer le tableau allData avec les indices correspondants
+    allData = [];
+    const maxLength = Math.max(validTableRows.length, validMobileCards.length);
+    
+    for (let i = 0; i < maxLength; i++) {
+        if (validTableRows[i] || validMobileCards[i]) {
+            allData.push({
+                element: validTableRows[i] || null,
+                mobileElement: validMobileCards[i] || null,
+                client: validTableRows[i] ? validTableRows[i].getAttribute('data-client') : 
+                       (validMobileCards[i] ? validMobileCards[i].getAttribute('data-client') : '')
+            });
+        }
+    }
 
     filteredData = [...allData];
 
@@ -347,52 +360,70 @@ document.addEventListener('DOMContentLoaded', function() {
     // Générer les QR codes
     @foreach($detailleParBillet as $billet)
         @if(!empty($billet["code"]))
-            new QRCode(document.getElementById("qrcode-{{ $billet['id'] }}"), {
-                text: "{{ $billet['code'] }}",
-                width: 120,
-                height: 120
-            });
+            if(document.getElementById("qrcode-{{ $billet['id'] }}")) {
+                new QRCode(document.getElementById("qrcode-{{ $billet['id'] }}"), {
+                    text: "{{ $billet['code'] }}",
+                    width: 120,
+                    height: 120
+                });
+            }
         @endif
     @endforeach
+    
+    // Mettre à jour l'affichage initial
+    updateDisplay();
 });
 
 function setupEventListeners() {
     // Recherche
-    document.getElementById('searchInput').addEventListener('input', function(e) {
-        const searchTerm = e.target.value.toLowerCase().trim();
-        filterData(searchTerm);
-    });
+    const searchInput = document.getElementById('searchInput');
+    if(searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            filterData(searchTerm);
+        });
+    }
 
     // Items par page
-    document.getElementById('itemsPerPage').addEventListener('change', function(e) {
-        itemsPerPage = parseInt(e.target.value);
-        currentPage = 1;
-        updateDisplay();
-    });
+    const itemsPerPageSelect = document.getElementById('itemsPerPage');
+    if(itemsPerPageSelect) {
+        itemsPerPageSelect.addEventListener('change', function(e) {
+            itemsPerPage = parseInt(e.target.value);
+            currentPage = 1;
+            updateDisplay();
+        });
+    }
 
     // Boutons précédent/suivant
-    document.getElementById('prevPage').addEventListener('click', function() {
-        if (currentPage > 1) {
-            currentPage--;
-            updateDisplay();
-        }
-    });
+    const prevBtn = document.getElementById('prevPage');
+    const nextBtn = document.getElementById('nextPage');
+    
+    if(prevBtn) {
+        prevBtn.addEventListener('click', function() {
+            if (currentPage > 1) {
+                currentPage--;
+                updateDisplay();
+            }
+        });
+    }
 
-    document.getElementById('nextPage').addEventListener('click', function() {
-        const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-        if (currentPage < totalPages) {
-            currentPage++;
-            updateDisplay();
-        }
-    });
+    if(nextBtn) {
+        nextBtn.addEventListener('click', function() {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                updateDisplay();
+            }
+        });
+    }
 }
 
 function filterData(searchTerm) {
     if (searchTerm === '') {
         filteredData = [...allData];
     } else {
-        filteredData = allData.filter(item =>
-            item.client && item.client.includes(searchTerm)
+        filteredData = allData.filter(item => 
+            item.client && item.client.toLowerCase().includes(searchTerm)
         );
     }
 
@@ -401,12 +432,20 @@ function filterData(searchTerm) {
 }
 
 function initializePagination() {
-    updateDisplay();
+    // L'initialisation se fait via updateDisplay
 }
 
 function updateDisplay() {
     const totalItems = filteredData.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
+    
+    // Ajuster la page courante si elle dépasse le nombre total de pages
+    if (currentPage > totalPages && totalPages > 0) {
+        currentPage = totalPages;
+    }
+    if (currentPage < 1) {
+        currentPage = 1;
+    }
 
     // Calculer les indices de début et fin
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -421,21 +460,26 @@ function updateDisplay() {
     // Afficher seulement les éléments de la page courante
     for (let i = startIndex; i < endIndex; i++) {
         if (filteredData[i]) {
-            filteredData[i].element.style.display = '';
-            if (filteredData[i].mobileElement) {
-                filteredData[i].mobileElement.style.display = '';
-            }
+            if (filteredData[i].element) filteredData[i].element.style.display = '';
+            if (filteredData[i].mobileElement) filteredData[i].mobileElement.style.display = '';
         }
     }
 
     // Mettre à jour les informations de pagination
-    document.getElementById('startItem').textContent = totalItems === 0 ? 0 : startIndex + 1;
-    document.getElementById('endItem').textContent = endIndex;
-    document.getElementById('totalItems').textContent = totalItems;
+    const startItemSpan = document.getElementById('startItem');
+    const endItemSpan = document.getElementById('endItem');
+    const totalItemsSpan = document.getElementById('totalItems');
+    
+    if(startItemSpan) startItemSpan.textContent = totalItems === 0 ? 0 : startIndex + 1;
+    if(endItemSpan) endItemSpan.textContent = endIndex;
+    if(totalItemsSpan) totalItemsSpan.textContent = totalItems;
 
     // Mettre à jour les boutons de pagination
-    document.getElementById('prevPage').disabled = currentPage === 1;
-    document.getElementById('nextPage').disabled = currentPage === totalPages || totalPages === 0;
+    const prevBtn = document.getElementById('prevPage');
+    const nextBtn = document.getElementById('nextPage');
+    
+    if(prevBtn) prevBtn.disabled = currentPage === 1 || totalPages === 0;
+    if(nextBtn) nextBtn.disabled = currentPage === totalPages || totalPages === 0;
 
     // Générer les numéros de page
     generatePaginationNumbers(totalPages);
@@ -443,9 +487,18 @@ function updateDisplay() {
 
 function generatePaginationNumbers(totalPages) {
     const paginationContainer = document.getElementById('paginationNumbers');
+    if(!paginationContainer) return;
+    
     paginationContainer.innerHTML = '';
 
-    if (totalPages === 0) return;
+    if (totalPages === 0 || totalPages === 1) {
+        // Si une seule page ou aucune, afficher seulement la page 1 si elle existe
+        if(totalPages === 1) {
+            const pageBtn = createPageButton(1);
+            paginationContainer.appendChild(pageBtn);
+        }
+        return;
+    }
 
     // Afficher maximum 5 pages autour de la page courante
     let startPage = Math.max(1, currentPage - 2);
@@ -512,8 +565,12 @@ function createPageButton(pageNumber) {
 }
 
 function downloadQRCode(id){
-    const canvas = document.querySelector("#qrcode-" + id + " canvas");
+    const container = document.querySelector("#qrcode-" + id);
+    if(!container) return alert("QR Code introuvable");
+    
+    const canvas = container.querySelector("canvas");
     if(!canvas) return alert("QR Code introuvable");
+    
     const link = document.createElement("a");
     link.download = "qrcode_billet_" + id + ".png";
     link.href = canvas.toDataURL("image/png");
@@ -527,6 +584,7 @@ document.addEventListener('DOMContentLoaded', function() {
     deleteButtons.forEach(button => {
         button.addEventListener('click', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             const billetId = this.getAttribute('data-delete-id');
 
             if (confirm('Êtes-vous sûr de vouloir supprimer ce billet ?')) {
