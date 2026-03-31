@@ -54,9 +54,9 @@ public static function sendPayment($request)
 
         $payload = [
             'transactionReference' => $transactionReference,
-            'gatewayMode' => "1",
-            'publicApiKey' => env('MAISHAPAY_PUBLIC_KEY_PROD'),
-            'secretApiKey' => env('MAISHAPAY_SECRET_KEY_PROD'),
+            'gatewayMode' => "0",
+            'publicApiKey' => env('MAISHAPAY_PUBLIC_KEY_TEST'),
+            'secretApiKey' => env('MAISHAPAY_SECRET_KEY_TEST'),
             'order' => [
                 'amount' => $total,
                 'currency' => $request['devise'],
