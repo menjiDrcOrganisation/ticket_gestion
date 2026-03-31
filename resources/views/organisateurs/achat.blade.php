@@ -14,7 +14,6 @@
                     <h2 class="text-2xl font-bold text-gray-800">Achats de Billets</h2>
                     <p class="text-gray-500 mt-1">Tous les achats de billets pour vos événements</p>
                 </div>
-
             </div>
 
             <!-- Stats cards -->
@@ -142,7 +141,7 @@
                                         <i class="fas fa-eye text-xs"></i>
                                     </button>
 
-                                   <button  
+                                    <button  
                                         class="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition"
                                         data-delete-id="{{ $billet['id'] }}">
                                         <i class="fas fa-trash text-xs"></i>
@@ -150,14 +149,13 @@
                                 </div>
                             </td>
                         </tr>
-                         @empty
+                        @empty
                         <tr>
-                            <td colspan="9" class="py-6 text-center text-gray-500">
+                            <td colspan="10" class="py-6 text-center text-gray-500">
                                 Aucun achat trouvé.
                             </td>
                         </tr>
                         @endforelse
-                       
                     </tbody>
                 </table>
             </div>
@@ -202,17 +200,19 @@
                                     class="w-8 h-8 bg-gray-100 text-gray-700 rounded-full flex items-center justify-center hover:bg-gray-200 transition">
                                 <i class="fas fa-eye text-xs"></i>
                             </button>
+                            <button  
+                                class="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition"
+                                data-delete-id="{{ $billet['id'] }}">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
                 @empty
-                        <tr>
-                            <td colspan="9" class="py-6 text-center text-gray-500">
-                                Aucun achat trouvé.
-                            </td>
-                        </tr>
+                <div class="text-center py-8 text-gray-500">
+                    Aucun achat trouvé.
+                </div>
                 @endforelse
-               
             </div>
 
             <!-- Pagination -->
@@ -294,13 +294,9 @@
     </div>
 </div>
 
-   @empty
-                        <tr>
-                            <td colspan="9" class="py-6 text-center text-gray-500">
-                                Aucun achat trouvé.
-                            </td>
-                        </tr>
-                @endforelse
+@empty
+<!-- Aucun billet : pas de modale à afficher -->
+@endforelse
 
 <!-- JS -->
 <script>
@@ -332,7 +328,7 @@ document.addEventListener('click', function(e) {
 document.addEventListener('DOMContentLoaded', function() {
     // Stocker toutes les données initiales
     const tableRows = document.querySelectorAll('#tableBody tr');
-    const mobileCards = document.querySelectorAll('#mobileCards > div');
+    const mobileCards = document.querySelectorAll('#mobileCards > div:not(.text-center)'); // exclure le message vide
     
     allData = Array.from(tableRows).map((row, index) => ({
         element: row,
@@ -346,15 +342,15 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
     
     // Générer les QR codes
-     @foreach($detailleParBillet as $billet)
-     @if(!empty($billet["code"]))
-             new QRCode(document.getElementById("qrcode-{{ $billet['id'] }}"), {
-                 text: "{{ $billet['code'] }}",
-                 width: 120,
-                 height: 120
-             });
-         @endif
-     @endforeach
+    @foreach($detailleParBillet as $billet)
+        @if(!empty($billet["code"]))
+            new QRCode(document.getElementById("qrcode-{{ $billet['id'] }}"), {
+                text: "{{ $billet['code'] }}",
+                width: 120,
+                height: 120
+            });
+        @endif
+    @endforeach
 });
 
 function setupEventListeners() {
@@ -393,7 +389,7 @@ function filterData(searchTerm) {
         filteredData = [...allData];
     } else {
         filteredData = allData.filter(item => 
-            item.client.includes(searchTerm)
+            item.client && item.client.includes(searchTerm)
         );
     }
     
@@ -415,10 +411,8 @@ function updateDisplay() {
     
     // Masquer tous les éléments
     allData.forEach(item => {
-        item.element.style.display = 'none';
-        if (item.mobileElement) {
-            item.mobileElement.style.display = 'none';
-        }
+        if (item.element) item.element.style.display = 'none';
+        if (item.mobileElement) item.mobileElement.style.display = 'none';
     });
     
     // Afficher seulement les éléments de la page courante
@@ -522,10 +516,9 @@ function downloadQRCode(id){
     link.href = canvas.toDataURL("image/png");
     link.click();
 }
-</script>
-<script>
+
+// Gestion de la suppression (unifiée)
 document.addEventListener('DOMContentLoaded', function() {
-    // Sélectionner tous les boutons supprimer
     const deleteButtons = document.querySelectorAll('button[data-delete-id]');
 
     deleteButtons.forEach(button => {
@@ -534,19 +527,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const billetId = this.getAttribute('data-delete-id');
 
             if (confirm('Êtes-vous sûr de vouloir supprimer ce billet ?')) {
-                // Créer un formulaire dynamique pour la requête DELETE
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = `/billet/${billetId}`; // la route destroy
+                form.action = `/billet/${billetId}`;
 
-                // Ajouter le token CSRF
                 const csrfInput = document.createElement('input');
                 csrfInput.type = 'hidden';
                 csrfInput.name = '_token';
                 csrfInput.value = '{{ csrf_token() }}';
                 form.appendChild(csrfInput);
 
-                // Ajouter la méthode DELETE
                 const methodInput = document.createElement('input');
                 methodInput.type = 'hidden';
                 methodInput.name = '_method';
