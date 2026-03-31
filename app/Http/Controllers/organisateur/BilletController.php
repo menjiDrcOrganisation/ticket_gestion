@@ -25,7 +25,7 @@ class BilletController extends Controller
 
             $billets = Billet::with('evenement','type_billet')
             ->where('evenement_id', $evenementId)
-            ->paginate(20);
+            ->paginate(10);
             
 
         foreach ($billets as $billet) {
