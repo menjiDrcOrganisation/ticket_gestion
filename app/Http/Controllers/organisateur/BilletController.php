@@ -25,6 +25,7 @@ class BilletController extends Controller
 
             $billets = Billet::with('evenement','type_billet')
             ->where('evenement_id', $evenementId)
+            ->orderBy('id', 'desc')
             ->paginate(10);
             
 

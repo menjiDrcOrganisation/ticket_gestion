@@ -106,6 +106,7 @@
                 <table class="min-w-full text-gray-700">
                     <thead class="bg-gray-50 border-b border-gray-100">
                         <tr>
+                            <th>#</th>
                             <th class="px-6 py-4 text-left font-medium">Client</th>
                             <th class="px-6 py-4 text-left font-medium">Type</th>
                             <th class="px-6 py-4 text-left font-medium">Prix unitaire</th>
@@ -121,6 +122,7 @@
                     <tbody class="divide-y divide-gray-100" id="tableBody">
                         @forelse($detailleParBillet as $billet)
                         <tr class="hover:bg-gray-50 transition" data-client="{{ strtolower($billet['auteur'] ?? '') }}">
+                            <td class="px-6 py-4">{{ $loop->iteration }}</td>
                             <td class="px-6 py-4">{{ $billet["auteur"] ?? "N/A" }}</td>
                             <td class="px-6 py-4">{{ $billet["type"] }}</td>
                             <td class="px-6 py-4">{{ $billet["prix_unitaire"] }} {{ $billet["devise"] }}</td>
