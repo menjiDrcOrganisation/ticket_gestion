@@ -139,6 +139,12 @@
                                             class="w-8 h-8 bg-gray-100 text-gray-700 rounded-full flex items-center justify-center hover:bg-gray-200 transition">
                                         <i class="fas fa-eye text-xs"></i>
                                     </button>
+
+                                   <button  
+                                        class="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center hover:bg-red-200 transition"
+                                        data-delete-id="{{ $billet['id'] }}">
+                                        <i class="fas fa-trash text-xs"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -515,7 +521,43 @@ function downloadQRCode(id){
     link.click();
 }
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Sélectionner tous les boutons supprimer
+    const deleteButtons = document.querySelectorAll('button[data-delete-id]');
 
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const billetId = this.getAttribute('data-delete-id');
+
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce billet ?')) {
+                // Créer un formulaire dynamique pour la requête DELETE
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/billet/${billetId}`; // la route destroy
+
+                // Ajouter le token CSRF
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = '{{ csrf_token() }}';
+                form.appendChild(csrfInput);
+
+                // Ajouter la méthode DELETE
+                const methodInput = document.createElement('input');
+                methodInput.type = 'hidden';
+                methodInput.name = '_method';
+                methodInput.value = 'DELETE';
+                form.appendChild(methodInput);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    });
+});
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 @endsection

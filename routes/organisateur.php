@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::get('billet', [BilletController::class,  'index'])->name('billet.all')->middleware(['auth']);
+Route::delete('billet/{id}', [BilletController::class, 'destroy'])
+    ->name('billet.destroy')
+    ->middleware(['auth']);
 
 Route::get('dashboard/organisateur', [OrganisateurDashboardController::class, 'index'])
     ->name('dashboard_orginasateur.show')->middleware(['auth']);

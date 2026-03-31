@@ -67,4 +67,20 @@ class BilletController extends Controller
             return $th;
         }
     }
+
+     public function destroy($id)
+    {
+        // Récupérer le billet par son id
+        $billet = Billet::find($id);
+
+        if (!$billet) {
+            return redirect()->back()->with('error', 'Billet introuvable.');
+        }
+
+        // Supprimer le billet
+        $billet->delete();
+
+        // Rediriger avec message de succès
+        return redirect()->back()->with('success', 'Billet supprimé avec succès.');
+    }
 }
