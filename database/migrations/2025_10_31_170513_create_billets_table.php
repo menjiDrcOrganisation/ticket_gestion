@@ -18,6 +18,7 @@ return new class extends Migration
     $table->string('numero');
     $table->string('email')->nullable();
     $table->string('code_billet');
+    $table->string('billetImage')->nullable();
 
     $table->integer('quantite');
     $table->integer('quantite_fictif');

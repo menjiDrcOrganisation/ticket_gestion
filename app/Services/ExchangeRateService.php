@@ -3,25 +3,33 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
-
+use Illuminate\Support\Facades\Log;
 
 class ExchangeRateService
 {
-    public function getUSDtoCDF()
-    {try {
-    $response = Http::get('https://api.exchangerate-api.com/v4/latest/USD');
-    $data = $response->json();
+    public function getUSDtoCDF(): float
+    {
+        try {
+            $response = Http::timeout(5)->get('https://api.exchangerate-api.com/v4/latest/USD');
 
-    // Vérifier si la devise CDF existe
-    if (!isset($data['rates']['CDF'])) {
-        throw new \Exception("Taux pour CDF introuvable dans la réponse de l'API.");
-    }
+            if (!$response->successful()) {
+                throw new \Exception("API exchange rate inaccessible");
+            }
 
-    return floatval($data['rates']['CDF']); // renvoie toujours un nombre
-} catch (\Exception $e) {
-    \Log::error("Erreur ExchangeRateService: " . $e->getMessage());
-    dd($e->getMessage()); // ou simplement Log si tu ne veux pas stopper le code
-    return 0; // valeur de secours
-}
+            $data = $response->json();
+
+            if (!isset($data['rates']['CDF'])) {
+                throw new \Exception("Taux CDF introuvable");
+            }
+
+            return (float) $data['rates']['CDF'];
+
+        } catch (\Exception $e) {
+
+            Log::error("ExchangeRateService error: " . $e->getMessage());
+
+            // ⚠️ fallback sécurisé pour RDC (tu peux ajuster)
+            return 2800.0;
+        }
     }
 }
