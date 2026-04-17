@@ -114,6 +114,8 @@ class BilletController extends Controller
 
         $qrCodeUrl = 'data:image/svg+xml;base64,' . $qrImage;
 
+        dd($qrCodeUrl);
+
     
 
         $data = [
