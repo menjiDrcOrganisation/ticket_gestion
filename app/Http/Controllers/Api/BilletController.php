@@ -145,6 +145,7 @@ class BilletController extends Controller
             });
 
             $billet->load(['evenement.ressource', 'type_billet']);
+            $qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&format=png&data=" . urlencode($billet->code_billet);
 
             // =========================
             // PDF DATA
@@ -162,7 +163,7 @@ class BilletController extends Controller
                     'devise' => $deviseClient,
                     'total' => number_format($total, 2, ',', ' '),
 
-                    'qrcode_url' => 'https://quickchart.io/qr?text=' . $billet->code_billet,
+                    'qrcode_url' => $qrCodeUrl,
                     'purchase_date' => Carbon::parse($billet->date_achat)->format('d/m/Y H:i'),
                     'event_date' => Carbon::parse($billet->evenement->date_debut)->format('d/m/Y'),
                     'event_time' => Carbon::parse($billet->evenement->heure_debut)->format('H:i'),
