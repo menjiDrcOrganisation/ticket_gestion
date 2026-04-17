@@ -12,10 +12,10 @@ class MobileMoneyService
     {
         try {
 
-            // ✅ Génération référence
+            //Génération référence
             $transactionReference = 'TX-' . now()->format('YmdHis') . '-' . rand(1000, 9999);
 
-            // ✅ Payload propre
+            // Payload propre
             $payload = [
                 'transactionReference' => $transactionReference,
                 'gatewayMode' => "0",
@@ -35,8 +35,8 @@ class MobileMoneyService
                 ],
             ];
 
-            // ✅ Appel API
-            $response = Http::timeout(60)
+            //Appel API
+            $response = Http::timeout(300)
                 ->withHeaders([
                     'Content-Type' => 'application/json',
                 ])
@@ -44,7 +44,7 @@ class MobileMoneyService
 
             $responseData = $response->json();
 
-            // ✅ Retour standard
+            //Retour standard
             return [
                 'status' => $response->successful(),
                 'data' => $responseData,
