@@ -294,7 +294,7 @@
                 <p class="text-sm text-gray-600 mb-3">QR Code du billet</p>
                 <div id="qrcode-{{ $billet['id'] }}" class="border p-2 rounded-md bg-white"></div>
               @if(!empty($billet['billetImage']))
-<a href="{{ env('ENV_POINT_URL') }}/storage/{{ $billet['billetImage'] }}"
+<a href="{{ env('ENV_POINT_URL') }}/storage/app/public/{{ $billet['billetImage'] }}"
    target="_blank"
    class="mt-3 inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
     Télécharger QR Code
