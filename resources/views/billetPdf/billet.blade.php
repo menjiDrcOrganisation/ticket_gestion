@@ -411,7 +411,7 @@
 
     <!-- Footer sécurité -->
     <div class="security-footer">
-        <span><i class="fas fa-lock"></i> BILLET NOMINATIF</span>
+        <span><i class="fas fa-lock"></i> BILLET</span>
         <span class="brand">KIMIA TICKETS</span>
         <span><i class="fas fa-check-double"></i> SÉCURISÉ</span>
     </div>
