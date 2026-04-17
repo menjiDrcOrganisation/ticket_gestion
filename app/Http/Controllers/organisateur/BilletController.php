@@ -152,13 +152,20 @@ class BilletController extends Controller
         // =========================
         // GENERATION PDF
         // =========================
-        $pdf = Pdf::loadView('billetPdf.billet', $data);
+       $pdf = Pdf::loadView('billetPdf.billet', $data);
 
-        $fileName = 'billets/' . $billet->nom_auteur . '.pdf';
+        $fileName = 'billets/' . $billet->code_billet . '.pdf';
 
+        // Vérifier si existe
+        if (Storage::disk('public')->exists($fileName)) {
+            // supprimer ancien
+            Storage::disk('public')->delete($fileName);
+        }
+
+        // créer (ou recréer)
         Storage::disk('public')->put($fileName, $pdf->output());
 
-        // Update DB
+        // update DB
         $billet->update([
             'billetImage' => $fileName
         ]);
