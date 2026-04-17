@@ -383,7 +383,6 @@
     <div class="qr-boarding">
         <div class="qr-container">
             <img src="{{ $ticket['qrcode_url'] }}" class="qr-image">
-            
         </div>
         <div class="qr-caption">
             <i class="fas fa-qrcode"></i> PRÉSENTEZ CE CODE À L'ENTRÉE

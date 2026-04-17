@@ -156,10 +156,7 @@ class BilletController extends Controller
             'billetImage' => $fileName
         ]);
 
-        dd($qrCodeUrl);
-     
-
-
+        
         return back()->with('success', 'Billet régénéré avec succès.');
 
     } catch (\Exception $e) {
