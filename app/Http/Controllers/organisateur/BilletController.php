@@ -108,14 +108,18 @@ class BilletController extends Controller
         $devise = $billet->type_billet->devise;
         $total = $prix * $billet->quantite;
         
-        $qrImage = base64_encode(
-            QrCode::format('svg')->size(300)->generate($billet->code_billet)
-        );
+        $qrSvg = QrCode::format('svg')
+            ->size(300)
+            ->generate($billet->code_billet);
 
+        // encoder proprement
+        $qrImage = base64_encode($qrSvg);
+
+        // créer l’URL base64
         $qrCodeUrl = 'data:image/svg+xml;base64,' . $qrImage;
 
-
-
+        // passer à la vue
+        
         $data = [
             'ticket' => [
                 'user_name' => $billet->nom_auteur,
