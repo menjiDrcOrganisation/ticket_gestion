@@ -29,10 +29,6 @@ class BilletController extends Controller
     public function achatbillet(Request $request)
     {
         try {
-
-            // =========================
-            // VALIDATION
-            // =========================
             $validated = $request->validate([
                 'type_billet' => 'required|string',
                 'nombre_reel' => 'required|integer|min:1',
@@ -43,9 +39,6 @@ class BilletController extends Controller
                 'devise' => 'required|string' // CDF ou USD
             ]);
 
-            // =========================
-            // GET TYPE BILLET
-            // =========================
             $type_billet = EvenementTypeBillet::where('type_billet_id', $validated['type_billet'])
                 ->where('evenement_id', $validated['id_evenement'])
                 ->first();
@@ -58,9 +51,6 @@ class BilletController extends Controller
                 throw new Exception("Billets épuisés.");
             }
 
-            // =========================
-            // MONTANT BASE
-            // =========================
             $montantUnitaire = (float) $type_billet->prix_unitaire;
             $deviseBillet = $type_billet->devise;
             $deviseClient = $validated['devise'];
@@ -74,9 +64,6 @@ class BilletController extends Controller
                 throw new Exception("Taux de change invalide.");
             }
 
-            // =========================
-            // CONVERSION
-            // =========================
             $montantConverti = $montantUnitaire;
 
             if ($deviseBillet !== $deviseClient) {

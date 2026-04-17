@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd; 
+use App\Models\EvenementTypeBillet;
 
 class BilletController extends Controller
 {
@@ -99,13 +100,15 @@ class BilletController extends Controller
 
         $billet = Billet::with(['evenement.ressource', 'type_billet'])->findOrFail($id);
 
-        // Si déjà généré
+        $type_billet = EvenementTypeBillet::where('type_billet_id', $billet->type_billet_id)
+                ->where('evenement_id', $billet->evenement_id)
+                ->first();
        
         // =========================
         // RECONSTRUIRE LES DONNÉES
         // =========================
-        $prix = $billet->type_billet->prix_unitaire;
-        $devise = $billet->type_billet->devise;
+        $prix = $type_billet->prix_unitaire;
+        $devise = $type_billet->devise;
         $total = $prix * $billet->quantite;
         
         $qrSvg = QrCode::format('svg')

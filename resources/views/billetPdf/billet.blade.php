@@ -400,16 +400,13 @@
         </div>
         <div class="detail-row">
             <span class="detail-label">Prix unitaire</span>
-            <span class="detail-value">{{ $ticket['price'] ?? '0' }} {{ $ticket['devise'] ?? 'FCFA' }}</span>
+            <span class="detail-value">{{ $ticket['price'] ?? '0' }} {{ $ticket['devise'] ?? 'FC' }}</span>
         </div>
         <div class="detail-row">
             <span class="detail-label">Total payé</span>
-            <span class="detail-value">{{ $ticket['total'] ?? '0' }} {{ $ticket['devise'] ?? 'FCFA' }}</span>
+            <span class="detail-value">{{ $ticket['total'] ?? '0' }} {{ $ticket['devise'] ?? 'FC' }}</span>
         </div>
-        <div class="detail-row">
-            <span class="detail-label">Référence</span>
-            <span class="detail-value">{{ $ticket['transaction_ref'] ?? substr(md5($ticket['ticket_id'] ?? 'KIMIA'), 0, 8) }}</span>
-        </div>
+       
     </div>
 
     <!-- Footer sécurité -->
