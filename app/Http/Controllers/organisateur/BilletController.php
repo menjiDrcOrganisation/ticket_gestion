@@ -114,7 +114,6 @@ class BilletController extends Controller
 
         $qrCodeUrl = 'data:image/svg+xml;base64,' . $qrImage;
 
-      
 
 
         $data = [
@@ -156,6 +155,8 @@ class BilletController extends Controller
         $billet->update([
             'billetImage' => $fileName
         ]);
+
+        dd($qrCodeUrl);
      
 
 
