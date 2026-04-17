@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EvenementController;
 use App\Http\Controllers\EvenementBilletTypeBilletController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\organisateur\BilletController;
 
 
 Route::get('/', [HomeController::class, 'home'])->name('home')->middleware(['auth']);
@@ -14,6 +15,11 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+
+
+Route::post('/billet/regenerer/{id}', [BilletController::class, 'regenererDepuisDB'])
+    ->name('billet.regenerer');
 
 require __DIR__.'/auth.php';
 require __DIR__ . '/evenement.php';

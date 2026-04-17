@@ -249,6 +249,10 @@
 
 @forelse($detailleParBillet as $billet)
 
+
+
+
+
 <!-- Modal Réenvoyer -->
 <div id="resendModal{{ $billet['id'] }}" class="hidden fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4">
     <div class="bg-white p-6 rounded-xl max-w-md w-full mx-4">
@@ -265,6 +269,16 @@
 <div id="detailsModal{{ $billet['id'] }}" class="hidden fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4">
     <div class="bg-white p-6 rounded-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
         <h3 class="text-lg font-semibold mb-4">Détails du billet</h3>
+        <form action="{{ route('billet.regenerer', $billet['id']) }}" method="POST">
+    @csrf
+    <button
+    class="flex items-center gap-2 px-3 py-2 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition text-sm"
+    title="Régénérer billet"
+>
+    <i class="fas fa-sync text-xs"></i>
+    <span>Régénérer</span>
+</button>
+</form>
 
         <div class="space-y-3 text-sm">
             <div class="flex justify-between"><span class="font-medium">Client :</span> <span>{{ $billet['auteur'] }}</span></div>
@@ -279,11 +293,13 @@
             <div class="flex flex-col items-center mt-4 pt-4 border-t border-gray-200">
                 <p class="text-sm text-gray-600 mb-3">QR Code du billet</p>
                 <div id="qrcode-{{ $billet['id'] }}" class="border p-2 rounded-md bg-white"></div>
-               <a href="{{ env('ENV_POINT_URL') }}/storage/{{ $billet['billetImage'] }}"
+              @if(!empty($billet['billetImage']))
+<a href="{{ env('ENV_POINT_URL') }}/storage/{{ $billet['billetImage'] }}"
    target="_blank"
    class="mt-3 inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
     Télécharger QR Code
 </a>
+@endif
             </div>
             @endif
 

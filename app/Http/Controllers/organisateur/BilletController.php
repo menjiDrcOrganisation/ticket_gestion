@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Billet;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 
 class BilletController extends Controller
 {
@@ -85,4 +87,71 @@ class BilletController extends Controller
         // Rediriger avec message de succès
         return redirect()->back()->with('success', 'Billet supprimé avec succès.');
     }
+
+
+  public function regenererDepuisDB($id)
+{
+    try {
+        
+
+        $billet = Billet::with(['evenement.ressource', 'type_billet'])->findOrFail($id);
+
+        // Si déjà généré
+       
+        // =========================
+        // RECONSTRUIRE LES DONNÉES
+        // =========================
+        $prix = $billet->type_billet->prix_unitaire;
+        $devise = $billet->type_billet->devise;
+        $total = $prix * $billet->quantite;
+
+        $data = [
+            'ticket' => [
+                'user_name' => $billet->nom_auteur,
+                'event_name' => $billet->evenement->nom ?? 'Evenement',
+                'location' => $billet->evenement->adresse ?? 'Non définie',
+
+                'type' => $billet->type_billet->nom_type ?? 'Standard',
+                'quantity' => $billet->quantite,
+
+                'price' => number_format($prix, 2, ',', ' '),
+                'devise' => $devise,
+                'total' => number_format($total, 2, ',', ' '),
+
+                'qrcode_url' => 'https://quickchart.io/qr?text=' . $billet->code_billet,
+                'purchase_date' => $billet->date_achat,
+                'event_date' => $billet->evenement->date_debut,
+                'event_time' => $billet->evenement->heure_debut,
+
+                'photo_affiche' => $billet->evenement->ressource[0]->photo_affiche ?? null,
+
+                'ticket_id' => strtoupper(substr(md5($billet->code_billet), 0, 8)),
+                'transaction_ref' => $billet->code_billet
+            ]
+        ];
+    
+
+        // =========================
+        // GENERATION PDF
+        // =========================
+        $pdf = Pdf::loadView('billetPdf.billet', $data);
+
+        $fileName = 'billets/' . $billet->nom_auteur . '.pdf';
+
+        Storage::disk('public')->put($fileName, $pdf->output());
+
+        // Update DB
+        $billet->update([
+            'billetImage' => $fileName
+        ]);
+     
+
+
+        return back()->with('success', 'Billet régénéré avec succès.');
+
+    } catch (\Exception $e) {
+        dd($e->getMessage());
+        return back()->with('error', $e->getMessage());
+    }
+}
 }
