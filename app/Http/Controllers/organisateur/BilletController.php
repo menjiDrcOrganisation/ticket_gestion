@@ -26,7 +26,7 @@ class BilletController extends Controller
             $billets = Billet::with('evenement','type_billet')
             ->where('evenement_id', $evenementId)
             ->orderBy('id', 'desc')
-            ->paginate(10);
+            ->get();
             
 
         foreach ($billets as $billet) {
@@ -44,7 +44,8 @@ class BilletController extends Controller
                         'total' => $billet->evenementTypeBillet()->prix_unitaire*$billet->quantite,
                         'date' => $billet->date_achat,
                         'code' => $billet->code_billet,
-                        'statut' => $billet->statut
+                        'statut' => $billet->statut,
+                        'billetImage'=> $billet->billetImage
                     ];
             }
 

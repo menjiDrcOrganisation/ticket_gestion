@@ -279,10 +279,11 @@
             <div class="flex flex-col items-center mt-4 pt-4 border-t border-gray-200">
                 <p class="text-sm text-gray-600 mb-3">QR Code du billet</p>
                 <div id="qrcode-{{ $billet['id'] }}" class="border p-2 rounded-md bg-white"></div>
-                <button onclick="downloadQRCode('{{ $billet['id'] }}')"
-                        class="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
-                    Télécharger QR Code
-                </button>
+               <a href="{{ env('ENV_POINT_URL') }}/storage/{{ $billet['billetImage'] }}"
+   target="_blank"
+   class="mt-3 inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
+    Télécharger QR Code
+</a>
             </div>
             @endif
 
@@ -305,7 +306,7 @@
 <script>
 // Variables globales pour la pagination
 let currentPage = 1;
-let itemsPerPage = 10;
+let itemsPerPage = 10; // Changé de 20 à 10 pour correspondre à l'option par défaut
 let filteredData = [];
 let allData = [];
 
@@ -327,52 +328,147 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Initialisation
-document.addEventListener('DOMContentLoaded', function() {
-    // Récupérer tous les éléments
-    const tableRows = document.querySelectorAll('#tableBody tr');
-    const mobileCards = document.querySelectorAll('#mobileCards > div');
+function filterData(searchTerm) {
+    if (searchTerm === '') {
+        filteredData = [...allData];
+    } else {
+        filteredData = allData.filter(item => 
+            item.client && item.client.toLowerCase().includes(searchTerm)
+        );
+    }
+
+    currentPage = 1;
+    updateDisplay();
+}
+
+function updateDisplay() {
+    const totalItems = filteredData.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
     
-    // Filtrer les éléments vides (messages "aucun achat")
-    const validTableRows = Array.from(tableRows).filter(row => !row.querySelector('td[colspan]'));
-    const validMobileCards = Array.from(mobileCards).filter(card => !card.classList.contains('text-center'));
+    // Ajuster la page courante si elle dépasse le nombre total de pages
+    if (currentPage > totalPages && totalPages > 0) {
+        currentPage = totalPages;
+    }
+    if (currentPage < 1) {
+        currentPage = 1;
+    }
+
+    // Calculer les indices de début et fin
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+
+    // D'abord, masquer TOUS les éléments
+    const allTableRows = document.querySelectorAll('#tableBody tr');
+    const allMobileCards = document.querySelectorAll('#mobileCards > div');
     
-    // Créer le tableau allData avec les indices correspondants
-    allData = [];
-    const maxLength = Math.max(validTableRows.length, validMobileCards.length);
+    allTableRows.forEach(row => {
+        // Ne pas masquer la ligne "aucun résultat"
+        if (!row.querySelector('td[colspan]')) {
+            row.style.display = 'none';
+        }
+    });
     
-    for (let i = 0; i < maxLength; i++) {
-        if (validTableRows[i] || validMobileCards[i]) {
-            allData.push({
-                element: validTableRows[i] || null,
-                mobileElement: validMobileCards[i] || null,
-                client: validTableRows[i] ? validTableRows[i].getAttribute('data-client') : 
-                       (validMobileCards[i] ? validMobileCards[i].getAttribute('data-client') : '')
-            });
+    allMobileCards.forEach(card => {
+        if (!card.classList.contains('text-center')) {
+            card.style.display = 'none';
+        }
+    });
+
+    // Afficher uniquement les éléments de la page courante
+    for (let i = startIndex; i < endIndex; i++) {
+        if (filteredData[i]) {
+            if (filteredData[i].element) {
+                filteredData[i].element.style.display = '';
+            }
+            if (filteredData[i].mobileElement) {
+                filteredData[i].mobileElement.style.display = '';
+            }
         }
     }
 
-    filteredData = [...allData];
-
-    initializePagination();
-    setupEventListeners();
-
-    // Générer les QR codes
-    @foreach($detailleParBillet as $billet)
-        @if(!empty($billet["code"]))
-            if(document.getElementById("qrcode-{{ $billet['id'] }}")) {
-                new QRCode(document.getElementById("qrcode-{{ $billet['id'] }}"), {
-                    text: "{{ $billet['code'] }}",
-                    width: 120,
-                    height: 120
-                });
-            }
-        @endif
-    @endforeach
+    // Mettre à jour les informations de pagination
+    const startItemSpan = document.getElementById('startItem');
+    const endItemSpan = document.getElementById('endItem');
+    const totalItemsSpan = document.getElementById('totalItems');
     
-    // Mettre à jour l'affichage initial
-    updateDisplay();
-});
+    if(startItemSpan) startItemSpan.textContent = totalItems === 0 ? 0 : startIndex + 1;
+    if(endItemSpan) endItemSpan.textContent = endIndex;
+    if(totalItemsSpan) totalItemsSpan.textContent = totalItems;
+
+    // Mettre à jour les boutons de pagination
+    const prevBtn = document.getElementById('prevPage');
+    const nextBtn = document.getElementById('nextPage');
+    
+    if(prevBtn) prevBtn.disabled = currentPage === 1 || totalPages === 0;
+    if(nextBtn) nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+
+    // Générer les numéros de page
+    generatePaginationNumbers(totalPages);
+}
+
+function generatePaginationNumbers(totalPages) {
+    const paginationContainer = document.getElementById('paginationNumbers');
+    if(!paginationContainer) return;
+    
+    paginationContainer.innerHTML = '';
+
+    if (totalPages === 0) {
+        return;
+    }
+
+    // Afficher maximum 10 pages
+    let startPage = 1;
+    let endPage = Math.min(10, totalPages);
+
+    // Si on est au-delà de la page 10, ajuster l'affichage
+    if (currentPage > 10) {
+        startPage = currentPage - 5;
+        endPage = Math.min(currentPage + 4, totalPages);
+        
+        // Ajouter le bouton "Première page"
+        const firstPageBtn = createPageButton(1);
+        paginationContainer.appendChild(firstPageBtn);
+        
+        const ellipsis1 = document.createElement('span');
+        ellipsis1.className = 'px-3 py-2 text-gray-500';
+        ellipsis1.textContent = '...';
+        paginationContainer.appendChild(ellipsis1);
+    }
+
+    // Générer les pages
+    for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = createPageButton(i);
+        paginationContainer.appendChild(pageBtn);
+    }
+
+    // Ajouter des points de suspension et le bouton dernière page si nécessaire
+    if (endPage < totalPages) {
+        const ellipsis2 = document.createElement('span');
+        ellipsis2.className = 'px-3 py-2 text-gray-500';
+        ellipsis2.textContent = '...';
+        paginationContainer.appendChild(ellipsis2);
+        
+        const lastPageBtn = createPageButton(totalPages);
+        paginationContainer.appendChild(lastPageBtn);
+    }
+}
+
+function createPageButton(pageNumber) {
+    const button = document.createElement('button');
+    button.className = `px-3 py-2 border rounded-lg transition ${
+        pageNumber === currentPage
+            ? 'bg-blue-600 text-white border-blue-600'
+            : 'border-gray-300 hover:bg-gray-50 text-gray-700'
+    }`;
+    button.textContent = pageNumber;
+
+    button.addEventListener('click', function() {
+        currentPage = pageNumber;
+        updateDisplay();
+    });
+
+    return button;
+}
 
 function setupEventListeners() {
     // Recherche
@@ -418,152 +514,6 @@ function setupEventListeners() {
     }
 }
 
-function filterData(searchTerm) {
-    if (searchTerm === '') {
-        filteredData = [...allData];
-    } else {
-        filteredData = allData.filter(item => 
-            item.client && item.client.toLowerCase().includes(searchTerm)
-        );
-    }
-
-    currentPage = 1;
-    updateDisplay();
-}
-
-function initializePagination() {
-    // L'initialisation se fait via updateDisplay
-}
-
-function updateDisplay() {
-    const totalItems = filteredData.length;
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-    
-    // Ajuster la page courante si elle dépasse le nombre total de pages
-    if (currentPage > totalPages && totalPages > 0) {
-        currentPage = totalPages;
-    }
-    if (currentPage < 1) {
-        currentPage = 1;
-    }
-
-    // Calculer les indices de début et fin
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
-
-    // Masquer tous les éléments
-    allData.forEach(item => {
-        if (item.element) item.element.style.display = 'none';
-        if (item.mobileElement) item.mobileElement.style.display = 'none';
-    });
-
-    // Afficher seulement les éléments de la page courante
-    for (let i = startIndex; i < endIndex; i++) {
-        if (filteredData[i]) {
-            if (filteredData[i].element) filteredData[i].element.style.display = '';
-            if (filteredData[i].mobileElement) filteredData[i].mobileElement.style.display = '';
-        }
-    }
-
-    // Mettre à jour les informations de pagination
-    const startItemSpan = document.getElementById('startItem');
-    const endItemSpan = document.getElementById('endItem');
-    const totalItemsSpan = document.getElementById('totalItems');
-    
-    if(startItemSpan) startItemSpan.textContent = totalItems === 0 ? 0 : startIndex + 1;
-    if(endItemSpan) endItemSpan.textContent = endIndex;
-    if(totalItemsSpan) totalItemsSpan.textContent = totalItems;
-
-    // Mettre à jour les boutons de pagination
-    const prevBtn = document.getElementById('prevPage');
-    const nextBtn = document.getElementById('nextPage');
-    
-    if(prevBtn) prevBtn.disabled = currentPage === 1 || totalPages === 0;
-    if(nextBtn) nextBtn.disabled = currentPage === totalPages || totalPages === 0;
-
-    // Générer les numéros de page
-    generatePaginationNumbers(totalPages);
-}
-
-function generatePaginationNumbers(totalPages) {
-    const paginationContainer = document.getElementById('paginationNumbers');
-    if(!paginationContainer) return;
-    
-    paginationContainer.innerHTML = '';
-
-    if (totalPages === 0 || totalPages === 1) {
-        // Si une seule page ou aucune, afficher seulement la page 1 si elle existe
-        if(totalPages === 1) {
-            const pageBtn = createPageButton(1);
-            paginationContainer.appendChild(pageBtn);
-        }
-        return;
-    }
-
-    // Afficher maximum 5 pages autour de la page courante
-    let startPage = Math.max(1, currentPage - 2);
-    let endPage = Math.min(totalPages, currentPage + 2);
-
-    // Ajuster si on est près du début
-    if (currentPage <= 3) {
-        endPage = Math.min(5, totalPages);
-    }
-
-    // Ajuster si on est près de la fin
-    if (currentPage >= totalPages - 2) {
-        startPage = Math.max(1, totalPages - 4);
-    }
-
-    // Bouton première page
-    if (startPage > 1) {
-        const firstPageBtn = createPageButton(1);
-        paginationContainer.appendChild(firstPageBtn);
-
-        if (startPage > 2) {
-            const ellipsis = document.createElement('span');
-            ellipsis.className = 'px-3 py-2 text-gray-500';
-            ellipsis.textContent = '...';
-            paginationContainer.appendChild(ellipsis);
-        }
-    }
-
-    // Boutons des pages
-    for (let i = startPage; i <= endPage; i++) {
-        const pageBtn = createPageButton(i);
-        paginationContainer.appendChild(pageBtn);
-    }
-
-    // Bouton dernière page
-    if (endPage < totalPages) {
-        if (endPage < totalPages - 1) {
-            const ellipsis = document.createElement('span');
-            ellipsis.className = 'px-3 py-2 text-gray-500';
-            ellipsis.textContent = '...';
-            paginationContainer.appendChild(ellipsis);
-        }
-
-        const lastPageBtn = createPageButton(totalPages);
-        paginationContainer.appendChild(lastPageBtn);
-    }
-}
-
-function createPageButton(pageNumber) {
-    const button = document.createElement('button');
-    button.className = `px-3 py-2 border rounded-lg transition ${
-        pageNumber === currentPage
-            ? 'bg-blue-600 text-white border-blue-600'
-            : 'border-gray-300 hover:bg-gray-50 text-gray-700'
-    }`;
-    button.textContent = pageNumber;
-
-    button.addEventListener('click', function() {
-        currentPage = pageNumber;
-        updateDisplay();
-    });
-
-    return button;
-}
-
 function downloadQRCode(id){
     const container = document.querySelector("#qrcode-" + id);
     if(!container) return alert("QR Code introuvable");
@@ -576,6 +526,64 @@ function downloadQRCode(id){
     link.href = canvas.toDataURL("image/png");
     link.click();
 }
+
+// Initialisation principale
+document.addEventListener('DOMContentLoaded', function() {
+    // Récupérer tous les éléments
+    const tableRows = document.querySelectorAll('#tableBody tr');
+    const mobileCards = document.querySelectorAll('#mobileCards > div');
+    
+    // Filtrer les éléments vides (messages "aucun achat")
+    const validTableRows = Array.from(tableRows).filter(row => {
+        return !row.querySelector('td[colspan]') && row.getAttribute('data-client') !== null;
+    });
+    
+    const validMobileCards = Array.from(mobileCards).filter(card => {
+        return !card.classList.contains('text-center') && card.getAttribute('data-client') !== null;
+    });
+    
+    // Créer le tableau allData
+    allData = [];
+    
+    // Utiliser la plus grande longueur
+    const maxLength = Math.max(validTableRows.length, validMobileCards.length);
+    
+    for (let i = 0; i < maxLength; i++) {
+        const tableRow = validTableRows[i] || null;
+        const mobileCard = validMobileCards[i] || null;
+        const clientName = tableRow ? tableRow.getAttribute('data-client') : 
+                          (mobileCard ? mobileCard.getAttribute('data-client') : '');
+        
+        if (tableRow || mobileCard) {
+            allData.push({
+                element: tableRow,
+                mobileElement: mobileCard,
+                client: clientName || ''
+            });
+        }
+    }
+
+    filteredData = [...allData];
+
+    // Initialiser la pagination
+    setupEventListeners();
+
+    // Générer les QR codes
+    @foreach($detailleParBillet as $billet)
+        @if(!empty($billet["code"]))
+            if(document.getElementById("qrcode-{{ $billet['id'] }}")) {
+                new QRCode(document.getElementById("qrcode-{{ $billet['id'] }}"), {
+                    text: "{{ $billet['code'] }}",
+                    width: 120,
+                    height: 120
+                });
+            }
+        @endif
+    @endforeach
+    
+    // Mettre à jour l'affichage initial
+    updateDisplay();
+});
 
 // Gestion de la suppression
 document.addEventListener('DOMContentLoaded', function() {

@@ -14,6 +14,7 @@ class Billet extends Model
        'nom_auteur',
        'numero',
        'email',
+       'billetImage',
        'code_billet',
        'statut',
        'quantite', 
