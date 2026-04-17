@@ -8,6 +8,9 @@ use App\Models\Billet;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd; 
 
 class BilletController extends Controller
 {
@@ -105,7 +108,13 @@ class BilletController extends Controller
         $devise = $billet->type_billet->devise;
         $total = $prix * $billet->quantite;
         
-            $qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&format=png&data=" . urlencode($billet->code_billet);
+        $qrImage = base64_encode(
+            QrCode::format('svg')->size(300)->generate($billet->code_billet)
+        );
+
+        $qrCodeUrl = 'data:image/svg+xml;base64,' . $qrImage;
+
+    
 
         $data = [
             'ticket' => [

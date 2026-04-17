@@ -382,9 +382,8 @@
     <!-- QR Code -->
     <div class="qr-boarding">
         <div class="qr-container">
-            <img src="{{ $ticket['qrcode_url'] ?? 'https://quickchart.io/qr?text=TICKET_' . ($ticket['ticket_id'] ?? '000000') . '&size=200&margin=2&dark=1A3B4C' }}" 
-                 class="qr-image" 
-                 alt="QR Code">
+            <img src="{{ $ticket['qrcode_url'] }}" class="qr-image">
+            
         </div>
         <div class="qr-caption">
             <i class="fas fa-qrcode"></i> PRÉSENTEZ CE CODE À L'ENTRÉE
