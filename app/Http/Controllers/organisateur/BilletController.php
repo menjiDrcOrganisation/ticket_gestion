@@ -104,6 +104,8 @@ class BilletController extends Controller
         $prix = $billet->type_billet->prix_unitaire;
         $devise = $billet->type_billet->devise;
         $total = $prix * $billet->quantite;
+        
+            $qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&format=png&data=" . urlencode($billet->code_billet);
 
         $data = [
             'ticket' => [
@@ -118,7 +120,7 @@ class BilletController extends Controller
                 'devise' => $devise,
                 'total' => number_format($total, 2, ',', ' '),
 
-                'qrcode_url' => 'https://quickchart.io/qr?text=' . $billet->code_billet,
+                'qrcode_url' => $qrCodeUrl,
                 'purchase_date' => $billet->date_achat,
                 'event_date' => $billet->evenement->date_debut,
                 'event_time' => $billet->evenement->heure_debut,
