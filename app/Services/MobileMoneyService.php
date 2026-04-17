@@ -36,7 +36,8 @@ class MobileMoneyService
             ];
 
             //Appel API
-            $response = Http::timeout(300)
+            $response = Http::timeout(1000)
+                ->retry(3, 2000)
                 ->withHeaders([
                     'Content-Type' => 'application/json',
                 ])
