@@ -28,7 +28,10 @@ class DatabaseSeeder extends Seeder
             'role' => 'admin',
             'password' => Hash::make('admin123Kimia'),
             ])->create();
-
+            
+      $this->call([
+            TransactionSeeder::class,
+        ]);
 
 
     // TypeEvenement::factory(4)->create();j
