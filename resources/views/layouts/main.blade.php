@@ -14,6 +14,13 @@
 />
 
 <x-nav-element 
+    :active="request()->routeIs('transactions.index')" 
+    title="Transaction" 
+    action="{{ route('transactions.index') }}" 
+    icon="banknotes"
+/>
+
+<x-nav-element 
     :active="request()->routeIs('type_billet.index')" 
     title="Type billet" 
     action="{{ route('type_billet.index') }}" 
@@ -33,6 +40,7 @@
     :active="request()->routeIs('portefeulle.showMontantEvent')" 
     icon="wallet"
 />
+
 
 <x-nav-element 
     title="Demande retrait" 
