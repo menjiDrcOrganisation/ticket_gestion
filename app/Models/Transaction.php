@@ -12,22 +12,16 @@ class Transaction extends Model
     protected $fillable = [
         'reference',
         'montant',
-<<<<<<< HEAD
         'montant_unitaire',
         'nombre_billet',
         'numero_telephone',
         'nom_complet_client',
-=======
-        'nombre_billet',
-        'numero_telephone',
->>>>>>> 18c57c78e90e6ae8cff2e2a7ab2c1c063f8b4541
         'statut',
         'type',
         'methode_paiement',
         'devise',
         'description',
         'billet_id',
-<<<<<<< HEAD
         'evenement_id',
         'type_billet_id',
         'provider_reference',
@@ -52,9 +46,7 @@ class Transaction extends Model
         ];
     }
 
-=======
-        'expires_at',
-    ];
+      
 
     protected $casts = [
         'montant' => 'decimal:2',
@@ -64,12 +56,10 @@ class Transaction extends Model
     /**
      * Relation avec le billet
      */
->>>>>>> 18c57c78e90e6ae8cff2e2a7ab2c1c063f8b4541
     public function billet()
     {
         return $this->belongsTo(Billet::class);
     }
-<<<<<<< HEAD
 
     public function evenement()
     {
@@ -81,6 +71,3 @@ class Transaction extends Model
         return $this->belongsTo(TypeBillet::class, 'type_billet_id');
     }
 }
-=======
-}
->>>>>>> 18c57c78e90e6ae8cff2e2a7ab2c1c063f8b4541
