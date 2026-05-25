@@ -8,6 +8,7 @@ use App\Models\Evenement;
 use App\Models\User;
 use App\Models\TypeBillet;
 use App\Models\Admin;
+use Database\Seeders\DemoEvenementScenarioSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -22,12 +23,16 @@ class DatabaseSeeder extends Seeder
    public function run(): void
 {
     
-    User::factory()->state([
-              'name' => 'Admin',
-            'email' => 'admin@tick.com',
-            'role' => 'admin',
-            'password' => Hash::make('admin123Kimia'),
-            ])->create();
+    User::updateOrCreate(
+      ['email' => 'admin@tick.com'],
+      [
+        'name' => 'Admin',
+        'role' => 'admin',
+        'password' => Hash::make('admin123Kimia'),
+      ]
+    );
+
+    $this->call(DemoEvenementScenarioSeeder::class);
 
 
 

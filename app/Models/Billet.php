@@ -41,5 +41,10 @@ public function evenementTypeBillet()
         ->first();
 }
 
+public function transactions()
+{
+    return $this->hasMany(Transaction::class);
+}
+
 
 }
