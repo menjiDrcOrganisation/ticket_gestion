@@ -34,6 +34,16 @@ class DatabaseSeeder extends Seeder
 
     $this->call(DemoEvenementScenarioSeeder::class);
 
+    User::factory()->state([
+              'name' => 'Admin',
+            'email' => 'admin@tick.com',
+            'role' => 'admin',
+            'password' => Hash::make('admin123Kimia'),
+            ])->create();
+            
+      $this->call([
+            TransactionSeeder::class,
+        ]);
 
 
     // TypeEvenement::factory(4)->create();j
