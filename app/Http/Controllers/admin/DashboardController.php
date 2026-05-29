@@ -29,15 +29,8 @@ class DashboardController extends Controller
 
         $demandeEvenements=DemandeEvenement::all()->count();
 
-        $evenementsEncours= Evenement::where('statut', 'encours')
-            ->with(['organisateur.user', 'typeBillets'])
-            ->latest()
-            ->get()->count();
-
-        $evenementsPasses= Evenement::where('statut', 'ferme')
-            ->with(['organisateur.user', 'typeBillets'])
-            ->latest()
-            ->get()->count();
+        $evenementsEncours = Evenement::encours()->count();
+        $evenementsPasses = Evenement::ferme()->count();
 
         
         $eventsPerMonthRaw = Evenement::selectRaw('MONTH(created_at) as mois, COUNT(*) as total')

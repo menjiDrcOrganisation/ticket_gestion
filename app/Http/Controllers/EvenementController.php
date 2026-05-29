@@ -19,24 +19,38 @@ class EvenementController extends Controller
 {
     
      
-   public function index()
+   public function index(Request $request)
     {
-        $evenements = Evenement::with(['organisateur.user', 'typeBillets','billets'])
-            ->latest()
-            ->paginate(10);
+        $query = Evenement::with(['organisateur.user', 'typeBillets','billets'])
+            ->latest();
 
-        $evenementsEncours= Evenement::where('statut', 'encours')
-        ->with(['organisateur.user', 'typeBillets'])
-        ->latest()
-        ->get()->count();
+        if ($request->filled('search')) {
+            $search = '%' . $request->search . '%';
+            $query->where(function ($sub) use ($search) {
+                $sub->where('nom', 'like', $search)
+                    ->orWhere('adresse', 'like', $search)
+                    ->orWhereHas('organisateur.user', function ($q) use ($search) {
+                        $q->where('name', 'like', $search)
+                          ->orWhere('email', 'like', $search);
+                    });
+            });
+        }
 
-         $evenementsPasse= Evenement::where('statut', 'ferme')
-        ->with(['organisateur.user', 'typeBillets'])
-        ->latest()
-        ->get()->count();
+        if ($request->filled('statut')) {
+            match ($request->statut) {
+                'avenir' => $query->avenir(),
+                'encours' => $query->encours(),
+                'ferme' => $query->ferme(),
+                default => null,
+            };
+        }
 
-        return view('evenements.showAll', compact('evenements','evenementsEncours',
-    'evenementsPasse'));
+        $evenements = $query->paginate(10)->withQueryString();
+
+        $evenementsEncours = Evenement::encours()->count();
+        $evenementsPasse = Evenement::ferme()->count();
+
+        return view('evenements.showAll', compact('evenements','evenementsEncours', 'evenementsPasse'));
     }
 
     public function create()
@@ -233,8 +247,12 @@ class EvenementController extends Controller
 
    public function updateStatus(Request $request, $id)
 {
+    $validated = $request->validate([
+        'statut' => 'required|string|in:encours,ferme',
+    ]);
+
     $evenement = Evenement::findOrFail($id);
-    $evenement->statut = $request->statut;
+    $evenement->statut = $validated['statut'];
     $evenement->save();
 
     return redirect()->back()->with('success', 'Statut de l’événement mis à jour avec succès.');

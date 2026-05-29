@@ -15,7 +15,7 @@ class EvenementBilletTypeBilletController extends Controller
     public function index()
    
     {
-        $evenementsActifs = Evenement::where('statut', 'actif')->count();
+        $evenementsActifs = Evenement::encours()->count();
 
         $billetsVendus = EvenementBilletTypeBillet::sum('quantite');
 

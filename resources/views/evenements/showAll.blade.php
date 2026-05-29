@@ -18,15 +18,22 @@
 
     <!-- Recherche -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-3">
-        <input type="text"
-            placeholder="Rechercher un événement..."
-            class="w-full md:w-1/3 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black">
-        <select class="border border-gray-300 rounded-lg px-4 py-2 w-full md:w-auto">
-            <option value="">Tous les statuts</option>
-            <option value="encours">encours</option>
-            <option value="ferme">Fermé</option>
-            <option value="à venir">À venir</option>
-        </select>
+        <form action="{{ route('evenements.index') }}" method="GET" class="flex flex-col md:flex-row gap-3 w-full md:w-auto items-center">
+            <input type="text"
+                name="search"
+                value="{{ request('search') }}"
+                placeholder="Rechercher un événement..."
+                class="w-full md:w-72 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black">
+
+            <select name="statut" onchange="this.form.submit()" class="border border-gray-300 rounded-lg px-4 py-2 w-full md:w-auto">
+                <option value="">Tous les statuts</option>
+                <option value="avenir" {{ request('statut') === 'avenir' ? 'selected' : '' }}>À venir</option>
+                <option value="encours" {{ request('statut') === 'encours' ? 'selected' : '' }}>encours</option>
+                <option value="ferme" {{ request('statut') === 'ferme' ? 'selected' : '' }}>Fermé</option>
+            </select>
+
+            <button type="submit" class="border border-gray-300 text-white bg-blue-500 rounded-lg px-4 py-2 w-full md:w-auto">Rechercher</button>
+        </form>
 
         <a href="{{route('evenements.create')}}"><button class="border border-gray-300 text-white bg-blue-500 rounded-lg px-4 py-2 w-full md:w-auto" type="button"> creer un evenement</button></a>
     </div>
@@ -56,13 +63,14 @@
                     <td class="px-4 py-4 whitespace-nowrap hidden lg:table-cell">{{ $evenement->adresse }}</td>
                     <td class="px-4 py-4 whitespace-nowrap hidden lg:table-cell">{{ $evenement->salle }}</td>
                     <td class="px-4 py-4 whitespace-nowrap">
-                        @if($evenement->statut === 'encours')
-                            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">encours</span>
-                        @elseif($evenement->statut === 'ferme')
-                            <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs">Fermé</span>
-                        @else
-                            <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs">À venir</span>
-                        @endif
+                        <form action="{{ route('evenements.updateStatus', $evenement->id) }}" method="POST">
+                            @csrf
+                            @method('PATCH')
+                            <select name="statut" onchange="this.form.submit()" class="border border-gray-300 rounded-lg px-3 py-1 text-xs bg-white">
+                                <option value="encours" {{ $evenement->statut === 'encours' ? 'selected' : '' }}>encours</option>
+                                <option value="ferme" {{ $evenement->statut === 'ferme' ? 'selected' : '' }}>Fermé</option>
+                            </select>
+                        </form>
                     </td>
                     <td class="px-4 py-4 max-w-[150px] truncate hidden xl:table-cell">
                         <a href="https://ticket.menjidrc.com/{{ $evenement->url_evenement }}" 
