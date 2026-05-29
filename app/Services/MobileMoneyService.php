@@ -56,7 +56,7 @@ class MobileMoneyService
                 ],
             ];
 
-            $response = Http::timeout(15)
+            $response = Http::timeout(5)
                 ->withHeaders([
                     'Content-Type' => 'application/json',
                 ])

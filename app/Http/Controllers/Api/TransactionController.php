@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class TransactionController extends Controller
 {
@@ -416,9 +417,17 @@ class TransactionController extends Controller
             ], 404);
         }
 
+        $extension = pathinfo($transaction->billet->billetImage, PATHINFO_EXTENSION);
+        $acheteur = Str::slug((string) ($transaction->nom_complet_client ?: 'acheteur'), '_');
+        $acheteur = $acheteur !== '' ? $acheteur : 'acheteur';
+        $filename = "billet_{$acheteur}_{$transaction->reference}";
+        if ($extension !== '') {
+            $filename .= '.' . strtolower($extension);
+        }
+
         return Storage::disk('public')->download(
             $transaction->billet->billetImage,
-            basename($transaction->billet->billetImage)
+            $filename
         );
     }
 
@@ -432,6 +441,7 @@ class TransactionController extends Controller
         return [
             'reference' => $transaction->reference,
             'statut' => $transaction->statut,
+            'nom_complet_client' => $transaction->nom_complet_client,
             'expires_at' => $transaction->expires_at?->toIso8601String(),
             'billet' => [
                 'evenement' => $typeBillet?->evenement?->nom,
