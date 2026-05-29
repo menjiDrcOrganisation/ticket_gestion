@@ -10,7 +10,6 @@ use App\Models\Transaction;
 use App\Services\ExchangeRateService;
 use App\Services\MobileMoneyService;
 use App\Services\TicketPdfService;
-use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -479,21 +478,10 @@ class TransactionController extends Controller
 
     private function generateReadableReference(): string
     {
-        $datePart = now()->format('Ymd');
-        $prefix = 'CMD-' . $datePart . '-';
+        $timestamp = now()->format('YmdHisv');
+        $uuidPart = strtoupper(str_replace('-', '', (string) Str::uuid()));
 
-        $lastReference = Transaction::whereDate('created_at', Carbon::today())
-            ->lockForUpdate()
-            ->orderByDesc('id')
-            ->value('reference');
-
-        $sequence = 1;
-
-        if ($lastReference && str_starts_with($lastReference, $prefix)) {
-            $sequence = ((int) substr($lastReference, -6)) + 1;
-        }
-
-        return sprintf('%s%06d', $prefix, $sequence);
+        return sprintf('CMD-%s-%s', $timestamp, substr($uuidPart, 0, 12));
     }
 
     private function isSignatureValid(Request $request, array $payload): bool
