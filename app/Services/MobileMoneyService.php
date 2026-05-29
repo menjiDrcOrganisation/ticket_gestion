@@ -56,8 +56,7 @@ class MobileMoneyService
                 ],
             ];
 
-            $response = Http::timeout(1000)
-                ->retry(3, 2000)
+            $response = Http::timeout(15)
                 ->withHeaders([
                     'Content-Type' => 'application/json',
                 ])
@@ -65,10 +64,31 @@ class MobileMoneyService
 
             $responseData = $response->json();
 
+            if ($response->successful()) {
+                return [
+                    'status' => true,
+                    'data' => $responseData,
+                    'reference' => $transactionReference,
+                    'uncertain' => false,
+                ];
+            }
+
+            $httpCode = $response->status();
+            $isDefinitiveClientError =
+                $httpCode >= 400
+                && $httpCode < 500
+                && !in_array($httpCode, [408, 429], true);
+            $providerMessage = $responseData['errors']['message']
+                ?? $responseData['title']
+                ?? 'Erreur fournisseur lors de l\'initiation du paiement.';
+
             return [
-                'status' => $response->successful(),
+                'status' => false,
                 'data' => $responseData,
                 'reference' => $transactionReference,
+                'message' => is_array($providerMessage) ? json_encode($providerMessage) : (string) $providerMessage,
+                'http_code' => $httpCode,
+                'uncertain' => !$isDefinitiveClientError,
             ];
         } catch (Exception $e) {
             Log::error("Erreur MobileMoneyService initiation: " . $e->getMessage());
@@ -76,6 +96,7 @@ class MobileMoneyService
             return [
                 'status' => false,
                 'message' => $e->getMessage(),
+                'uncertain' => true,
             ];
         }
     }

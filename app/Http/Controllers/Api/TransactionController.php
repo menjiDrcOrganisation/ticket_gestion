@@ -160,6 +160,23 @@ class TransactionController extends Controller
             ]);
 
             if (!$payment['status']) {
+                $isUncertain = (bool) ($payment['uncertain'] ?? false);
+
+                if ($isUncertain) {
+                    $transaction->update([
+                        'statut' => 'paiement_en_cours',
+                    ]);
+
+                    return response()->json([
+                        'status' => true,
+                        'pending' => true,
+                        'message' => 'Paiement en cours de traitement. En attente du callback fournisseur.',
+                        'transaction_reference' => $transaction->reference,
+                        'error' => $payment['message'] ?? null,
+                        'gateway_response' => $payment['data'] ?? null,
+                    ], 202);
+                }
+
                 $transaction->update([
                     'statut' => 'echoue',
                     'failed_at' => now(),
@@ -169,6 +186,7 @@ class TransactionController extends Controller
                     'status' => false,
                     'message' => 'Echec du lancement du paiement.',
                     'error' => $payment['message'] ?? null,
+                    'gateway_response' => $payment['data'] ?? null,
                 ], 502);
             }
 
@@ -230,6 +248,7 @@ class TransactionController extends Controller
             'transactionReference' => $payload['transactionReference'] ?? null,
             'status' => $payload['transactionStatus'] ?? $payload['status'] ?? null,
             'has_signature_header' => $request->header('X-Signature') !== null,
+            'full_payload' => $payload,
         ]);
 
         if (!$this->isSignatureValid($request, $payload)) {
@@ -243,6 +262,7 @@ class TransactionController extends Controller
             $payload['transactionReference']
                 ?? $payload['reference']
                 ?? $payload['transaction_ref']
+                ?? $payload['originatingTransactionId']
                 ?? ''
         );
 
@@ -271,7 +291,30 @@ class TransactionController extends Controller
             ]);
         }
 
-        $paidAmount = (float) ($payload['amount'] ?? $payload['order']['amount'] ?? 0);
+        $callbackStatus = $payload['transactionStatus'] ?? $payload['status'] ?? null;
+
+        if (!$this->isSuccessfulStatus($callbackStatus)) {
+            $transaction->update([
+                'statut' => 'echoue',
+                'failed_at' => now(),
+                'callback_payload' => $payload,
+                'gateway_reference' => $payload['gatewayReference']
+                    ?? $payload['transactionId']
+                    ?? null,
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Paiement echoue chez le fournisseur.',
+            ], 422);
+        }
+
+        $paidAmount = (float) (
+            $payload['amount']
+                ?? $payload['order']['amount']
+                ?? $payload['order']['cost']['amount']
+                ?? 0
+        );
 
         if (round($paidAmount, 2) !== round((float) $transaction->montant, 2)) {
             $transaction->update([
@@ -287,24 +330,21 @@ class TransactionController extends Controller
         }
 
         $verified = MobileMoneyService::verifyPayment($transaction->reference, (float) $transaction->montant);
-
-        if (
-            !$verified['status']
-            && $this->isLocalCallbackRelaxed()
-            && $this->isSuccessfulStatus($payload['transactionStatus'] ?? $payload['status'] ?? null)
-        ) {
-            $verified = [
-                'status' => true,
-                'verified' => true,
-                'data' => ['source' => 'local-relaxed-callback'],
-            ];
-        }
+        $isSuccessfulCallback = $this->isSuccessfulStatus($callbackStatus);
 
         if (!$verified['status']) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Verification serveur fournisseur indisponible.',
-            ], 503);
+            if ($this->isLocalCallbackRelaxed() && $isSuccessfulCallback) {
+                $verified = [
+                    'status' => true,
+                    'verified' => true,
+                    'data' => ['source' => 'local-relaxed-callback'],
+                ];
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Verification serveur fournisseur indisponible.',
+                ], 503);
+            }
         }
 
         if (!($verified['verified'] ?? false)) {
