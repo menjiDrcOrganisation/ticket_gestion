@@ -109,6 +109,9 @@
     </div>
 
     <h2>Type billet</h2>
+    @error('ticket_type_id')
+        <p class="text-red-600 text-sm mb-2">{{ $message }}</p>
+    @enderror
     <div class="flex">
         <select id="billet_type" class="w-full border border-gray-300 rounded p-2">
             @foreach ($typeBillets as $ticket)
@@ -120,22 +123,33 @@
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         @foreach ($typeBillets as $index => $ticket)
-            <div class="hidden type_billet_element" id="{{ $ticket['id'] }}-ticket">
+            @php
+                $ticketId = $ticket['id'];
+                $oldQuantite = old('quantite.' . $ticketId, old('quantite.' . $index));
+                $oldPrix = old('prix.' . $ticketId, old('prix.' . $index));
+                $oldDevise = old('devise.' . $ticketId, old('devise.' . $index, 'CDF'));
+                $isCardActive = $oldQuantite !== null || $oldPrix !== null;
+            @endphp
+            <div class="{{ $isCardActive ? '' : 'hidden' }} type_billet_element" id="{{ $ticketId }}-ticket">
                 <div class="flex justify-between">
                     <label class="block text-gray-600 font-medium mb-2">{{ $ticket->nom_type }}</label>
                     <div class="close cursor-pointer">X</div>
                 </div>
 
-                <input type="hidden" name="ticket_type_id[]" value="{{ $ticket['id'] }}" />
+                <input type="hidden" name="ticket_type_id[]" value="{{ $ticketId }}" class="ticket-id-input" {{ $isCardActive ? '' : 'disabled' }} />
 
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-gray-500 text-sm mb-1">Quantité</label>
-                        <input type="number" name="quantite[]"
-                               value="{{ old('quantite.'.$index) }}"
-                               min="0"
-                               class="w-full border border-gray-300 rounded p-2">
+                        <input type="number" name="quantite[{{ $ticketId }}]"
+                               value="{{ $oldQuantite }}"
+                               min="1"
+                               class="w-full border border-gray-300 rounded p-2"
+                               {{ $isCardActive ? 'required' : 'disabled' }}>
 
+                        @error("quantite.$ticketId")
+                            <p class="text-red-600 text-sm">{{ $message }}</p>
+                        @enderror
                         @error("quantite.$index")
                             <p class="text-red-600 text-sm">{{ $message }}</p>
                         @enderror
@@ -143,11 +157,15 @@
 
                     <div>
                         <label class="block text-gray-500 text-sm mb-1">Prix</label>
-                        <input type="number" name="prix[]"
-                               value="{{ old('prix.'.$index) }}"
-                               min="0"
-                               class="w-full border border-gray-300 rounded p-2">
+                        <input type="number" name="prix[{{ $ticketId }}]"
+                               value="{{ $oldPrix }}"
+                               min="1"
+                               class="w-full border border-gray-300 rounded p-2"
+                               {{ $isCardActive ? 'required' : 'disabled' }}>
 
+                        @error("prix.$ticketId")
+                            <p class="text-red-600 text-sm">{{ $message }}</p>
+                        @enderror
                         @error("prix.$index")
                             <p class="text-red-600 text-sm">{{ $message }}</p>
                         @enderror
@@ -155,11 +173,14 @@
 
                     <div>
                         <label class="block text-gray-500 text-sm mb-1">Devise</label>
-                        <select name="devise[]" class="w-full border border-gray-300 rounded p-2">
-                            <option value="CDF">CDF</option>
-                            <option value="USD">USD</option>
+                        <select name="devise[{{ $ticketId }}]" class="w-full border border-gray-300 rounded p-2" {{ $isCardActive ? 'required' : 'disabled' }}>
+                            <option value="CDF" {{ $oldDevise === 'CDF' ? 'selected' : '' }}>CDF</option>
+                            <option value="USD" {{ $oldDevise === 'USD' ? 'selected' : '' }}>USD</option>
                         </select>
 
+                        @error("devise.$ticketId")
+                            <p class="text-red-600 text-sm">{{ $message }}</p>
+                        @enderror
                         @error("devise.$index")
                             <p class="text-red-600 text-sm">{{ $message }}</p>
                         @enderror
@@ -176,7 +197,7 @@
         <input type="text" name="nom_organisateur"
                value="{{ old('nom_organisateur') }}"
                placeholder="Nom de l'organisateur"
-               class="w-full border border-gray-300 rounded p-2 mb-2">
+               class="w-full border border-gray-300 rounded p-2 mb-2" required>
 
         @error('nom_organisateur')
             <p class="text-red-600 text-sm">{{ $message }}</p>
@@ -185,7 +206,7 @@
         <input type="email" name="email_organisateur"
                value="{{ old('email_organisateur') }}"
                placeholder="email"
-               class="w-full border border-gray-300 rounded p-2 mb-2">
+             class="w-full border border-gray-300 rounded p-2 mb-2" required>
 
         @error('email_organisateur')
             <p class="text-red-600 text-sm">{{ $message }}</p>
@@ -194,7 +215,7 @@
         <input type="text" name="telephone"
                value="{{ old('telephone') }}"
                placeholder="telephone"
-               class="w-full border border-gray-300 rounded p-2">
+             class="w-full border border-gray-300 rounded p-2" required>
 
         @error('telephone')
             <p class="text-red-600 text-sm">{{ $message }}</p>
@@ -255,39 +276,76 @@
     function openModal(id){document.getElementById(id).classList.remove('hidden');}
     function closeModal(id){document.getElementById(id).classList.add('hidden');}
 
-    const type_billet_element = document.getElementsByClassName("type_billet_element")
+    const createEventForm = document.querySelector('form[action="{{ route('evenements.store') }}"]');
+    const typeBilletAction = document.getElementById('billet_type');
 
-    const type_billet_action = document.getElementById("billet_type")
+    function setCardState(card, isActive) {
+        if (!card) return;
 
+        card.classList.toggle('hidden', !isActive);
 
-    if (type_billet_action.options.length > 0) {
-    type_billet_action.selectedIndex = 0;
+        const ticketIdInput = card.querySelector('.ticket-id-input');
+        if (ticketIdInput) {
+            ticketIdInput.disabled = !isActive;
+        }
 
-    // Récupérer la valeur du premier
-    const firstId = type_billet_action.value;
-
-    // Afficher automatiquement le premier bloc
-    const firstBlock = document.getElementById(firstId);
-    if (firstBlock) firstBlock.classList.remove("hidden");
+        card.querySelectorAll('input[type="number"], select').forEach((field) => {
+            field.disabled = !isActive;
+            field.required = isActive;
+        });
     }
 
-    type_billet_action.addEventListener("change", function (e) {
-        document.getElementById(e.target.value).classList.remove("hidden")
-    })
+    if (typeBilletAction && typeBilletAction.options.length > 0) {
+        typeBilletAction.selectedIndex = 0;
 
-    document.querySelectorAll(".type_billet_element .close").forEach(btn => {
-        btn.addEventListener("click", function (e) {
-            const parent = e.target.closest(".type_billet_element");
-             parent.querySelectorAll("input").forEach(input => {
-            input.value = 0;
-        });
+        const hasActiveCard = Array.from(document.querySelectorAll('.type_billet_element'))
+            .some((card) => !card.classList.contains('hidden'));
 
-        parent.querySelectorAll("select").forEach(select => {
-            select.selectedIndex = 0; 
+        if (!hasActiveCard) {
+            const firstId = typeBilletAction.value;
+            const firstBlock = document.getElementById(firstId);
+            setCardState(firstBlock, true);
+        }
+
+        typeBilletAction.addEventListener('change', function (e) {
+            const selectedCard = document.getElementById(e.target.value);
+            setCardState(selectedCard, true);
         });
-            parent.classList.add("hidden");
+    }
+
+    document.querySelectorAll('.type_billet_element .close').forEach((btn) => {
+        btn.addEventListener('click', function (e) {
+            const parent = e.target.closest('.type_billet_element');
+
+            parent.querySelectorAll('input[type="number"]').forEach((input) => {
+                input.value = '';
+            });
+
+            parent.querySelectorAll('select').forEach((select) => {
+                select.selectedIndex = 0;
+            });
+
+            setCardState(parent, false);
         });
     });
+
+    if (createEventForm) {
+        createEventForm.addEventListener('submit', function (e) {
+            const activeCards = Array.from(document.querySelectorAll('.type_billet_element'))
+                .filter((card) => !card.classList.contains('hidden'));
+
+            const hasValidTicket = activeCards.some((card) => {
+                const qty = Number(card.querySelector('input[name^="quantite["]')?.value || 0);
+                const price = Number(card.querySelector('input[name^="prix["]')?.value || 0);
+                return qty > 0 && price > 0;
+            });
+
+            if (!hasValidTicket) {
+                e.preventDefault();
+                alert('Ajoutez au moins un type de billet avec une quantite et un prix superieurs a 0.');
+            }
+        });
+    }
 </script>
 
 @endsection

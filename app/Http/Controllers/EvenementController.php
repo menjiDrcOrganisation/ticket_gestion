@@ -14,6 +14,10 @@ use App\Models\Ressource;
 
 use App\Mail\EnvoiMotDePasseMail;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use Carbon\Carbon;
 
 class EvenementController extends Controller
 {
@@ -50,105 +54,109 @@ class EvenementController extends Controller
      */
     public function store(\App\Http\Requests\StoreEvenementRequest $request)
     {
+        $validated = $request->validated();
 
         try {
-            $uuid = Str::uuid(); 
-            $code_organi = substr($uuid, 0, 10);
+            $code_organi = substr((string) Str::uuid(), 0, 10);
+            $code_scanneur = substr((string) Str::uuid(), 0, 8);
+            $email_scanneur = uniqid() . '@gmail.com';
 
-            $uuid = Str::uuid();          
-            $code_scanneur = substr($uuid, 0, 8);
-        
-            $validated = $request->validated(); 
-            
-            $email_scanneur=uniqid()
-        . '@gmail.com';
-
-            if (!empty($validated['nom_organisateur'])) {
-
-                //organisateur
-                $user = User::create(
-                     // condition
-                    ['email' => $validated['email_organisateur'],
-                        'name' => $validated['nom_organisateur'],
-                        'password' => Hash::make($code_organi),
-                        'role' => 'organisateur',
-                    ]
-                );
+            $evenement = DB::transaction(function () use ($validated, $code_organi, $code_scanneur, $email_scanneur) {
+                $userOrganisateur = User::create([
+                    'email' => $validated['email_organisateur'],
+                    'name' => $validated['nom_organisateur'],
+                    'password' => Hash::make($code_organi),
+                    'role' => 'organisateur',
+                ]);
 
                 $organisateur = Organisateur::create([
-                    'user_id' => $user->id,
+                    'user_id' => $userOrganisateur->id,
                     'telephone' => $validated['telephone'],
                 ]);
 
-                // scanneur
-
-                 $user = User::create(['email' => $email_scanneur,
-                        'name' => "Scanneur",
-                        'password' => Hash::make($code_scanneur),
-                        'role' => 'scanneur',
-                    ]
-                );
-
-                $scanneur = Scanneur::create([
-                    'user_id' => $user->id
+                $userScanneur = User::create([
+                    'email' => $email_scanneur,
+                    'name' => 'Scanneur',
+                    'password' => Hash::make($code_scanneur),
+                    'role' => 'scanneur',
                 ]);
 
-                
+                $scanneur = Scanneur::create([
+                    'user_id' => $userScanneur->id,
+                ]);
 
-            } else {
-                $organisateur = null;
-            }
+                $evenement = Evenement::create([
+                    'nom' => $validated['nom_evenement'],
+                    'url_evenement' => $this->generateUniqueEventSlug($validated['nom_evenement']),
+                    'organisateur_id' => $organisateur->id,
+                    'scanneur_id' => $scanneur->id,
+                    'adresse' => $validated['adresse'],
+                    'salle' => $validated['salle'],
+                    'date_debut' => Carbon::parse($validated['date_debut'] . ' ' . $validated['heure_debut']),
+                    'date_fin' => Carbon::parse($validated['date_fin'] . ' ' . $validated['heure_fin']),
+                    'heure_debut' => $validated['heure_debut'],
+                    'heure_fin' => $validated['heure_fin'],
+                    'statut' => 'encours',
+                ]);
 
-            // Création de l'événement
-            $evenement = Evenement::create([
-                'nom' => $validated['nom_evenement'],
-                'url_evenement' => Str::slug($validated['nom_evenement']),
-                'organisateur_id' => $organisateur?->id,
-                'scanneur_id' => $scanneur?->id,
-                'adresse' => $validated['adresse'],
-                'salle' => $validated['salle'],
-                'date_debut' => $validated['date_debut'],
-                'date_fin' => $validated['date_fin'],
-                'heure_debut' => $validated['heure_debut'],
-                'heure_fin' => $validated['heure_fin'],
-                'statut' => 'encours',
-            ]);
+                $photoAffiche = $validated['photo_affiche'];
+                $imagePath = $photoAffiche->store('affiches', 'public');
 
-            $photo_affiche=$validated['photo_affiche'];
-            $image_path = $photo_affiche->store("affiches","public");
+                Ressource::create([
+                    'nom_artiste' => $validated['nom_artiste'],
+                    'phrase_accroche' => $validated['acroche'],
+                    'a_propos' => $validated['a_propos'],
+                    'photo_affiche' => $imagePath,
+                    'evenement_id' => $evenement->id,
+                ]);
 
-            Ressource::create([
-                'nom_artiste' => $validated['nom_artiste'],
-                'phrase_accroche'=> $validated['acroche'],
-                'a_propos'=> $validated['a_propos'],
-                'photo_affiche'=>$image_path,
-                'evenement_id'=> $evenement->id
-            ]);
+                $ticketCount = 0;
+                foreach ($validated['ticket_type_id'] as $index => $typeId) {
+                    $typeId = (int) $typeId;
+                    $quantite = (int) (
+                        $validated['quantite'][$typeId]
+                        ?? $validated['quantite'][$index]
+                        ?? 0
+                    );
+                    $prix = (float) (
+                        $validated['prix'][$typeId]
+                        ?? $validated['prix'][$index]
+                        ?? 0
+                    );
+                    $devise = strtoupper((string) (
+                        $validated['devise'][$typeId]
+                        ?? $validated['devise'][$index]
+                        ?? 'CDF'
+                    ));
 
-            // Boucle sur type les billets
-            foreach ($validated['ticket_type_id'] as $index => $typeId) {
-                $quantite = $validated['quantite'][$index] ?? 0;
-                $prix = $validated['prix'][$index] ?? 0;
-                $devise = $validated['devise'][$index];
+                    if ($quantite > 0 && $prix > 0) {
+                        EvenementTypeBillet::create([
+                            'evenement_id' => $evenement->id,
+                            'type_billet_id' => $typeId,
+                            'nombre_billet' => $quantite,
+                            'prix_unitaire' => $prix,
+                            'devise' => $devise,
+                        ]);
+                        $ticketCount++;
+                    }
+                }
 
-                if ($quantite > 0 && $prix  > 0) {
-                    EvenementTypeBillet::create([
-                        'evenement_id' => $evenement->id,
-                        'type_billet_id' => $typeId,
-                        'nombre_billet' => $quantite,
-                        'prix_unitaire' => $prix,
-                        'devise'=> $devise
+                if ($ticketCount === 0) {
+                    throw ValidationException::withMessages([
+                        'ticket_type_id' => 'Ajoutez au moins un type de billet avec une quantite et un prix superieurs a 0.',
                     ]);
                 }
-            }
+
+                return $evenement;
+            });
             
              try {
                 
-               $error= Mail::to($validated['email_organisateur'])->send(new EnvoiMotDePasseMail(
+                Mail::to($validated['email_organisateur'])->send(new EnvoiMotDePasseMail(
                     $validated['nom_organisateur'],
                     $validated['email_organisateur'],
                     $code_organi,
-                    env('ACHAT_URL', 'https://kimiaticket.com')."/".Str::slug($validated['nom_evenement']),
+                    env('ACHAT_URL', 'https://kimiaticket.com') . "/" . $evenement->url_evenement,
                     $email_scanneur,
                     $code_scanneur
                 ));
@@ -160,9 +168,27 @@ class EvenementController extends Controller
             }
 
             return redirect()->route('evenements.index')->with('success', $message);
+        } catch (ValidationException $e) {
+            return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Throwable $th) {
-            return $th;
+            return redirect()->back()->withInput()->with('error', 'Erreur lors de la creation de l evenement : ' . $th->getMessage());
         }
+    }
+
+    private function generateUniqueEventSlug(string $name): string
+    {
+        $baseSlug = Str::slug($name);
+        $baseSlug = $baseSlug !== '' ? $baseSlug : 'evenement';
+
+        $slug = $baseSlug;
+        $counter = 2;
+
+        while (Evenement::where('url_evenement', $slug)->exists()) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+
+        return $slug;
     }
 
 
@@ -200,16 +226,54 @@ class EvenementController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $validated = $request->validate([
+            'nom' => 'nullable|string|max:255',
+            'date_debut' => 'nullable|date',
+            'date_fin' => 'nullable|date|after_or_equal:date_debut',
+            'adresse' => 'nullable|string|max:255',
+            'salle' => 'nullable|string|max:255',
+            'url_evenement' => 'nullable|string|max:255',
+            'photo_affiche' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+        ]);
 
-         try {
-            $evenement =Evenement::find($id);
-            $evenement->update($request->all());
-    
-            return redirect()->back()->with('success', 'Evenement modifier avec  succces.');
+        try {
+            $evenement = Evenement::findOrFail($id);
+
+            $evenement->update([
+                'nom' => $validated['nom'] ?? $evenement->nom,
+                'date_debut' => $validated['date_debut'] ?? $evenement->date_debut,
+                'date_fin' => $validated['date_fin'] ?? $evenement->date_fin,
+                'adresse' => $validated['adresse'] ?? $evenement->adresse,
+                'salle' => $validated['salle'] ?? $evenement->salle,
+                'url_evenement' => $validated['url_evenement'] ?? $evenement->url_evenement,
+            ]);
+
+            if ($request->hasFile('photo_affiche')) {
+                $imagePath = $request->file('photo_affiche')->store('affiches', 'public');
+                $ressource = $evenement->ressource()->latest('id')->first();
+
+                if ($ressource && !empty($ressource->photo_affiche) && Storage::disk('public')->exists($ressource->photo_affiche)) {
+                    Storage::disk('public')->delete($ressource->photo_affiche);
+                }
+
+                if ($ressource) {
+                    $ressource->update([
+                        'photo_affiche' => $imagePath,
+                    ]);
+                } else {
+                    Ressource::create([
+                        'nom_artiste' => 'Artiste',
+                        'phrase_accroche' => null,
+                        'a_propos' => null,
+                        'photo_affiche' => $imagePath,
+                        'evenement_id' => $evenement->id,
+                    ]);
+                }
+            }
+
+            return redirect()->back()->with('success', 'Evenement modifie avec succes.');
         } catch (\Throwable $th) {
-            dd($th);
-            return redirect()->back()->with('error', 'Erreur lors de la mise à jour de l evenement : ' . $th->getMessage());
-
+            return redirect()->back()->with('error', 'Erreur lors de la mise a jour de l evenement : ' . $th->getMessage());
         }
         
     }

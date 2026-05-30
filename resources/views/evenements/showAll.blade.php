@@ -247,7 +247,7 @@
                 <div id="edit-modal-{{ $evenement->id }}" 
                     class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50 p-4">
 
-                    <div class="bg-white rounded-xl shadow-lg w-full max-w-xl p-6 relative">
+                    <div class="bg-white rounded-xl shadow-lg w-full max-w-xl p-6 relative max-h-[90vh] overflow-y-auto">
 
                         <!-- Close button -->
                         <button onclick="closeModal('edit-modal-{{ $evenement->id }}')" 
@@ -257,11 +257,11 @@
 
                         <h2 class="text-xl font-bold mb-4 text-gray-800">Modifier l'événement</h2>
 
-                        <form action="{{ route('evenements.update', $evenement->id) }}" method="POST">
+                        <form action="{{ route('evenements.update', $evenement->id) }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             @method('PUT')
 
-                            <div class="grid gap-4">
+                            <div class="grid gap-4 max-h-[65vh] overflow-y-auto pr-1">
 
                                 <div>
                                     <label class="text-sm text-gray-600">Nom événement</label>
@@ -299,6 +299,15 @@
                                     <label class="text-sm text-gray-600">Url de l'evenement</label>
                                     <input type="text" name="url_evenement" value="{{ $evenement->url_evenement }}"
                                         class="w-full border rounded-lg p-2">
+                                </div>
+
+                                <div>
+                                    <label class="text-sm text-gray-600">Changer la photo de l'affiche</label>
+                                    <input type="file" name="photo_affiche" accept="image/*"
+                                        class="w-full border rounded-lg p-2">
+                                    @if(isset($evenement->ressource[0]) && !empty($evenement->ressource[0]->photo_affiche))
+                                        <p class="text-xs text-gray-500 mt-1">Photo actuelle: {{ $evenement->ressource[0]->photo_affiche }}</p>
+                                    @endif
                                 </div>
 
                             </div>
