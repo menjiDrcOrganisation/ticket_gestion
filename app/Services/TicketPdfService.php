@@ -14,9 +14,7 @@ class TicketPdfService
     {
         $billet->loadMissing(['evenement.ressource', 'type_billet']);
 
-        $qrSvg = QrCode::format('svg')
-            ->size(300)
-            ->generate($billet->code_billet);
+        $qrSvg = $this->generateQrSvg($billet->code_billet);
 
         $qrCodeUrl = 'data:image/svg+xml;base64,' . base64_encode($qrSvg);
 
@@ -55,5 +53,26 @@ class TicketPdfService
         ]);
 
         return $fileName;
+    }
+
+    private function generateQrSvg(string $content): string
+    {
+        if (class_exists(QrCode::class)) {
+            return QrCode::format('svg')
+                ->size(300)
+                ->generate($content);
+        }
+
+        $escapedContent = htmlspecialchars($content, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+        return sprintf(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">'
+            . '<rect width="300" height="300" fill="#ffffff" stroke="#111827" stroke-width="4"/>'
+            . '<rect x="24" y="24" width="252" height="252" rx="18" fill="#f9fafb" stroke="#d1d5db" stroke-width="2"/>'
+            . '<text x="150" y="138" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#111827">QR indisponible</text>'
+            . '<text x="150" y="172" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#4b5563">%s</text>'
+            . '</svg>',
+            $escapedContent
+        );
     }
 }
