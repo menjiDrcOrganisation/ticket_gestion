@@ -321,8 +321,23 @@ class TransactionController extends Controller
             ], 422);
         }
 
-        $verified = MobileMoneyService::verifyPayment($transaction->reference, (float) $transaction->montant);
         $isSuccessfulCallback = $this->isSuccessfulStatus($callbackStatus);
+        $verifyUrl = (string) env('MOBILE_MONEY_VERIFY_URL', '');
+
+        if ($isSuccessfulCallback && $verifyUrl === '') {
+            Log::info('Verification fournisseur ignoree: MOBILE_MONEY_VERIFY_URL absent.', [
+                'reference' => $transaction->reference,
+                'status' => $callbackStatus,
+            ]);
+
+            $verified = [
+                'status' => true,
+                'verified' => true,
+                'data' => ['source' => 'callback-only'],
+            ];
+        } else {
+            $verified = MobileMoneyService::verifyPayment($transaction->reference, (float) $transaction->montant);
+        }
 
         if (!$verified['status']) {
             if ($this->isLocalCallbackRelaxed() && $isSuccessfulCallback) {
