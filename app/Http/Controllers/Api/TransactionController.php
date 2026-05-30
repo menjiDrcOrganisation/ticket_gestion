@@ -568,6 +568,7 @@ class TransactionController extends Controller
             $billet = Billet::create([
                 'nom_auteur' => $locked->nom_complet_client,
                 'numero' => $locked->numero_telephone,
+                'billetImage' => '',
                 'code_billet' => 'TCK-' . strtoupper(uniqid()),
                 'evenement_id' => $locked->evenement_id,
                 'type_billet_id' => $locked->type_billet_id,
