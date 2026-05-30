@@ -4,17 +4,22 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class Billet extends Model
 {
     /** @use HasFactory<\Database\Factories\BilletFactory> */
     use HasFactory;
+
+    private static ?string $billetImageColumn = null;
+
     protected   $fillable = [
        'date_achat',
        'nom_auteur',
        'numero',
        'email',
        'billetImage',
+       'billet_image',
        'code_billet',
        'statut',
        'quantite', 
@@ -22,6 +27,34 @@ class Billet extends Model
        'evenement_id',
        'type_billet_id'
     ];
+
+public function getBilletImageAttribute($value)
+{
+    if (!empty($value)) {
+        return $value;
+    }
+
+    return $this->attributes['billet_image'] ?? null;
+}
+
+public function setBilletImageAttribute($value): void
+{
+    $column = $this->resolveBilletImageColumn();
+    $this->attributes[$column] = $value;
+}
+
+private function resolveBilletImageColumn(): string
+{
+    if (self::$billetImageColumn !== null) {
+        return self::$billetImageColumn;
+    }
+
+    self::$billetImageColumn = Schema::hasColumn('billets', 'billetImage')
+        ? 'billetImage'
+        : 'billet_image';
+
+    return self::$billetImageColumn;
+}
 
 public function evenement()
 {
