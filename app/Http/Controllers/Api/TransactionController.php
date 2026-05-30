@@ -243,19 +243,30 @@ class TransactionController extends Controller
     public function callback(Request $request): JsonResponse
     {
         $payload = $request->all();
+        $callbackStatus = $payload['transactionStatus'] ?? $payload['status'] ?? null;
+        $hasValidSignature = $this->isSignatureValid($request, $payload);
 
         Log::info('Callback paiement recu.', [
             'transactionReference' => $payload['transactionReference'] ?? null,
-            'status' => $payload['transactionStatus'] ?? $payload['status'] ?? null,
+            'status' => $callbackStatus,
             'has_signature_header' => $request->header('X-Signature') !== null,
+            'has_valid_signature' => $hasValidSignature,
             'full_payload' => $payload,
         ]);
 
-        if (!$this->isSignatureValid($request, $payload)) {
+        if (!$hasValidSignature && !$this->isSuccessfulStatus($callbackStatus)) {
             return response()->json([
                 'status' => false,
                 'message' => 'Signature callback invalide.',
             ], 401);
+        }
+
+        if (!$hasValidSignature) {
+            Log::warning('Callback paiement sans signature valide, verification fournisseur requise.', [
+                'status' => $callbackStatus,
+                'transactionReference' => $payload['transactionReference'] ?? null,
+                'originatingTransactionId' => $payload['originatingTransactionId'] ?? null,
+            ]);
         }
 
         $reference = (string) (
@@ -290,8 +301,6 @@ class TransactionController extends Controller
                 'message' => 'Transaction deja traitee.',
             ]);
         }
-
-        $callbackStatus = $payload['transactionStatus'] ?? $payload['status'] ?? null;
 
         if (!$this->isSuccessfulStatus($callbackStatus)) {
             $transaction->update([
