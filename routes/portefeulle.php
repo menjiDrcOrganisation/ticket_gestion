@@ -1,5 +1,5 @@
 <?php
-use App\Http\Controllers\admin\PortefeulleController;
+use App\Http\Controllers\Admin\PortefeulleController;
 Route::prefix('portefeulle')->name('portefeulle.')->group(function () {
         Route::get('/', [PortefeulleController::class, 'showMontantEvent'])->name('showMontantEvent');      
        
