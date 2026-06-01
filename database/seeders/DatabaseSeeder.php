@@ -23,16 +23,16 @@ class DatabaseSeeder extends Seeder
    public function run(): void
 {
     
-    User::updateOrCreate(
-      ['email' => 'admin@tick.com'],
-      [
-        'name' => 'Admin',
-        'role' => 'admin',
-        'password' => Hash::make('admin123Kimia'),
-      ]
-    );
+    // User::updateOrCreate(
+    //   ['email' => 'admin@tick.com'],
+    //   [
+    //     'name' => 'Admin',
+    //     'role' => 'admin',
+    //     'password' => Hash::make('admin123Kimia'),
+    //   ]
+    // );
 
-    $this->call(DemoEvenementScenarioSeeder::class);
+    // $this->call(DemoEvenementScenarioSeeder::class);
 
     User::factory()->state([
               'name' => 'Admin',
