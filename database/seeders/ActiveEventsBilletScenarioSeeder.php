@@ -25,50 +25,53 @@ class ActiveEventsBilletScenarioSeeder extends Seeder
         foreach ($activeEvents as $event) {
             foreach ($event->typeBillets as $typeBillet) {
                 $stock = (int) ($typeBillet->pivot->nombre_billet ?? 1);
-                $quantite = max(1, min(3, $stock));
-
-                $seedCode = sprintf('SEED-ACTIF-%d-%d', $event->id, $typeBillet->id);
-                $imageBasePath = sprintf('seed/billets/%s', strtolower($seedCode));
                 $buyerSlug = strtolower(preg_replace('/[^a-z0-9]+/i', '.', $typeBillet->nom_type));
                 $buyerSlug = trim($buyerSlug, '.');
+                // Cree plusieurs billets par type (max 10 pour garder un seed rapide).
+                $nombreBilletsACreer = max(1, min(10, $stock));
 
-                $qrAsset = $this->generateQrAsset($seedCode, $imageBasePath);
-                $imagePath = $qrAsset['path'];
+                for ($i = 1; $i <= $nombreBilletsACreer; $i++) {
+                    $seedCode = sprintf('SEED-ACTIF-%d-%d-%d', $event->id, $typeBillet->id, $i);
+                    $imageBasePath = sprintf('seed/billets/%s', strtolower($seedCode));
 
-                // Genere un vrai QR SVG pour le billet seed.
-                if (! Storage::disk('public')->exists($imagePath)) {
-                    Storage::disk('public')->put($imagePath, $qrAsset['content']);
+                    $qrAsset = $this->generateQrAsset($seedCode, $imageBasePath);
+                    $imagePath = $qrAsset['path'];
+
+                    // Genere un vrai QR SVG pour le billet seed.
+                    if (! Storage::disk('public')->exists($imagePath)) {
+                        Storage::disk('public')->put($imagePath, $qrAsset['content']);
+                    }
+
+                    $billet = Billet::updateOrCreate(
+                        ['code_billet' => $seedCode],
+                        [
+                            'date_achat' => now()->subHours(2),
+                            'nom_auteur' => 'Client Seed ' . $typeBillet->nom_type . ' #' . $i,
+                            'numero' => '+2439700' . str_pad((string) (($typeBillet->id * 100) + $i), 5, '0', STR_PAD_LEFT),
+                            'email' => sprintf('seed.%s.event%d.%d@example.com', $buyerSlug ?: 'client', $event->id, $i),
+                            // Certaines bases en production ont cette colonne en NOT NULL.
+                            'billetImage' => $imagePath,
+                            'statut' => 'valide',
+                            'quantite' => 1,
+                            'quantite_fictif' => 1,
+                            'evenement_id' => $event->id,
+                            'type_billet_id' => $typeBillet->id,
+                        ]
+                    );
+
+                    EvenementBilletTypeBillet::updateOrCreate(
+                        [
+                            'evenement_id' => $event->id,
+                            'billet_id' => $billet->id,
+                            'type_billet_id' => $typeBillet->id,
+                        ],
+                        [
+                            'statut' => 'valide',
+                            'quantite' => 1,
+                            'quantite_fictif' => 1,
+                        ]
+                    );
                 }
-
-                $billet = Billet::updateOrCreate(
-                    ['code_billet' => $seedCode],
-                    [
-                        'date_achat' => now()->subHours(2),
-                        'nom_auteur' => 'Client Seed ' . $typeBillet->nom_type,
-                        'numero' => '+243970000' . str_pad((string) $typeBillet->id, 3, '0', STR_PAD_LEFT),
-                        'email' => sprintf('seed.%s.event%d@example.com', $buyerSlug ?: 'client', $event->id),
-                        // Certaines bases en production ont cette colonne en NOT NULL.
-                        'billetImage' => $imagePath,
-                        'statut' => 'valide',
-                        'quantite' => $quantite,
-                        'quantite_fictif' => $quantite,
-                        'evenement_id' => $event->id,
-                        'type_billet_id' => $typeBillet->id,
-                    ]
-                );
-
-                EvenementBilletTypeBillet::updateOrCreate(
-                    [
-                        'evenement_id' => $event->id,
-                        'billet_id' => $billet->id,
-                        'type_billet_id' => $typeBillet->id,
-                    ],
-                    [
-                        'statut' => 'valide',
-                        'quantite' => $quantite,
-                        'quantite_fictif' => $quantite,
-                    ]
-                );
             }
         }
     }
