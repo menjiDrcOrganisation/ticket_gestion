@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\DemandeEvenement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\DemandeEvent;
 
 class DemandeEvenementController extends Controller
 {
@@ -32,7 +34,7 @@ class DemandeEvenementController extends Controller
             $affichePath = $request->file('affiche')->store('affiches', 'public');
         }
 
-        DemandeEvenement::create([
+     $demandeEvenement=   DemandeEvenement::create([
             'nom_evenement' => $request->nom_evenement,
             'contact_organisateur' => $request->contact_organisateur,
             'description' => $request->description,
@@ -40,6 +42,12 @@ class DemandeEvenementController extends Controller
             'statut' => $request->statut,
             'affiche' => $affichePath,
         ]);
+
+     
+
+        Mail::to('benikasu7@gmail.com')->send(new DemandeEvent($demandeEvenement));
+
+
 
         return redirect()->back()->with('success', 'Demande ajoutée avec succès.');
     }
