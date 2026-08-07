@@ -9,8 +9,24 @@ use App\Http\Controllers\organisateur\BilletController;
 
 
 Route::get('/', [HomeController::class, 'home'])->name('home')->middleware(['auth']);
+require __DIR__.'/auth.php';
 
 Route::middleware('auth')->group(function () {
+
+        
+        require __DIR__ . '/evenement.php';
+        require __DIR__.'/dmd_event.php';
+        require __DIR__.'/dashboard.php';
+        require __DIR__.'/organisateur.php';
+        require __DIR__.'/scanneur.php';
+        require __DIR__.'/type_billet.php';
+        require __DIR__.'/portefeulle.php';
+        require __DIR__.'/user.php';
+        require __DIR__.'/retrait.php';
+        require __DIR__.'/event_sacnner.php';
+        require __DIR__.'/dmd_retrait.php';
+        require  __DIR__.'/transaction.php';
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -21,16 +37,3 @@ Route::middleware('auth')->group(function () {
 Route::post('/billet/regenerer/{id}', [BilletController::class, 'regenererDepuisDB'])
     ->name('billet.regenerer');
 
-require __DIR__.'/auth.php';
-require __DIR__ . '/evenement.php';
-require __DIR__.'/dmd_event.php';
-require __DIR__.'/dashboard.php';
-require __DIR__.'/organisateur.php';
-require __DIR__.'/scanneur.php';
-require __DIR__.'/type_billet.php';
-require __DIR__.'/portefeulle.php';
-require __DIR__.'/user.php';
-require __DIR__.'/retrait.php';
-require __DIR__.'/event_sacnner.php';
-require __DIR__.'/dmd_retrait.php';
-require  __DIR__.'/transaction.php';

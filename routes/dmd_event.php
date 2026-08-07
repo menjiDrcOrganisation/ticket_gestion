@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\DemandeEvenementController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TypeEvenementController;
+use App\Http\Controllers\EvenementBilletTypeBilletController;
 
 Route::get('/dmd_events', [DemandeEvenementController::class, 'index'])->name('demandeEvenement.index');
 
@@ -12,8 +14,7 @@ Route::delete('/dmd_events/{demandeEvenement}', [DemandeEvenementController::cla
 
 
 //type d'evenement routes
-use App\Http\Controllers\TypeEvenementController;
-use App\Http\Controllers\EvenementBilletTypeBilletController;
+
 
 
 Route::get('/type_evenements', [TypeEvenementController::class, 'index'])->name('typeEvenement.index');

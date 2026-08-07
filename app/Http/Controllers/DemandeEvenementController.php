@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\DemandeEvenement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Mail\ConfirmationDemandeEvenementMail;
+use Illuminate\Support\Facades\Mail;
 
 class DemandeEvenementController extends Controller
 {
@@ -16,33 +18,42 @@ class DemandeEvenementController extends Controller
     }
 
     // Ajouter une demande
-    public function store(Request $request)
-    {
-        $request->validate([
-            'nom_evenement' => 'required|string|max:255',
-            'contact_organisateur' => 'required|string|max:255',
-            'description' => 'required|string',
-            'type_evenement' => 'required|string|max:255',
-            'statut' => 'required|string|in:en_attente,valide,ferme',
-            'affiche' => 'nullable|image|max:2048', // 2MB max
-        ]);
+public function store(Request $request)
+{   
+    $request->validate([
+        'nom_evenement' => 'required|string|max:255',
+        'contact_organisateur' => 'required|string|max:255',
+        'description' => 'required|string',
+        'type_evenement' => 'required|string|max:255',
+        'statut' => 'required|string|in:en_attente,valide,ferme',
+        'affiche' => 'nullable|image|max:2048',
+    ]);
 
-        $affichePath = null;
-        if($request->hasFile('affiche')){
-            $affichePath = $request->file('affiche')->store('affiches', 'public');
-        }
+    $affichePath = null;
 
-        DemandeEvenement::create([
-            'nom_evenement' => $request->nom_evenement,
-            'contact_organisateur' => $request->contact_organisateur,
-            'description' => $request->description,
-            'type_evenement' => $request->type_evenement,
-            'statut' => $request->statut,
-            'affiche' => $affichePath,
-        ]);
-
-        return redirect()->back()->with('success', 'Demande ajoutée avec succès.');
+    if ($request->hasFile('affiche')) {
+        $affichePath = $request->file('affiche')
+            ->store('affiches', 'public');
     }
+
+   $demande = DemandeEvenement::create([
+    'nom_evenement' => $request->nom_evenement,
+    'contact_organisateur' => $request->contact_organisateur,
+    'description' => $request->description,
+    'type_evenement' => $request->type_evenement,
+    'statut' => $request->statut,
+    'affiche' => $affichePath,
+]);
+
+if (filter_var($request->contact_organisateur, FILTER_VALIDATE_EMAIL)) {
+    Mail::to($request->contact_organisateur)
+        ->send(new ConfirmationDemandeEvenementMail($demande));
+}
+
+    return redirect()
+        ->back()
+        ->with('success', 'Demande créée avec succès.');
+}
 
     // Modifier une demande
     public function update(Request $request, DemandeEvenement $demandeEvenement)
