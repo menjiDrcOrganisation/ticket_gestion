@@ -1,5 +1,3 @@
-{{-- resources/views/admin/transactions/index.blade.php --}}
-
 @extends('layouts.main')
 
 @section('content')
@@ -17,7 +15,7 @@
 
         <form method="GET" action="{{ route('transactions.index') }}">
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
 
                 {{-- Statut --}}
                 <div>
@@ -58,7 +56,7 @@
                 </div>
 
                 {{-- Email --}}
-                <div>
+                {{-- <div>
                     <label class="block text-sm font-medium mb-1">
                         Email
                     </label>
@@ -68,6 +66,21 @@
                         name="email"
                         value="{{ request('email') }}"
                         placeholder="client@email.com"
+                        class="w-full border rounded-lg px-3 py-2"
+                    >
+                </div> --}}
+
+                {{-- Téléphone --}}
+                <div>
+                    <label class="block text-sm font-medium mb-1">
+                        Téléphone
+                    </label>
+
+                    <input
+                        type="text"
+                        name="numero_telephone"
+                        value="{{ request('telephone') }}"
+                        placeholder="77 123 45 67"
                         class="w-full border rounded-lg px-3 py-2"
                     >
                 </div>
@@ -121,14 +134,14 @@
 
                 <button
                     type="submit"
-                    class="bg-blue-600 text-white px-4 py-2 rounded-lg"
+                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
                 >
                     Rechercher
                 </button>
 
                 <a
                     href="{{ route('transactions.index') }}"
-                    class="bg-gray-200 px-4 py-2 rounded-lg"
+                    class="bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300 transition"
                 >
                     Réinitialiser
                 </a>
@@ -171,6 +184,10 @@
                     <th class="text-left px-4 py-3">
                         Téléphone
                     </th>
+{{-- 
+                    <th class="text-left px-4 py-3">
+                        Email
+                    </th> --}}
 
                     <th class="text-left px-4 py-3">
                         Statut
@@ -195,7 +212,7 @@
 
                 @forelse($transactions as $transaction)
 
-                    <tr class="border-t">
+                    <tr class="border-t hover:bg-gray-50 transition">
 
                         <td class="px-4 py-3 font-medium">
                             {{ $transaction->reference }}
@@ -209,6 +226,10 @@
                         <td class="px-4 py-3">
                             {{ $transaction->numero_telephone }}
                         </td>
+
+                        {{-- <td class="px-4 py-3">
+                            {{ $transaction->email ?? 'N/A' }}
+                        </td> --}}
 
                         <td class="px-4 py-3">
 
@@ -251,49 +272,53 @@
 
                         <td class="px-4 py-3">
 
-                            <div class="flex justify-center gap-2">
+                            <div class="flex justify-center gap-2 flex-wrap">
 
                                 {{-- Voir --}}
                                 <a
                                     href="{{ route('transactions.show', $transaction->id) }}"
-                                    class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
+                                    class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition"
                                 >
                                     Voir
                                 </a>
 
-                                {{-- Génération manuelle --}}
-                                @if(!$transaction->billet_id)
-
+                                {{-- Génération manuelle du billet --}}
+                                @if(!$transaction->billet_id && $transaction->statut === 'completee')
                                     <form
                                         action="{{ route('transactions.force-generate', $transaction->id) }}"
                                         method="POST"
+                                        class="inline"
                                     >
                                         @csrf
 
                                         <button
                                             type="submit"
-                                            class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
+                                            class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm transition"
+                                            onclick="return confirm('Générer le billet manuellement ?')"
                                         >
-                                            Forcer
+                                            Générer billet
                                         </button>
                                     </form>
-
                                 @endif
 
                                 {{-- Remboursement --}}
-                                <form
-                                    action="{{ route('transactions.refund', $transaction->id) }}"
-                                    method="POST"
-                                >
-                                    @csrf
-
-                                    <button
-                                        type="submit"
-                                        class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
+                                @if($transaction->statut === 'completee')
+                                    <form
+                                        action="{{ route('transactions.refund', $transaction->id) }}"
+                                        method="POST"
+                                        class="inline"
                                     >
-                                        Rembourser
-                                    </button>
-                                </form>
+                                        @csrf
+
+                                        <button
+                                            type="submit"
+                                            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition"
+                                            onclick="return confirm('Confirmer le remboursement ?')"
+                                        >
+                                            Rembourser
+                                        </button>
+                                    </form>
+                                @endif
 
                             </div>
 
@@ -304,7 +329,7 @@
                 @empty
 
                     <tr>
-                        <td colspan="7" class="text-center py-6 text-gray-500">
+                        <td colspan="8" class="text-center py-6 text-gray-500">
                             Aucune transaction trouvée.
                         </td>
                     </tr>

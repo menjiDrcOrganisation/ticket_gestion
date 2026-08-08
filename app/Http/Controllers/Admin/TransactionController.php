@@ -50,6 +50,7 @@ class TransactionController extends Controller
         if ($request->filled('date_debut')) {
             $query->whereDate('created_at', '>=', $request->date_debut);
         }
+        
 
         // Filtre date fin
         if ($request->filled('date_fin')) {
