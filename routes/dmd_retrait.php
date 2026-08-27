@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\DemandeRetraitAdminController;
+use App\Http\Controllers\Web\Admin\DemandeRetraitAdminController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/demande-retrait', 
@@ -25,3 +25,10 @@ Route::get('/demande-retrait/{id}/edit',
     ->name('dmd_retrait.show');
 
 ?>
+
+
+
+
+
+
+

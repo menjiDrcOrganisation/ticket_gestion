@@ -66,11 +66,16 @@ public function type_billet()
     return $this->belongsTo(TypeBillet::class);
 }
 
+public function evenementTypeBilletRelation()
+{
+    return $this->hasOne(EvenementTypeBillet::class, 'type_billet_id', 'type_billet_id');
+}
+
 
 public function evenementTypeBillet()
 {
-    return EvenementTypeBillet::where('evenement_id', $this->evenement_id)
-        ->where('type_billet_id', $this->type_billet_id)
+    return $this->evenementTypeBilletRelation()
+        ->where('evenement_id', $this->evenement_id)
         ->first();
 }
 

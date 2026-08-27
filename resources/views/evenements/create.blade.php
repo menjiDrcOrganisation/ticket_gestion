@@ -5,7 +5,7 @@
     </h2>
 
     <div id="create_type"
-        class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        class="hidden fixed inset-0 z-50 items-center justify-center bg-black/50 p-4">
         <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
             <h3 class="text-lg font-semibold mb-4">ajouter un type billet</h3>
             <form action="{{route('type_billet.store')}}" method="POST"
@@ -26,8 +26,36 @@
     </div>
 
 
-<form enctype="multipart/form-data" action="{{ route('evenements.store') }}" method="POST" class="space-y-5">
+@php
+    $hasStepTwoErrors = $errors->hasAny([
+        'ticket_type_id',
+        'quantite',
+        'prix',
+        'devise',
+        'nom_organisateur',
+        'email_organisateur',
+        'telephone',
+        'nom_artiste',
+        'acroche',
+        'a_propos',
+        'photo_affiche',
+    ]);
+@endphp
+
+<form id="evenement-form" enctype="multipart/form-data" action="{{ route('evenements.store') }}" method="POST" class="space-y-5">
     @csrf
+
+    <div class="mb-4">
+        <div class="flex items-center gap-2 text-sm font-medium">
+            <span id="wizard-dot-1" class="h-7 w-7 rounded-full bg-blue-600 text-white flex items-center justify-center">1</span>
+            <span class="text-gray-600">Informations événement</span>
+            <span class="text-gray-400">/</span>
+            <span id="wizard-dot-2" class="h-7 w-7 rounded-full bg-gray-300 text-gray-700 flex items-center justify-center">2</span>
+            <span class="text-gray-600">Billetterie et organisateur</span>
+        </div>
+    </div>
+
+    <div id="step-1" class="space-y-5">
 
     <!-- Nom -->
     <div>
@@ -37,6 +65,39 @@
                class="w-full border border-gray-300 rounded p-2">
 
         @error('nom_evenement')
+            <p class="text-red-600 text-sm">{{ $message }}</p>
+        @enderror
+    </div>
+
+    @php
+        $selectedTypeId = old('type_evenement_id');
+        $selectedIsOther = old('type_evenement_nom') && !$selectedTypeId;
+    @endphp
+    <div>
+        <label for="type_evenement_select" class="block font-semibold text-gray-700 mb-1">Type d'événement</label>
+        <select id="type_evenement_select" name="type_evenement_id" class="w-full border border-gray-300 rounded p-2">
+            <option value="">Selectionner un type</option>
+            @foreach(($typeEvenements ?? []) as $typeEvenement)
+                <option value="{{ $typeEvenement->id }}" {{ (string) $selectedTypeId === (string) $typeEvenement->id ? 'selected' : '' }}>
+                    {{ $typeEvenement->nom_type }}
+                </option>
+            @endforeach
+            <option value="other" {{ $selectedIsOther ? 'selected' : '' }}>Autre</option>
+        </select>
+
+        <div id="type_evenement_other_wrapper" class="mt-3 {{ $selectedIsOther ? '' : 'hidden' }}">
+            <label for="type_evenement_nom" class="block font-semibold text-gray-700 mb-1">Préciser le type</label>
+            <input type="text" name="type_evenement_nom" id="type_evenement_nom"
+                   value="{{ old('type_evenement_nom') }}"
+                   placeholder="Ex: Concert, Conférence, Festival"
+                   class="w-full border border-gray-300 rounded p-2">
+            <p class="text-xs text-gray-500 mt-1">Ce type sera créé automatiquement s'il n'existe pas.</p>
+        </div>
+
+        @error('type_evenement_nom')
+            <p class="text-red-600 text-sm">{{ $message }}</p>
+        @enderror
+        @error('type_evenement_id')
             <p class="text-red-600 text-sm">{{ $message }}</p>
         @enderror
     </div>
@@ -108,6 +169,14 @@
         </div>
     </div>
 
+    <div class="flex justify-end">
+        <button id="go-step-2" type="button" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+            Suivant
+        </button>
+    </div>
+    </div>
+
+    <div id="step-2" class="space-y-5 hidden">
     <h2>Type billet</h2>
     @error('ticket_type_id')
         <p class="text-red-600 text-sm mb-2">{{ $message }}</p>
@@ -262,22 +331,131 @@
         @enderror
     </div>
 
-    <div class="text-center">
-        <button type="submit"
-                class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+    <div class="text-center flex justify-center gap-3">
+        <button id="go-step-1" type="button" class="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-300">
+            Précédent
+        </button>
+        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
             Enregistrer l’événement
         </button>
+    </div>
     </div>
 </form>
 
 </div>
 <script>
 
-    function openModal(id){document.getElementById(id).classList.remove('hidden');}
-    function closeModal(id){document.getElementById(id).classList.add('hidden');}
+    function openModal(id){
+        document.getElementById(id).classList.remove('hidden');
+        document.getElementById(id).classList.add('flex');
+    }
+    function closeModal(id){
+        document.getElementById(id).classList.remove('flex');
+        document.getElementById(id).classList.add('hidden');
+    }
 
-    const createEventForm = document.querySelector('form[action="{{ route('evenements.store') }}"]');
+    const createEventForm = document.getElementById('evenement-form');
     const typeBilletAction = document.getElementById('billet_type');
+    const step1 = document.getElementById('step-1');
+    const step2 = document.getElementById('step-2');
+    const goStep2Btn = document.getElementById('go-step-2');
+    const goStep1Btn = document.getElementById('go-step-1');
+    const wizardDot1 = document.getElementById('wizard-dot-1');
+    const wizardDot2 = document.getElementById('wizard-dot-2');
+    const typeSelect = document.getElementById('type_evenement_select');
+    const otherTypeWrapper = document.getElementById('type_evenement_other_wrapper');
+    const otherTypeInput = document.getElementById('type_evenement_nom');
+
+    function showStep(step) {
+        const stepOneActive = step === 1;
+
+        step1.classList.toggle('hidden', !stepOneActive);
+        step2.classList.toggle('hidden', stepOneActive);
+
+        wizardDot1.classList.toggle('bg-blue-600', stepOneActive);
+        wizardDot1.classList.toggle('text-white', stepOneActive);
+        wizardDot1.classList.toggle('bg-gray-300', !stepOneActive);
+        wizardDot1.classList.toggle('text-gray-700', !stepOneActive);
+
+        wizardDot2.classList.toggle('bg-blue-600', !stepOneActive);
+        wizardDot2.classList.toggle('text-white', !stepOneActive);
+        wizardDot2.classList.toggle('bg-gray-300', stepOneActive);
+        wizardDot2.classList.toggle('text-gray-700', stepOneActive);
+    }
+
+    function syncTypeEvenementFields() {
+        if (!typeSelect || !otherTypeWrapper) {
+            return;
+        }
+
+        const isOther = typeSelect.value === 'other';
+
+        otherTypeWrapper.classList.toggle('hidden', !isOther);
+
+        if (isOther) {
+            typeSelect.removeAttribute('name');
+            if (otherTypeInput) {
+                otherTypeInput.required = true;
+            }
+        } else {
+            typeSelect.setAttribute('name', 'type_evenement_id');
+            if (otherTypeInput) {
+                otherTypeInput.required = false;
+                if (!otherTypeInput.dataset.keepValue) {
+                    otherTypeInput.value = '';
+                }
+            }
+        }
+    }
+
+    if (typeSelect) {
+        typeSelect.addEventListener('change', function () {
+            if (otherTypeInput) {
+                delete otherTypeInput.dataset.keepValue;
+            }
+            syncTypeEvenementFields();
+        });
+
+        if (otherTypeInput && otherTypeInput.value) {
+            otherTypeInput.dataset.keepValue = '1';
+        }
+        syncTypeEvenementFields();
+    }
+
+    if (goStep2Btn) {
+        goStep2Btn.addEventListener('click', function () {
+            const requiredStep1Fields = [
+                ...step1.querySelectorAll('input[name="nom_evenement"], input[name="date_debut"], input[name="date_fin"], input[name="adresse"], input[name="salle"], input[name="heure_debut"], input[name="heure_fin"]')
+            ];
+
+            const isTypeValid = (() => {
+                if (!typeSelect) {
+                    return true;
+                }
+                if (typeSelect.value === 'other') {
+                    return !!otherTypeInput && otherTypeInput.value.trim() !== '';
+                }
+                return typeSelect.value !== '';
+            })();
+
+            const hasEmptyRequired = requiredStep1Fields.some((field) => !field.value);
+
+            if (hasEmptyRequired || !isTypeValid) {
+                alert('Veuillez compléter les informations de l\'étape 1 avant de continuer.');
+                return;
+            }
+
+            showStep(2);
+        });
+    }
+
+    if (goStep1Btn) {
+        goStep1Btn.addEventListener('click', function () {
+            showStep(1);
+        });
+    }
+
+    showStep({{ $hasStepTwoErrors ? 2 : 1 }});
 
     function setCardState(card, isActive) {
         if (!card) return;

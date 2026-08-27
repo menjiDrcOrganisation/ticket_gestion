@@ -1,11 +1,11 @@
  
  <?php
-use App\Http\Controllers\DemandeEvenementController;
-use App\Http\Controllers\TypeEvenementController;
+use App\Http\Controllers\Web\Admin\DemandeEvenementController;
+use App\Http\Controllers\Web\Admin\TypeEvenementController;
 
-use App\Http\Controllers\organisateur\BilletController;
-use App\Http\Controllers\EvenementBilletTypeBilletController;
-use App\Http\Controllers\organisateur\DashboardController as OrganisateurDashboardController;
+use App\Http\Controllers\Web\Organisateur\BilletController;
+use App\Http\Controllers\Web\Organisateur\EvenementBilletTypeBilletController;
+use App\Http\Controllers\Web\Organisateur\DashboardController as OrganisateurDashboardController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -17,3 +17,8 @@ Route::delete('billet/{id}', [BilletController::class, 'destroy'])
 
 Route::get('dashboard/organisateur', [OrganisateurDashboardController::class, 'index'])
     ->name('dashboard_orginasateur.show')->middleware(['auth']);
+
+
+
+
+

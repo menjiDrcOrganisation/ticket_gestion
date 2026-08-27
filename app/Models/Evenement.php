@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\TypeEvenement;
 
 class Evenement extends Model
 {
@@ -13,6 +14,7 @@ class Evenement extends Model
      protected $fillable = [
         'organisateur_id',
         'scanneur_id',
+          'type_evenement_id',
         'nom',
         'url_evenement',
         'date_debut',
@@ -54,6 +56,11 @@ class Evenement extends Model
     public function scanneur()
     {
         return $this->belongsTo(Scanneur::class);
+    }
+
+    public function typeEvenement()
+    {
+        return $this->belongsTo(TypeEvenement::class, 'type_evenement_id');
     }
 
 

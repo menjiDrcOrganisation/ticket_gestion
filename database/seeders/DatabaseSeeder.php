@@ -21,43 +21,11 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database.
      */
-   public function run(): void
-{
-    
-    // User::updateOrCreate(
-    //   ['email' => 'admin@tick.com'],
-    //   [
-    //     'name' => 'Admin',
-    //     'role' => 'admin',
-    //     'password' => Hash::make('admin123Kimia'),
-    //   ]
-    // );
+     public function run(): void{
 
-    // $this->call(DemoEvenementScenarioSeeder::class);
-    $this->call(ActiveEventsBilletScenarioSeeder::class);
-
-    // User::factory()->state([
-    //           'name' => 'Admin',
-    //         'email' => 'admin@tick.com',
-    //         'role' => 'admin',
-    //         'password' => Hash::make('admin123Kimia'),
-    //         ])->create();
-            
-    //   $this->call([
-    //         TransactionSeeder::class,
-    //     ]);
-
-
-    // TypeEvenement::factory(4)->create();j
-    // Evenement::factory(4)->create();
-    // TypeBillet::factory(4)->create();
-
-    // DemandeEvenement::factory(20)->create();
-    
-    // \App\Models\EvenementBilletTypeBillet::factory(10)->create();
-
-    // Tu peux aussi générer d'autres utilisateurs
-    //\App\Models\User::factory(5)->create();
-}
+    $this->call(TypeEvenementSeeder::class);
+    $this->call(SuperAdminSeeder::class);
+   
+  }
 
 }

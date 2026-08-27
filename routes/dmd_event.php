@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\DemandeEvenementController;
+use App\Http\Controllers\Web\Admin\DemandeEvenementController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/dmd_events', [DemandeEvenementController::class, 'index'])->name('demandeEvenement.index');
@@ -12,8 +12,8 @@ Route::delete('/dmd_events/{demandeEvenement}', [DemandeEvenementController::cla
 
 
 //type d'evenement routes
-use App\Http\Controllers\TypeEvenementController;
-use App\Http\Controllers\EvenementBilletTypeBilletController;
+use App\Http\Controllers\Web\Admin\TypeEvenementController;
+use App\Http\Controllers\Web\Organisateur\EvenementBilletTypeBilletController;
 
 
 Route::get('/type_evenements', [TypeEvenementController::class, 'index'])->name('typeEvenement.index');
@@ -30,3 +30,9 @@ Route::post('achat/billet/', [DemandeEvenementController::class, 'processAchatBi
 Route::get('achatbillet/{evenementId}', [EvenementBilletTypeBilletController::class,  'achatbillet'])->name('billets.index');
 
 ?>
+
+
+
+
+
+

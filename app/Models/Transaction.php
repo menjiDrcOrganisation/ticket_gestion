@@ -46,13 +46,6 @@ class Transaction extends Model
         ];
     }
 
-      
-
-    protected $casts = [
-        'montant' => 'decimal:2',
-        'expires_at' => 'datetime',
-    ];
-
     /**
      * Relation avec le billet
      */

@@ -10,7 +10,6 @@ class TypeEvenement extends Model
     /** @use HasFactory<\Database\Factories\TypeEvenementFactory> */
     use HasFactory;
     protected     $fillable = [
-       'nom_type', 
-       
+       'nom_type',
     ];
 }

@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\RetraitController;
+use App\Http\Controllers\Web\Organisateur\RetraitController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/retrait', 
@@ -21,3 +21,9 @@ Route::get('/retrait/{retrait}/edit',
 Route::get('/retrait/create', 
     [RetraitController::class, 'show'])
     ->name('retraits.show');
+
+
+
+
+
+

@@ -1,5 +1,5 @@
 <?php
-use App\Http\Controllers\TypeBilletController;
+use App\Http\Controllers\Web\Admin\TypeBilletController;
 use Illuminate\Support\Facades\Route;   
 
 Route::prefix('type_billet')->name('type_billet.')->group(function () {
@@ -9,3 +9,9 @@ Route::prefix('type_billet')->name('type_billet.')->group(function () {
     Route::put('/{typeBillet}', [TypeBilletController::class, 'update'])->name('update');
     Route::delete('/{typeBillet}', [TypeBilletController::class, 'destroy'])->name('destroy');
 })->middleware(['auth']);
+
+
+
+
+
+

@@ -35,4 +35,11 @@ class UserFactory extends Factory
             'password' => Hash::make('admin123'),
         ]);
     }
+
+    public function unverified(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'email_verified_at' => null,
+        ]);
+    }
 }
