@@ -32,13 +32,7 @@ class TypeEvenementSeeder extends Seeder
                 continue;
             }
 
-            // Keep model creation consistent with factory usage.
-            $payload = TypeEvenement::factory()
-                ->state(['nom_type' => $nomType])
-                ->make()
-                ->toArray();
-
-            TypeEvenement::create($payload);
+            TypeEvenement::create(['nom_type' => $nomType]);
         }
     }
 }
