@@ -1,34 +1,63 @@
 @extends('layouts.main')
+@section('title', 'Événements')
 @section('content')
 <div class="max-w-7xl mx-auto bg-gray-50 p-6 rounded-2xl shadow-sm mb-4">
 
     <!-- Statistiques -->
     <div class="grid md:grid-cols-3 gap-6 mb-8">
-        <x-indic-dashboard :value="$evenements->count()" title="total des evenements">
-        </x-indic-dashboard>
+        <x-indic-dashboard :value="$evenements->total()" title="Total des événements" subtitle="Catalogue" icon="calendar-days" tone="blue" />
 
-         <x-indic-dashboard :value="$evenementsEncours" title="Événements en cours">
-        </x-indic-dashboard>
+        <x-indic-dashboard :value="$evenementsEncours" title="Événements en cours" subtitle="Actifs" icon="play-circle" tone="emerald" />
 
-         <x-indic-dashboard :value="$evenementsPasse" title="Événements fermé">
-        </x-indic-dashboard>
+        <x-indic-dashboard :value="$evenementsPasse" title="Événements fermés" subtitle="Terminés" icon="check-circle" tone="slate" />
     </div>
     </div>
 
+    <!-- Recherche et filtres -->
+    <div class="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <form method="GET" action="{{ route('evenements.index') }}" class="grid grid-cols-1 gap-3 md:grid-cols-12 md:items-end">
+            <div class="md:col-span-5">
+                <label for="q" class="mb-1.5 block text-sm font-medium text-slate-600">Recherche</label>
+                <x-app-input id="q" name="q" :value="$search" placeholder="Nom, URL, adresse, salle, organisateur..." wrapperClass="mb-0" />
+            </div>
 
-    <!-- Recherche -->
-    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-3">
-        <input type="text"
-            placeholder="Rechercher un événement..."
-            class="w-full md:w-1/3 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black">
-        <select class="border border-gray-300 rounded-lg px-4 py-2 w-full md:w-auto">
-            <option value="">Tous les statuts</option>
-            <option value="encours">encours</option>
-            <option value="ferme">Fermé</option>
-            <option value="à venir">À venir</option>
-        </select>
+            <div class="md:col-span-3">
+                <label for="statut" class="mb-1.5 block text-sm font-medium text-slate-600">Statut événement</label>
+                <x-app-select id="statut" name="statut" wrapperClass="mb-0">
+                    <option value="">Tous les statuts</option>
+                    <option value="encours" @selected($status === 'encours')>En cours</option>
+                    <option value="ferme" @selected($status === 'ferme')>Fermé</option>
+                    <option value="a venir" @selected($status === 'a venir')>À venir</option>
+                </x-app-select>
+            </div>
 
-        <a href="{{route('evenements.create')}}"><button class="border border-gray-300 text-white bg-blue-500 rounded-lg px-4 py-2 w-full md:w-auto" type="button"> creer un evenement</button></a>
+            <div class="md:col-span-4">
+                <label for="type_evenement_id" class="mb-1.5 block text-sm font-medium text-slate-600">Type d'événement</label>
+                <x-app-select id="type_evenement_id" name="type_evenement_id" wrapperClass="mb-0">
+                    <option value="">Tous les types</option>
+                    @foreach($typeEvenements as $typeEvenement)
+                        <option value="{{ $typeEvenement->id }}" @selected((string) $typeEvenementId === (string) $typeEvenement->id)>
+                            {{ $typeEvenement->nom_type }}
+                        </option>
+                    @endforeach
+                </x-app-select>
+            </div>
+
+            <div class="md:col-span-12 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex flex-wrap gap-2">
+                    <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700">
+                        Filtrer
+                    </button>
+                    <a href="{{ route('evenements.index') }}" class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                        Réinitialiser
+                    </a>
+                </div>
+
+                <a href="{{route('evenements.create')}}" class="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700">
+                    Créer un événement
+                </a>
+            </div>
+        </form>
     </div>
 
     <!-- Tableau responsive amélioré -->
@@ -36,12 +65,16 @@
         <table class="min-w-full text-sm text-left text-gray-700">
             <thead class="bg-gray-100 uppercase text-xs font-semibold">
                 <tr>
-                    <th class="px-4 py-3 whitespace-nowrap">Nom événement</th>
+                    <th class="px-4 py-3 whitespace-nowrap">#</th>
+                    <th class="px-4 py-3 whitespace-nowrap">Nom de l'événement</th>
                     <th class="px-4 py-3 whitespace-nowrap hidden md:table-cell">Auteur</th>
                     <th class="px-4 py-3 whitespace-nowrap">Date</th>
                     <th class="px-4 py-3 whitespace-nowrap hidden lg:table-cell">Adresse</th>
                     <th class="px-4 py-3 whitespace-nowrap hidden lg:table-cell">Salle</th>
-                    <th class="px-4 py-3 whitespace-nowrap">Statut</th>
+                    <th class="px-4 py-3 whitespace-nowrap hidden lg:table-cell">Type</th>
+                    <th class="px-4 py-3 whitespace-nowrap">Statut événement</th>
+                    <th class="px-4 py-3 whitespace-nowrap hidden xl:table-cell">Mail</th>
+                    <th class="px-4 py-3 whitespace-nowrap hidden xl:table-cell">Tentatives</th>
                     <th class="px-4 py-3 whitespace-nowrap hidden xl:table-cell">URL</th>
                     <th class="px-4 py-3 text-right whitespace-nowrap">Actions</th>
                 </tr>
@@ -49,12 +82,14 @@
             <tbody class="divide-y divide-gray-200">
                 @forelse ($evenements as $evenement)
                 <tr class="hover:bg-gray-50 transition">
+                    <td class="px-4 py-4 whitespace-nowrap">{{ ($evenements->firstItem() ?? 0) + $loop->index }}</td>
                     <td class="px-4 py-4 font-medium whitespace-nowrap">{{ $evenement->nom }}</td>
                     <td class="px-4 py-4 whitespace-nowrap hidden md:table-cell">{{ $evenement->organisateur->user->name ?? '—' }} <br>
                     {{ $evenement->organisateur->user->email ?? '—' }}</td>
                     <td class="px-4 py-4 whitespace-nowrap">{{ \Carbon\Carbon::parse($evenement->date_debut)->format('d/m/Y') }}</td>
                     <td class="px-4 py-4 whitespace-nowrap hidden lg:table-cell">{{ $evenement->adresse }}</td>
                     <td class="px-4 py-4 whitespace-nowrap hidden lg:table-cell">{{ $evenement->salle }}</td>
+                    <td class="px-4 py-4 whitespace-nowrap hidden lg:table-cell">{{ $evenement->typeEvenement->nom_type ?? '—' }}</td>
                     <td class="px-4 py-4 whitespace-nowrap">
                         @if($evenement->statut === 'encours')
                             <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">encours</span>
@@ -64,6 +99,16 @@
                             <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs">À venir</span>
                         @endif
                     </td>
+                    <td class="px-4 py-4 whitespace-nowrap hidden xl:table-cell">
+                        @if($evenement->mail_sent_at)
+                            <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs">Envoyé</span>
+                        @elseif($evenement->last_mail_error)
+                            <span class="bg-rose-100 text-rose-700 px-3 py-1 rounded-full text-xs">Échec</span>
+                        @else
+                            <span class="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs">En attente</span>
+                        @endif
+                    </td>
+                    <td class="px-4 py-4 whitespace-nowrap hidden xl:table-cell">{{ (int) ($evenement->mail_send_attempts ?? 0) }}</td>
                     <td class="px-4 py-4 max-w-[150px] truncate hidden xl:table-cell">
                         <a href="https://ticket.menjidrc.com/{{ $evenement->url_evenement }}" 
                            target="_blank" 
@@ -74,7 +119,8 @@
 
                     <!-- Actions - Toujours visible -->
                     <td class="px-4 py-4 text-right">
-                        <div class="flex justify-end gap-2">
+                        <div class="flex flex-col items-end gap-1">
+                            <div class="flex justify-end gap-2">
                             <!-- Voir -->
                             <button 
                                 onclick="openModal('modal-{{ $evenement->id }}')" 
@@ -90,27 +136,54 @@
                                 title="Modifier">
                                 <i data-lucide="edit-3" class="w-4 h-4"></i>
                             </button>
+                            <!-- Fermer -->
+                            @if($evenement->statut === 'ferme')
+                                <button type="button"
+                                        class="text-slate-400 transition p-1 rounded cursor-not-allowed"
+                                        title="Événement déjà fermé"
+                                        disabled>
+                                    <i data-lucide="lock" class="w-4 h-4"></i>
+                                </button>
+                            @else
+                                <form action="{{ route('evenements.updateStatus', $evenement->id) }}"
+                                      method="POST"
+                                      onsubmit="return confirm('Voulez-vous vraiment fermer cet événement ?')"
+                                      class="inline">
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="hidden" name="statut" value="ferme">
+                                    <button type="submit"
+                                            class="text-rose-600 hover:text-rose-700 transition p-1 rounded hover:bg-rose-50"
+                                            title="Fermer l'événement">
+                                        <i data-lucide="lock" class="w-4 h-4"></i>
+                                    </button>
+                                </form>
+                            @endif
 
-
-                            <!-- Supprimer -->
-                            <form action="{{ route('evenements.destroy', $evenement) }}" 
-                                  method="POST" 
-                                  onsubmit="return confirm('Voulez-vous vraiment supprimer cet événement ?')"
-                                  class="inline">
+                            <form action="{{ route('evenements.resendMail', $evenement->id) }}"
+                                  method="POST"
+                                  onsubmit="return confirm('Renvoyer les identifiants pour cet événement ?')"
+                                  class="inline-flex items-center gap-1.5">
                                 @csrf
-                                @method('DELETE')
-                                <button type="submit" 
-                                        class="text-red-500 hover:text-red-700 transition p-1 rounded hover:bg-red-50" 
-                                        title="Supprimer l'événement">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                <button type="submit"
+                                        class="text-indigo-600 hover:text-indigo-800 transition p-1 rounded hover:bg-indigo-50"
+                                        title="Renvoyer le mail d'accès">
+                                    <i data-lucide="send" class="w-4 h-4"></i>
                                 </button>
                             </form>
+                            </div>
+
+                            @if($evenement->mail_sent_at)
+                                <span class="text-[11px] text-emerald-600 whitespace-nowrap">mail envoye</span>
+                            @else
+                                <span class="text-[11px] text-rose-600 whitespace-nowrap">mail non envoye</span>
+                            @endif
                         </div>
                     </td>
                 </tr>
 
                 <!-- Modal amélioré -->
-                <div id="modal-{{ $evenement->id }}" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
+                <div id="modal-{{ $evenement->id }}" class="fixed inset-0 bg-black bg-opacity-50 items-center justify-center hidden z-50 p-4">
                     <div class="bg-white rounded-xl shadow-lg w-full max-w-2xl p-6 relative max-h-[90vh] overflow-y-auto">
                         <!-- Bouton fermer -->
                         <button onclick="closeModal('modal-{{ $evenement->id }}')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition p-2 rounded-full hover:bg-gray-100">
@@ -131,6 +204,26 @@
                                 <span class="text-gray-500">•</span>
                                 <span class="text-gray-600">{{ \Carbon\Carbon::parse($evenement->date_debut)->format('d/m/Y H:i') }}</span>
                             </div>
+                        </div>
+
+                        @php
+                            $affiche = $evenement->ressource->firstWhere('photo_affiche', '!=', null) ?? $evenement->ressource->first();
+                        @endphp
+
+                        <div class="mb-5">
+                            <h3 class="text-sm font-semibold text-gray-500 uppercase mb-2">Affiche</h3>
+                            @if($affiche && !empty($affiche->photo_affiche))
+                                <img
+                                    src="{{ asset('storage/' . ltrim($affiche->photo_affiche, '/')) }}"
+                                    alt="Affiche de {{ $evenement->nom }}"
+                                    class="w-full max-h-72 rounded-lg border border-gray-200 object-cover"
+                                    loading="lazy"
+                                >
+                            @else
+                                <div class="rounded-lg border border-dashed border-gray-300 bg-gray-50 px-4 py-8 text-center text-sm text-gray-500">
+                                    Aucune affiche disponible pour cet événement.
+                                </div>
+                            @endif
                         </div>
 
                         <!-- Contenu du modal -->
@@ -197,7 +290,7 @@
                                         <div class="flex items-start gap-3">
                                             <i data-lucide="link" class="w-4 h-4 text-gray-400 mt-0.5"></i>
                                             <div>
-                                                <p class="font-medium text-gray-700">Type billet</p>
+                                                <p class="font-medium text-gray-700">Type de billet</p>
                                                 <ul>
                                                    
                                                 @foreach($evenement->typeBillets as $type_billet)
@@ -245,7 +338,7 @@
                 </div>
                 <!-- Modal Modifier -->
                 <div id="edit-modal-{{ $evenement->id }}" 
-                    class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50 p-4">
+                    class="fixed inset-0 bg-black bg-opacity-40 items-center justify-center hidden z-50 p-4">
 
                     <div class="bg-white rounded-xl shadow-lg w-full max-w-xl p-6 relative max-h-[90vh] overflow-y-auto">
 
@@ -296,7 +389,7 @@
                                 </div>
 
                                 <div>
-                                    <label class="text-sm text-gray-600">Url de l'evenement</label>
+                                    <label class="text-sm text-gray-600">URL de l'événement</label>
                                     <input type="text" name="url_evenement" value="{{ $evenement->url_evenement }}"
                                         class="w-full border rounded-lg p-2">
                                 </div>
@@ -331,7 +424,7 @@
 
                 @empty
                 <tr>
-                    <td colspan="8" class="text-center py-6 text-gray-500">Aucun événement trouvé.</td>
+                    <td colspan="12" class="text-center py-6 text-gray-500">Aucun événement trouvé.</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -339,8 +432,13 @@
     </div>
 
     <!-- Pagination -->
-    <div class="mt-6 flex justify-center">
-        {{ $evenements->links() ?? '' }}
+    <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p class="text-sm text-slate-600">
+            Affichage de {{ $evenements->firstItem() ?? 0 }} à {{ $evenements->lastItem() ?? 0 }} sur {{ $evenements->total() }} événements
+        </p>
+        <div>
+            {{ $evenements->links() ?? '' }}
+        </div>
     </div>
 </div>
 
@@ -351,18 +449,23 @@
 
 <script>
 function openModal(id) {
-    document.getElementById(id).classList.remove('hidden');
+    const modal = document.getElementById(id);
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
     document.body.style.overflow = 'hidden';
 }
 
 function closeModal(id) {
-    document.getElementById(id).classList.add('hidden');
+    const modal = document.getElementById(id);
+    modal.classList.remove('flex');
+    modal.classList.add('hidden');
     document.body.style.overflow = 'auto';
 }
 
 // Fermer le modal en cliquant à l'extérieur
 document.addEventListener('click', function(event) {
     if (event.target.classList.contains('fixed')) {
+        event.target.classList.remove('flex');
         event.target.classList.add('hidden');
         document.body.style.overflow = 'auto';
     }

@@ -31,9 +31,8 @@
             <!-- Email -->
             <div class="mb-4">
                 <label for="email" class="block text-sm font-medium text-gray-700">Adresse e-mail</label>
-                <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus
-                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm
-                              focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none" />
+                <x-app-input id="email" name="email" type="email" :value="old('email')" required autofocus
+                    wrapperClass="mt-1" inputClass="px-4 rounded-lg shadow-sm focus:ring-blue-600 focus:border-blue-600" />
 
                 @error('email')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>

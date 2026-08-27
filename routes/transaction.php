@@ -1,6 +1,7 @@
  <?php
 
 use App\Http\Controllers\Web\Admin\TransactionController;
+use App\Http\Middleware\AuditTrail;
 
 Route::prefix('admin')
     ->group(function () {
@@ -18,12 +19,12 @@ Route::prefix('admin')
         Route::post(
             '/transactions/{id}/force-generate',
             [TransactionController::class, 'forceGenerate']
-        )->name('transactions.force-generate');
+        )->middleware(['auth', AuditTrail::class])->name('transactions.force-generate');
 
         Route::post(
             '/transactions/{id}/refund',
             [TransactionController::class, 'markAsRefunded']
-        )->name('transactions.refund');
+        )->middleware(['auth', AuditTrail::class])->name('transactions.refund');
     });
 
 

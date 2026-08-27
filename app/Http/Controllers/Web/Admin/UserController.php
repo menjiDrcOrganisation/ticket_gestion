@@ -15,14 +15,17 @@ class UserController extends Controller
      */
     public function index()
     {
-       try {
-        if(auth()->user()->id !== 1 && auth()->user()->role !== 'admin'){
-             return view('users.index', compact('users'));}
-           $users = User::paginate(10);
-           return view('users.superAdmin', compact('users'));
-       } catch (\Exception $e) {
-           return redirect()->back()->with('error', 'Une erreur est survenue lors de la récupération des utilisateurs.');
-       }
+        try {
+            $users = User::paginate(10);
+
+            if (! auth()->user()?->isSuperAdmin()) {
+                return view('users.index', compact('users'));
+            }
+
+            return view('users.superAdmin', compact('users'));
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Une erreur est survenue lors de la récupération des utilisateurs.');
+        }
     }
 
     /**

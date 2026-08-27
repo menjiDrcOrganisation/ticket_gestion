@@ -24,7 +24,10 @@ class Evenement extends Model
         'statut',
         'heure_debut',
         'heure_fin',
-        'url_evenement'
+        'url_evenement',
+        'mail_send_attempts',
+        'mail_sent_at',
+        'last_mail_error',
 
     ];
 

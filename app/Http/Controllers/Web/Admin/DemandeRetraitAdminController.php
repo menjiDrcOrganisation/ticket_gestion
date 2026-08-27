@@ -12,48 +12,89 @@ class DemandeRetraitAdminController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
 
     {
+        $search = trim((string) $request->query('q', ''));
+        $status = trim((string) $request->query('statut', ''));
+        $dateFrom = $request->query('date_from');
+        $dateTo = $request->query('date_to');
+
+        $statusMap = [
+            'en_attente' => ['en_attente', 'en attente', 'attente', 'pending'],
+            'approuve' => ['approuve', 'approuvé', 'approved'],
+            'refuse' => ['refuse', 'refusé', 'rejected'],
+        ];
+
+        $retraitsQuery = Retrait::query()->with('organisateur.user')
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($subQuery) use ($search) {
+                    $subQuery->where('nom_detenteur', 'like', '%' . $search . '%')
+                        ->orWhere('montant', 'like', '%' . $search . '%')
+                        ->orWhereHas('organisateur.user', function ($userQuery) use ($search) {
+                            $userQuery->where('name', 'like', '%' . $search . '%')
+                                ->orWhere('email', 'like', '%' . $search . '%');
+                        });
+                });
+            })
+            ->when($status !== '', function ($query) use ($status, $statusMap) {
+                $query->whereIn('statut', $statusMap[$status] ?? [$status]);
+            })
+            ->when(!empty($dateFrom), function ($query) use ($dateFrom) {
+                $query->whereDate('date', '>=', $dateFrom);
+            })
+            ->when(!empty($dateTo), function ($query) use ($dateTo) {
+                $query->whereDate('date', '<=', $dateTo);
+            });
 
         //totale de retraits demandés
         $totaldmd = Retrait::count();
         //montant total des retraits demandés
         $totalmontantdmd = Retrait::sum('montant');
         //montage total des retraits demandés approuves
-        $totalmontantdmdapprouve = Retrait::where('statut', 'approuve')->sum('montant');
+        $totalmontantdmdapprouve = Retrait::whereIn('statut', $statusMap['approuve'])->sum('montant');
        //
         
         //montant total des retraits demandés en attente
-        $totalmontantdmdenattente = Retrait::where('statut', 'en_attente')->sum('montant');
+        $totalmontantdmdenattente = Retrait::whereIn('statut', $statusMap['en_attente'])->sum('montant');
         //montant total des retraits demandés refusés
-        $totalmontantdmdrefuse = Retrait::where('statut', 'refuse')->sum('montant');
+        $totalmontantdmdrefuse = Retrait::whereIn('statut', $statusMap['refuse'])->sum('montant');
 $stats = [
     'totaldmd' => Retrait::count(),
 
     'totalmontantdmd' => Retrait::sum('montant'),
 
-    'totalmontantdmdapprouve' => Retrait::where('statut', 'approuve')
+    'totalmontantdmdapprouve' => Retrait::whereIn('statut', $statusMap['approuve'])
                 ->sum('montant'),
 
-    'totalmontantdmdenattente' => Retrait::where('statut', 'en attente')
+    'totalmontantdmdenattente' => Retrait::whereIn('statut', $statusMap['en_attente'])
                 ->sum('montant'),
 
-    'totalmontantdmdrefuse' => Retrait::where('statut', 'refuse')
+    'totalmontantdmdrefuse' => Retrait::whereIn('statut', $statusMap['refuse'])
                 ->sum('montant'),
 ];
-        $retraits = Retrait::with('organisateur.user')->get();
+        $retraits = $retraitsQuery->latest()->paginate(10)->withQueryString();
         $organisateurs = Organisateur::with('user')->get();
 
         return view('dmd_retraits.index', compact('retraits', 'organisateurs', 'totaldmd',
          'totalmontantdmd', 'totalmontantdmdapprouve',
-          'totalmontantdmdenattente', 'totalmontantdmdrefuse', 'stats'));
+          'totalmontantdmdenattente', 'totalmontantdmdrefuse', 'stats',
+          'search', 'status', 'dateFrom', 'dateTo'));
     }
 
     public function updateStatut(Request $request, $id)
     {
         $retrait = Retrait::findOrFail($id);
-        $retrait->statut = $request->input('statut');
+
+        $incomingStatus = trim((string) $request->input('statut'));
+        $normalizedStatus = match ($incomingStatus) {
+            'en attente', 'en_attente', 'attente', 'pending' => 'en_attente',
+            'approuvé', 'approuve', 'approved' => 'approuve',
+            'refusé', 'refuse', 'rejected' => 'refuse',
+            default => 'en_attente',
+        };
+
+        $retrait->statut = $normalizedStatus;
         $retrait->save();
 
         return redirect()->back()

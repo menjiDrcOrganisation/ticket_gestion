@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\Web\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Billet;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 
 class PortefeulleController extends Controller
 {
-    public function showMontantEvent()
+    public function showMontantEvent(Request $request)
     {
         // Récupération des billets avec le type et les événements
 
@@ -66,10 +67,45 @@ class PortefeulleController extends Controller
             }
         }
 
+        $search = trim((string) $request->query('q', ''));
+        $devise = trim((string) $request->query('devise', ''));
+
+        $eventsCollection = collect($montantParEvenement)
+            ->values()
+            ->when($search !== '', function ($collection) use ($search) {
+                return $collection->filter(function (array $event) use ($search): bool {
+                    return str_contains(mb_strtolower((string) ($event['nom'] ?? '')), mb_strtolower($search));
+                });
+            })
+            ->when($devise === 'CDF', function ($collection) {
+                return $collection->filter(fn (array $event): bool => ((float) ($event['CDF'] ?? 0)) > 0);
+            })
+            ->when($devise === 'USD', function ($collection) {
+                return $collection->filter(fn (array $event): bool => ((float) ($event['USD'] ?? 0)) > 0);
+            })
+            ->sortByDesc('date')
+            ->values();
+
+        $perPage = 10;
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $pagedEvents = new LengthAwarePaginator(
+            $eventsCollection->forPage($currentPage, $perPage)->values(),
+            $eventsCollection->count(),
+            $perPage,
+            $currentPage,
+            [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]
+        );
+
         return view('portefeulle.showMontantEvent', compact(
             'montantParEvenement',
             'totalEnCdf',
-            'totalEnUsd'
+            'totalEnUsd',
+            'pagedEvents',
+            'search',
+            'devise'
         ));
 
          } catch (\Throwable $th) {

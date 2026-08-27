@@ -13,11 +13,19 @@ class TypeBilletController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $typeBillets = TypeBillet::all();
+        $search = trim((string) $request->query('q', ''));
+
+        $typeBillets = TypeBillet::query()
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where('nom_type', 'like', '%' . $search . '%');
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
         
-        return view('type_billets.index', compact('typeBillets'));
+        return view('type_billets.index', compact('typeBillets', 'search'));
 
     }
 
@@ -36,11 +44,27 @@ class TypeBilletController extends Controller
     {
         try {
             $validatedData = $request->validated();
-    
-            TypeBillet::create($validatedData);
-    
+
+            $typeBillet = TypeBillet::create($validatedData);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Type de billet cree avec succes.',
+                    'data' => [
+                        'id' => $typeBillet->id,
+                        'nom_type' => $typeBillet->nom_type,
+                    ],
+                ], 201);
+            }
+
             return redirect()->back()->with('success', 'Type de billet créé avec succès.');
         } catch (\Throwable $th) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Erreur lors de la creation du type de billet.',
+                ], 500);
+            }
+
             return redirect()->back()->with('error', 'Erreur lors de la création du type de billet : ' . $th->getMessage());
 
         }

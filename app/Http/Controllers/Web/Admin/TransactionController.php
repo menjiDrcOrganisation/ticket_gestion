@@ -133,7 +133,7 @@ class TransactionController extends Controller
             // Mise à jour transaction
             $transaction->update([
                 'billet_id' => $billet->id,
-                'statut' => 'completee',
+                'statut' => 'paye',
             ]);
 
             Log::info(
@@ -178,7 +178,7 @@ class TransactionController extends Controller
 
         $transaction->update([
             'type' => 'remboursement',
-            'statut' => 'completee',
+            'statut' => 'annulee',
         ]);
 
         Log::info(

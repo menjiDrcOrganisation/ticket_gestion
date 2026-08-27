@@ -6,29 +6,77 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Billet;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Pagination\LengthAwarePaginator;
+use App\Models\Evenement;
 use App\Models\EvenementTypeBillet;
 use App\Services\TicketPdfService;
 
 class BilletController extends Controller
 {
  
-        public function index(Request $request)
+    public function index(Request $request)
     {
         try {
-            $totalRestant= 0;
-            $totalAchat= 0;
-            $detailleParBillet=[];
+            $totalRestant = 0;
+            $totalAchat = 0;
+            $detailleParBillet = [];
             $totalCDF = 0;
             $totalUSD = 0;
 
+            $search = trim((string) $request->query('q', ''));
+            $status = trim((string) $request->query('statut', ''));
+            $devise = trim((string) $request->query('devise', ''));
+            $type = trim((string) $request->query('type', ''));
+            $selectedEventId = (int) $request->query('event_id', 0);
+            $perPage = (int) $request->query('per_page', 10);
+            if (!in_array($perPage, [10, 25, 50, 100], true)) {
+                $perPage = 10;
+            }
+
              
             $user = Auth::user();
-            $evenementId = $user->organisateur->evenements[0]->id;
+            $evenementsOrganisateur = Evenement::where('organisateur_id', $user->organisateur->id)
+                ->orderBy('date_debut', 'desc')
+                ->get(['id', 'nom', 'date_debut']);
+
+            $allowedEventIds = $evenementsOrganisateur->pluck('id')->all();
+            if (empty($allowedEventIds)) {
+                $emptyPaginator = new LengthAwarePaginator([], 0, $perPage, 1, [
+                    'path' => $request->url(),
+                    'query' => $request->query(),
+                ]);
+
+                return view('organisateurs.achat', [
+                    'detailleParBillet' => $emptyPaginator,
+                    'totalCDF' => 0,
+                    'totalUSD' => 0,
+                    'totalAchat' => 0,
+                    'totalRestant' => 0,
+                    'search' => $search,
+                    'status' => $status,
+                    'devise' => $devise,
+                    'type' => $type,
+                    'selectedEventId' => 0,
+                    'perPage' => $perPage,
+                    'statusOptions' => [],
+                    'deviseOptions' => [],
+                    'typeOptions' => [],
+                    'evenementsOrganisateur' => collect(),
+                ]);
+            }
+
+            if ($selectedEventId > 0 && !in_array($selectedEventId, $allowedEventIds, true)) {
+                $selectedEventId = 0;
+            }
 
             $billets = Billet::with('evenement','type_billet')
-            ->where('evenement_id', $evenementId)
-            ->orderBy('id', 'desc')
-            ->get();
+                ->whereIn('evenement_id', $allowedEventIds)
+                ->when($selectedEventId > 0, function ($query) use ($selectedEventId) {
+                    $query->where('evenement_id', $selectedEventId);
+                })
+                ->orderBy('id', 'desc')
+                ->get();
             
 
         foreach ($billets as $billet) {
@@ -37,7 +85,7 @@ class BilletController extends Controller
                 continue;
             }
         
-             if (!isset($detailleParBillet[$billet->id])) {
+            if (!isset($detailleParBillet[$billet->id])) {
                     $detailleParBillet[$billet->id] = [
                         'id' =>$billet->id,
                         'auteur' =>$billet->nom_auteur,
@@ -67,12 +115,99 @@ class BilletController extends Controller
                 }
         }
 
-        
+        $detailleCollection = collect($detailleParBillet)->values();
 
-        return view('organisateurs.achat', compact('detailleParBillet', 'totalCDF', 'totalUSD', 'totalAchat','totalRestant'));
+        $statusOptions = $detailleCollection
+            ->pluck('statut')
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
+
+        $deviseOptions = $detailleCollection
+            ->pluck('devise')
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
+
+        $typeOptions = $detailleCollection
+            ->pluck('type')
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
+
+        $filtered = $detailleCollection->filter(function (array $item) use ($search, $status, $devise, $type): bool {
+            if ($search !== '') {
+                $haystack = mb_strtolower(
+                    implode(' ', [
+                        (string) ($item['auteur'] ?? ''),
+                        (string) ($item['type'] ?? ''),
+                        (string) ($item['code'] ?? ''),
+                    ])
+                );
+
+                if (!str_contains($haystack, mb_strtolower($search))) {
+                    return false;
+                }
+            }
+
+            if ($status !== '' && mb_strtolower((string) ($item['statut'] ?? '')) !== mb_strtolower($status)) {
+                return false;
+            }
+
+            if ($devise !== '' && (string) ($item['devise'] ?? '') !== $devise) {
+                return false;
+            }
+
+            if ($type !== '' && (string) ($item['type'] ?? '') !== $type) {
+                return false;
+            }
+
+            return true;
+        })->values();
+
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $currentPageItems = $filtered->forPage($currentPage, $perPage)->values();
+
+        $detailleParBillet = new LengthAwarePaginator(
+            $currentPageItems,
+            $filtered->count(),
+            $perPage,
+            $currentPage,
+            [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]
+        );
+
+        
+        return view('organisateurs.achat', compact(
+            'detailleParBillet',
+            'totalCDF',
+            'totalUSD',
+            'totalAchat',
+            'totalRestant',
+            'search',
+            'status',
+            'devise',
+            'type',
+            'selectedEventId',
+            'perPage',
+            'statusOptions',
+            'deviseOptions',
+            'typeOptions',
+            'evenementsOrganisateur'
+        ));
 
         } catch (\Throwable $th) {
-            return $th;
+            Log::error('Erreur chargement billets organisateur', [
+                'error_message' => $th->getMessage(),
+                'exception' => $th,
+            ]);
+
+            return redirect()->back()->with('error', 'Impossible de charger les billets pour le moment.');
         }
     }
 

@@ -10,8 +10,8 @@
 
                     <div class="flex flex-wrap items-center gap-3">
                         <div class="relative">
-                            <input type="text" id="searchInput" placeholder="Rechercher..."
-                                class="w-96 rounded-lg border border-slate-300 pl-4 pr-3 py-2 text-sm focus:ring-2 focus:ring-emerald-400 focus:outline-none">
+                            <x-app-input type="text" id="searchInput" placeholder="Rechercher..." wrapperClass=""
+                                inputClass="w-96 pl-4 pr-3" />
                         </div>
 
                         <button onclick="openModal('storeModal')" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 shadow">
@@ -53,10 +53,10 @@
                                             <form action="{{ route('admin.organisateurs.update', $organisateur->id) }}" method="POST">
                                                 @csrf
                                                 @method('PUT')
-                                                <input type="text" name="name" value="{{ $organisateur->user->name ?? '' }}" class="w-full border rounded px-3 py-2 mb-3" placeholder="Nom" required>
-                                                <input type="email" name="email" value="{{ $organisateur->user->email ?? '' }}" class="w-full border rounded px-3 py-2 mb-3" placeholder="Email" required>
-                                                <input type="text" name="telephone" value="{{ $organisateur->telephone }}" class="w-full border rounded px-3 py-2 mb-3" placeholder="Téléphone" required>
-                                                <input type="password" name="password" class="w-full border rounded px-3 py-2 mb-4" placeholder="Mot de passe (laisser vide pour ne pas changer)">
+                                                <x-app-input type="text" name="name" :value="$organisateur->user->name ?? ''" placeholder="Nom" required />
+                                                <x-app-input type="email" name="email" :value="$organisateur->user->email ?? ''" placeholder="Email" required />
+                                                <x-app-input type="text" name="telephone" :value="$organisateur->telephone" placeholder="Téléphone" required />
+                                                <x-app-input type="password" name="password" placeholder="Mot de passe (laisser vide pour ne pas changer)" wrapperClass="mb-4" />
                                                 <div class="flex justify-end gap-2">
                                                     <button type="button" onclick="closeModal('updateModal{{ $organisateur->id }}')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Annuler</button>
                                                     <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Enregistrer</button>
@@ -98,10 +98,10 @@
         <h3 class="text-lg font-semibold mb-4">Ajouter un organisateur</h3>
         <form action="{{ route('admin.organisateurs.store') }}" method="POST">
             @csrf
-            <input type="text" name="name" placeholder="Nom" class="w-full border rounded px-3 py-2 mb-3" required>
-            <input type="email" name="email" placeholder="Email" class="w-full border rounded px-3 py-2 mb-3" required>
-            <input type="text" name="telephone" placeholder="Téléphone" class="w-full border rounded px-3 py-2 mb-3" required>
-            <input type="password" name="password" placeholder="Mot de passe" class="w-full border rounded px-3 py-2 mb-4" required>
+            <x-app-input type="text" name="name" placeholder="Nom" required />
+            <x-app-input type="email" name="email" placeholder="Email" required />
+            <x-app-input type="text" name="telephone" placeholder="Téléphone" required />
+            <x-app-input type="password" name="password" placeholder="Mot de passe" required wrapperClass="mb-4" />
             <div class="flex justify-end gap-2">
                 <button type="button" onclick="closeModal('storeModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Annuler</button>
                 <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Ajouter</button>

@@ -39,6 +39,7 @@ require __DIR__.'/event_sacnner.php';
 require __DIR__.'/dmd_retrait.php';
 require  __DIR__.'/transaction.php';
 require __DIR__.'/admin_organisateur.php';
+require __DIR__.'/audit.php';
 
 
 

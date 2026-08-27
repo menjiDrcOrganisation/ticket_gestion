@@ -2,65 +2,57 @@
 
 namespace App\Http\Controllers\Web\Admin;
 
-use App\Models\Evenement;
-
-use App\Models\EvenementBilletTypeBillet;
-
-use App\Models\DemandeEvenement;
-
-use App\Models\EvenementTypeBillet;
 use App\Http\Controllers\Controller;
+use App\Services\DashboardMetricsService;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
+    public function __construct(private DashboardMetricsService $dashboardMetricsService)
+    {
+    }
 
-     public function index()
+    public function index(Request $request)
     {
         try {
-        
-        $evenementsPopulaires = EvenementBilletTypeBillet::select('evenement_id')
-            ->selectRaw('SUM(quantite) as total_billets')
-            ->groupBy('evenement_id')
-            ->orderByDesc('total_billets')
-            ->take(5)
-            ->with('evenement') 
-            ->get();
+            $days = (int) $request->integer('days', 30);
+            $dashboard = $this->dashboardMetricsService->adminData($days);
 
-        $demandeEvenements=DemandeEvenement::all()->count();
-
-        $evenementsEncours= Evenement::where('statut', 'encours')
-            ->with(['organisateur.user', 'typeBillets'])
-            ->latest()
-            ->get()->count();
-
-        $evenementsPasses= Evenement::where('statut', 'ferme')
-            ->with(['organisateur.user', 'typeBillets'])
-            ->latest()
-            ->get()->count();
-
-        
-        $eventsPerMonthRaw = Evenement::selectRaw('MONTH(created_at) as mois, COUNT(*) as total')
-            ->groupBy('mois')
-            ->orderBy('mois')
-            ->pluck('total', 'mois');
-
-            $eventsPerMonth = [];
-
-            for ($i = 1; $i <= 12; $i++) {
-                $eventsPerMonth[$i] = $eventsPerMonthRaw[$i] ?? 0; // si pas d'événement → 0
-            }
-
-            return view('dashboard.viewDash', compact(
-                'evenementsEncours',
-                'evenementsPasses',
-                'demandeEvenements',
-                'eventsPerMonth',
-                'evenementsPopulaires'
-            ));
-
-            } catch (\Throwable $th) {
-            //throw $th;
+            return view('dashboard.viewDash', [
+                'dashboard' => $dashboard,
+            ]);
+        } catch (\Throwable $th) {
+            return view('dashboard.viewDash', [
+                'dashboard' => [
+                    'periodDays' => 30,
+                    'kpis' => [
+                        'evenementsActifs' => 0,
+                        'ventesAujourdhui' => 0,
+                        'caAujourdhuiCDF' => 0,
+                        'caAujourdhuiUSD' => 0,
+                    ],
+                    'charts' => [
+                        'salesLabels' => [],
+                        'salesByDay' => [],
+                        'salesByTypeLabels' => [],
+                        'salesByTypeValues' => [],
+                    ],
+                    'queues' => [
+                        'demandesEnAttente' => collect(),
+                        'retraitsEnAttente' => collect(),
+                    ],
+                    'lists' => [
+                        'topEvenements' => collect(),
+                        'transactionsEchouees' => collect(),
+                        'activityRecent' => collect(),
+                    ],
+                    'alerts' => [
+                        'eventsWithoutSales' => collect(),
+                        'retraitsRetard' => 0,
+                        'failedRate24h' => 0.0,
+                    ],
+                ],
+            ])->with('error', 'Impossible de charger les statistiques du dashboard.');
         }
     }
 }

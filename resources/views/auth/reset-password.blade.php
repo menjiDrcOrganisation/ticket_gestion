@@ -30,8 +30,8 @@
             <!-- Nouveau mot de passe -->
             <div class="mb-4 relative">
                 <label for="password" class="block text-sm font-medium text-gray-700">Nouveau mot de passe</label>
-                <input id="password" name="password" type="password" required autocomplete="new-password"
-                    class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none pr-10" />
+                <x-app-input id="password" name="password" type="password" required autocomplete="new-password"
+                    wrapperClass="mt-1" inputClass="px-4 rounded-lg shadow-sm pr-10 focus:ring-blue-600 focus:border-blue-600" />
                 <button type="button" id="togglePassword" class="absolute right-3 top-9 text-gray-500 hover:text-gray-700 focus:outline-none">
                     👁️
                 </button>
@@ -43,8 +43,8 @@
             <!-- Confirmation -->
             <div class="mb-6 relative">
                 <label for="password_confirmation" class="block text-sm font-medium text-gray-700">Confirmer le mot de passe</label>
-                <input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password"
-                    class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none pr-10" />
+                <x-app-input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password"
+                    wrapperClass="mt-1" inputClass="px-4 rounded-lg shadow-sm pr-10 focus:ring-blue-600 focus:border-blue-600" />
                 <button type="button" id="togglePasswordConfirm" class="absolute right-3 top-9 text-gray-500 hover:text-gray-700 focus:outline-none">
                     👁️
                 </button>

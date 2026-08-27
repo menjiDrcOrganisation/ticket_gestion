@@ -59,4 +59,13 @@ class User extends Authenticatable
     {
         return $this->hasOne(Scanneur::class);
     }
+
+    public function isSuperAdmin(): bool
+    {
+        $superAdminEmail = (string) config('app.super_admin_email', '');
+
+        return $this->role === 'admin'
+            && $superAdminEmail !== ''
+            && strcasecmp((string) $this->email, $superAdminEmail) === 0;
+    }
 }

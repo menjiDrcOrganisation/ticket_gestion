@@ -11,30 +11,41 @@ use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
-        // Récupérer l'événement de l'organisateur
         if ($user->role === 'organisateur') {
-
-    // Cherche l'événement de cet organisateur
-        $evenement = Evenement::where('organisateur_id', $user->organisateur->id)->first();
-
+            $evenementsOrganisateur = Evenement::where('organisateur_id', $user->organisateur->id)
+                ->orderBy('date_debut', 'desc')
+                ->get(['id', 'nom', 'date_debut']);
         } elseif ($user->role === 'scanneur') {
-
-            // Cherche l'événement lié au scanneur
-            $evenement = Evenement::where('scanneur_id', $user->scanneur->id)->first();
+            $evenementsOrganisateur = Evenement::where('scanneur_id', $user->scanneur->id)
+                ->orderBy('date_debut', 'desc')
+                ->get(['id', 'nom', 'date_debut']);
         } else {
-
-            // Rôle non géré
             return redirect()->back()->with('error', 'Type d’utilisateur inconnu.');
         }
 
-        // Récupérer tous les billets liés à cet événement
-        $billets = Billet::with('evenement','type_billet')
-            ->where('evenement_id', $evenement->id)
-            ->get();
+        $selectedEventId = (int) $request->query('event_id', 0);
+        $allowedEventIds = $evenementsOrganisateur->pluck('id')->all();
+
+        if ($selectedEventId > 0 && !in_array($selectedEventId, $allowedEventIds, true)) {
+            $selectedEventId = 0;
+        }
+
+        $evenement = $selectedEventId > 0
+            ? $evenementsOrganisateur->firstWhere('id', $selectedEventId)
+            : $evenementsOrganisateur->first();
+
+        $billetsQuery = Billet::with('evenement', 'type_billet')
+            ->whereIn('evenement_id', $allowedEventIds);
+
+        if ($selectedEventId > 0) {
+            $billetsQuery->where('evenement_id', $selectedEventId);
+        }
+
+        $billets = $billetsQuery->get();
 
         $totalBilletsVendus=0;
         $revenusCDF = 0;
@@ -72,12 +83,12 @@ class DashboardController extends Controller
                 
         }
 
-        // Derniers achats (5 derniers billets)
-
-        $derniersAchats = $billets->sortByDesc('created_at')->take(5);
+        $derniersAchats = $billets->sortByDesc('created_at')->take(5)->values();
 
         return view('organisateurs.dashboard_org', compact(
             'evenement',
+            'evenementsOrganisateur',
+            'selectedEventId',
             'totalBilletsVendus',
             'revenusCDF',
             'revenusUSD',

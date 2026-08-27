@@ -13,10 +13,44 @@ use Illuminate\Support\Facades\Storage;
 class DemandeEvenementController extends Controller
 {
     // Afficher toutes les demandes
-    public function index()
+    public function index(Request $request)
     {
-        $demandeEvenements = DemandeEvenement::latest()->get();
-        return view('dmdEvent.index', compact('demandeEvenements'));
+        $search = trim((string) $request->query('q', ''));
+        $status = (string) $request->query('statut', '');
+        $typeEvenement = trim((string) $request->query('type_evenement', ''));
+
+        $demandeEvenements = DemandeEvenement::query()
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($subQuery) use ($search) {
+                    $subQuery->where('nom_evenement', 'like', '%' . $search . '%')
+                        ->orWhere('contact_organisateur', 'like', '%' . $search . '%')
+                        ->orWhere('description', 'like', '%' . $search . '%');
+                });
+            })
+            ->when($status !== '', function ($query) use ($status) {
+                $query->where('statut', $status);
+            })
+            ->when($typeEvenement !== '', function ($query) use ($typeEvenement) {
+                $query->where('type_evenement', $typeEvenement);
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        $typeEvenements = DemandeEvenement::query()
+            ->whereNotNull('type_evenement')
+            ->where('type_evenement', '!=', '')
+            ->distinct()
+            ->orderBy('type_evenement')
+            ->pluck('type_evenement');
+
+        return view('dmdEvent.index', compact(
+            'demandeEvenements',
+            'typeEvenements',
+            'search',
+            'status',
+            'typeEvenement'
+        ));
     }
 
     // Ajouter une demande

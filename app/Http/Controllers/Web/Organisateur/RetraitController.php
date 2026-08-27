@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Web\Organisateur;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Retrait\StoreRetraitRequest;
-use App\Models\Admin;
+use App\Models\Evenement;
 use App\Models\Retrait;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class RetraitController extends Controller
 {
@@ -18,7 +18,9 @@ class RetraitController extends Controller
     {
         $userOrganisateur  = auth()->user()->organisateur;
         $retraits = Retrait::with('organisateur')->where('organisateur_id', $userOrganisateur->id)->get();
-        return view('retraits.index', compact('retraits'));
+        $evenementsCount = Evenement::where('organisateur_id', $userOrganisateur->id)->count();
+
+        return view('retraits.index', compact('retraits', 'evenementsCount'));
     }
 
     /**
@@ -43,7 +45,11 @@ class RetraitController extends Controller
             return redirect()->back()
                              ->with('success', 'Retrait créé avec succès.');
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            Log::error('Erreur creation retrait organisateur', [
+                'error_message' => $e->getMessage(),
+                'exception' => $e,
+            ]);
+
             return redirect()->back()
                              ->with('error', 'Une erreur est survenue lors de la création du retrait.');
         }
