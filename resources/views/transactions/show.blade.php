@@ -1,8 +1,22 @@
 {{-- resources/views/admin/transactions/show.blade.php --}}
 
 @extends('layouts.main')
+@section('title', 'Détails transaction')
 
 @section('content')
+
+@php
+    $statusLabels = [
+        'en_attente' => 'En attente',
+        'paiement_en_cours' => 'Paiement en cours',
+        'paye' => 'Payée',
+        'paye_sans_billet' => 'Payée (sans billet)',
+        'echoue' => 'Échouée',
+        'annulee' => 'Annulée',
+        'completee' => 'Complétée (legacy)',
+        'echouee' => 'Échouée (legacy)',
+    ];
+@endphp
 
 <div class="container mx-auto px-4 py-6">
 
@@ -35,7 +49,7 @@
 
             <div>
                 <strong>Statut :</strong>
-                {{ $transaction->statut }}
+                {{ $statusLabels[$transaction->statut] ?? ucfirst(str_replace('_', ' ', (string) $transaction->statut)) }}
             </div>
 
             <div>

@@ -17,8 +17,8 @@
             <!-- Nom -->
             <div class="mb-4">
                 <label for="name" class="block text-sm font-medium text-gray-700">Nom complet</label>
-                <input id="name" name="name" type="text" value="{{ old('name') }}" required autofocus autocomplete="name"
-                    class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none" />
+                <x-app-input id="name" name="name" type="text" :value="old('name')" required autofocus autocomplete="name"
+                    wrapperClass="mt-1" inputClass="px-4 rounded-lg shadow-sm focus:ring-blue-600 focus:border-blue-600" />
                 @error('name')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
@@ -27,8 +27,8 @@
             <!-- Email -->
             <div class="mb-4">
                 <label for="email" class="block text-sm font-medium text-gray-700">Adresse e-mail</label>
-                <input id="email" name="email" type="email" value="{{ old('email') }}" required autocomplete="username"
-                    class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none" />
+                <x-app-input id="email" name="email" type="email" :value="old('email')" required autocomplete="username"
+                    wrapperClass="mt-1" inputClass="px-4 rounded-lg shadow-sm focus:ring-blue-600 focus:border-blue-600" />
                 @error('email')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
@@ -37,8 +37,8 @@
             <!-- Mot de passe -->
             <div class="mb-4 relative">
                 <label for="password" class="block text-sm font-medium text-gray-700">Mot de passe</label>
-                <input id="password" name="password" type="password" required autocomplete="new-password"
-                    class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none pr-10" />
+                <x-app-input id="password" name="password" type="password" required autocomplete="new-password"
+                    wrapperClass="mt-1" inputClass="px-4 rounded-lg shadow-sm pr-10 focus:ring-blue-600 focus:border-blue-600" />
                 <button type="button" id="togglePassword" class="absolute right-3 top-9 text-gray-500 hover:text-gray-700 focus:outline-none">
                     👁️
                 </button>
@@ -50,8 +50,8 @@
             <!-- Confirmation du mot de passe -->
             <div class="mb-6 relative">
                 <label for="password_confirmation" class="block text-sm font-medium text-gray-700">Confirmer le mot de passe</label>
-                <input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password"
-                    class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none pr-10" />
+                <x-app-input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password"
+                    wrapperClass="mt-1" inputClass="px-4 rounded-lg shadow-sm pr-10 focus:ring-blue-600 focus:border-blue-600" />
                 <button type="button" id="togglePasswordConfirm" class="absolute right-3 top-9 text-gray-500 hover:text-gray-700 focus:outline-none">
                     👁️
                 </button>

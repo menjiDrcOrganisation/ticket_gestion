@@ -12,7 +12,7 @@ class TypeEvenementFactory extends Factory
     public function definition(): array
     {
         return [
-            'nom_type' => $this->faker->randomElement([
+            'nom_type' => fake()->randomElement([
                 'Concert',
                 'Conférence',
                 'Festival',

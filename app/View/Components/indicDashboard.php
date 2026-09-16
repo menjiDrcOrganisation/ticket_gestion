@@ -11,9 +11,14 @@ class indicDashboard extends Component
     /**
      * Create a new component instance.
      */
-    public function __construct( public int  $value= 0 , public string $title="titre ")
-    {
-        //
+    public function __construct(
+        public string|int|float $value = 0,
+        public string $title = 'titre',
+        public ?string $subtitle = null,
+        public string $icon = 'chart-bar',
+        public string $tone = 'blue',
+        public ?string $href = null,
+    ) {
     }
 
     /**

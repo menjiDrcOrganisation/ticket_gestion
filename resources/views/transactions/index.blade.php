@@ -1,8 +1,34 @@
 {{-- resources/views/admin/transactions/index.blade.php --}}
 
 @extends('layouts.main')
+@section('title', 'Transactions')
 
 @section('content')
+
+@php
+    $statusOptions = [
+        'en_attente' => 'En attente',
+        'paiement_en_cours' => 'Paiement en cours',
+        'paye' => 'Payée',
+        'paye_sans_billet' => 'Payée (sans billet)',
+        'echoue' => 'Échouée',
+        'annulee' => 'Annulée',
+        // Valeurs legacy encore présentes dans certaines lignes historiques.
+        'completee' => 'Complétée (legacy)',
+        'echouee' => 'Échouée (legacy)',
+    ];
+
+    $statusStyles = [
+        'en_attente' => 'bg-amber-100 text-amber-700',
+        'paiement_en_cours' => 'bg-sky-100 text-sky-700',
+        'paye' => 'bg-emerald-100 text-emerald-700',
+        'paye_sans_billet' => 'bg-lime-100 text-lime-700',
+        'echoue' => 'bg-rose-100 text-rose-700',
+        'annulee' => 'bg-slate-200 text-slate-700',
+        'completee' => 'bg-emerald-100 text-emerald-700',
+        'echouee' => 'bg-rose-100 text-rose-700',
+    ];
+@endphp
 
 <div class="container mx-auto px-4 py-6">
 
@@ -31,29 +57,11 @@
                     >
                         <option value="">Tous</option>
 
-                        <option value="en_attente"
-                            @selected(request('statut') == 'en_attente')
-                        >
-                            En attente
-                        </option>
-
-                        <option value="completee"
-                            @selected(request('statut') == 'completee')
-                        >
-                            Complétée
-                        </option>
-
-                        <option value="echouee"
-                            @selected(request('statut') == 'echouee')
-                        >
-                            Échouée
-                        </option>
-
-                        <option value="annulee"
-                            @selected(request('statut') == 'annulee')
-                        >
-                            Annulée
-                        </option>
+                        @foreach($statusOptions as $statusValue => $statusLabel)
+                            <option value="{{ $statusValue }}" @selected(request('statut') == $statusValue)>
+                                {{ $statusLabel }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
 
@@ -153,169 +161,100 @@
     @endif
 
     {{-- Tableau --}}
-    <div class="bg-white shadow rounded-lg overflow-hidden">
+    <x-app-table minWidth="1120px" tableClass="[&>tbody>tr:hover]:bg-slate-50" stickyHeader="true">
+        <x-slot:head>
+            <tr>
+                <x-app-th>#</x-app-th>
+                <x-app-th>Référence</x-app-th>
+                <x-app-th>Client</x-app-th>
+                <x-app-th>Montant</x-app-th>
+                <x-app-th>Téléphone</x-app-th>
+                <x-app-th>Statut</x-app-th>
+                <x-app-th>Paiement</x-app-th>
+                <x-app-th>Date</x-app-th>
+                <x-app-th align="center">Actions</x-app-th>
+            </tr>
+        </x-slot:head>
 
-        <table class="w-full">
+        <x-slot:body>
+            @forelse($transactions as $transaction)
+                <tr class="transition">
+                    <x-app-td>{{ ($transactions->firstItem() ?? 0) + $loop->index }}</x-app-td>
+                    <x-app-td class="font-medium">{{ $transaction->reference }}</x-app-td>
+                    <x-app-td>
+                        {{ $transaction->nom_complet_client ?? $transaction->billet?->nom_auteur ?? '—' }}
+                    </x-app-td>
+                    <x-app-td :nowrap="true">
+                        {{ number_format($transaction->montant, 2, ',', ' ') }}
+                        {{ $transaction->devise }}
+                    </x-app-td>
+                    <x-app-td :nowrap="true">{{ $transaction->numero_telephone }}</x-app-td>
+                    <x-app-td>
+                        @php
+                            $statusValue = (string) $transaction->statut;
+                            $statusLabel = $statusOptions[$statusValue] ?? ucfirst(str_replace('_', ' ', $statusValue));
+                            $statusClass = $statusStyles[$statusValue] ?? 'bg-gray-100 text-gray-700';
+                        @endphp
 
-            <thead class="bg-gray-100">
-                <tr>
+                        <span class="px-2 py-1 rounded text-xs {{ $statusClass }}">
+                            {{ $statusLabel }}
+                        </span>
+                    </x-app-td>
+                    <x-app-td :nowrap="true">{{ $transaction->methode_paiement }}</x-app-td>
+                    <x-app-td :nowrap="true">{{ $transaction->created_at->format('d/m/Y H:i') }}</x-app-td>
+                    <x-app-td align="center">
+                        <div class="flex justify-center gap-2">
+                            {{-- Voir --}}
+                            <a
+                                href="{{ route('transactions.show', $transaction->id) }}"
+                                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
+                            >
+                                Voir
+                            </a>
 
-                    <th class="text-left px-4 py-3">
-                        Référence
-                    </th>
-
-                    <th class="text-left px-4 py-3">
-                        Montant
-                    </th>
-
-                    <th class="text-left px-4 py-3">
-                        Téléphone
-                    </th>
-
-                    <th class="text-left px-4 py-3">
-                        Statut
-                    </th>
-
-                    <th class="text-left px-4 py-3">
-                        Paiement
-                    </th>
-
-                    <th class="text-left px-4 py-3">
-                        Date
-                    </th>
-
-                    <th class="text-center px-4 py-3">
-                        Actions
-                    </th>
-
-                </tr>
-            </thead>
-
-            <tbody>
-
-                @forelse($transactions as $transaction)
-
-                    <tr class="border-t">
-
-                        <td class="px-4 py-3 font-medium">
-                            {{ $transaction->reference }}
-                        </td>
-
-                        <td class="px-4 py-3">
-                            {{ number_format($transaction->montant, 2, ',', ' ') }}
-                            {{ $transaction->devise }}
-                        </td>
-
-                        <td class="px-4 py-3">
-                            {{ $transaction->numero_telephone }}
-                        </td>
-
-                        <td class="px-4 py-3">
-
-                            @switch($transaction->statut)
-
-                                @case('completee')
-                                    <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">
-                                        Complétée
-                                    </span>
-                                @break
-
-                                @case('en_attente')
-                                    <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs">
-                                        En attente
-                                    </span>
-                                @break
-
-                                @case('echouee')
-                                    <span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs">
-                                        Échouée
-                                    </span>
-                                @break
-
-                                @default
-                                    <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
-                                        Annulée
-                                    </span>
-
-                            @endswitch
-
-                        </td>
-
-                        <td class="px-4 py-3">
-                            {{ $transaction->methode_paiement }}
-                        </td>
-
-                        <td class="px-4 py-3">
-                            {{ $transaction->created_at->format('d/m/Y H:i') }}
-                        </td>
-
-                        <td class="px-4 py-3">
-
-                            <div class="flex justify-center gap-2">
-
-                                {{-- Voir --}}
-                                <a
-                                    href="{{ route('transactions.show', $transaction->id) }}"
-                                    class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
-                                >
-                                    Voir
-                                </a>
-
-                                {{-- Génération manuelle --}}
-                                @if(!$transaction->billet_id)
-
-                                    <form
-                                        action="{{ route('transactions.force-generate', $transaction->id) }}"
-                                        method="POST"
-                                    >
-                                        @csrf
-
-                                        <button
-                                            type="submit"
-                                            class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
-                                        >
-                                            Forcer
-                                        </button>
-                                    </form>
-
-                                @endif
-
-                                {{-- Remboursement --}}
+                            {{-- Génération manuelle --}}
+                            @if(!$transaction->billet_id)
                                 <form
-                                    action="{{ route('transactions.refund', $transaction->id) }}"
+                                    action="{{ route('transactions.force-generate', $transaction->id) }}"
                                     method="POST"
                                 >
                                     @csrf
 
                                     <button
                                         type="submit"
-                                        class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
+                                        class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
                                     >
-                                        Rembourser
+                                        Forcer
                                     </button>
                                 </form>
+                            @endif
 
-                            </div>
+                            {{-- Remboursement --}}
+                            <form
+                                action="{{ route('transactions.refund', $transaction->id) }}"
+                                method="POST"
+                            >
+                                @csrf
 
-                        </td>
-
-                    </tr>
-
-                @empty
-
-                    <tr>
-                        <td colspan="7" class="text-center py-6 text-gray-500">
-                            Aucune transaction trouvée.
-                        </td>
-                    </tr>
-
-                @endforelse
-
-            </tbody>
-
-        </table>
-
-    </div>
+                                <button
+                                    type="submit"
+                                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
+                                >
+                                    Rembourser
+                                </button>
+                            </form>
+                        </div>
+                    </x-app-td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="9" class="text-center py-6 text-gray-500">
+                        Aucune transaction trouvée.
+                    </td>
+                </tr>
+            @endforelse
+        </x-slot:body>
+    </x-app-table>
 
     {{-- Pagination --}}
     <div class="mt-6">

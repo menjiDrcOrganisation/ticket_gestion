@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>@yield('title', 'Tableau de bord') - TicketMaster</title>
+<title>@yield('title', 'Administration') - TicketMaster</title>
 
 <!-- Favicon : logo dans l'onglet -->
 <link rel="icon" href="{{ asset('icons/Icone_Kimia.png') }}" type="image/png" />
@@ -82,7 +82,7 @@
         <!-- Modal de deconnexion -->
         <div
             id="deconnexion"
-            class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            class="hidden fixed inset-0 z-50 items-center justify-center bg-black/50 p-4"
         >
             <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
                 <h3 class="text-lg font-semibold mb-4">
@@ -122,7 +122,7 @@
             <!-- Logo & titre -->
             <div class="p-6 border-b border-gray-100">
                 <div class="flex items-center gap-4">
-                        <img src="{{ asset('icons/Icone_Kimia.png') }}"  class="h-28 w-20">
+                        <img src="{{ asset('icons/Icone_Kimia.png') }}" class="h-16 w-12 object-contain" alt="Logo Kimiaticket">
                     <div>
                         <h1 class="font-bold text-2xl text-gray-900">
                             Kimiaticket
@@ -187,25 +187,35 @@
             <div class="flex items-center justify-between mb-6 lg:hidden">
                 <button
                     id="sidebarToggle"
-                    class="p-2 rounded-lg bg-white shadow"
+                    type="button"
+                    aria-label="Ouvrir le menu"
+                    class="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition duration-200 hover:bg-slate-50 hover:shadow-md active:scale-95"
                 >
-                    <i class="fas fa-bars text-xl text-gray-700"></i>
+                    <i class="fas fa-bars text-2xl leading-none"></i>
                 </button>
                 <h1 class="text-xl font-bold text-gray-800">
-                    @yield('title', 'Tableau de bord')
+                    @yield('title', 'Administration')
                 </h1>
             </div>
             @if(session('success'))
-    <div class="mb-4 p-4 text-green-800 bg-green-100 border border-green-300 rounded-lg">
-        {{ session('success') }}
-    </div>
-@endif
+                <div class="mb-4 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800 shadow-sm">
+                    <i data-lucide="check-circle-2" class="mt-0.5 h-5 w-5 flex-shrink-0"></i>
+                    <div>
+                        <p class="text-sm font-semibold">Opération réussie</p>
+                        <p class="text-sm">{{ session('success') }}</p>
+                    </div>
+                </div>
+            @endif
 
-@if(session('error'))
-    <div class="mb-4 p-4 text-red-800 bg-red-100 border border-red-300 rounded-lg">
-        {{ session('error') }}
-    </div>
-@endif
+            @if(session('error'))
+                <div class="mb-4 flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-800 shadow-sm">
+                    <i data-lucide="triangle-alert" class="mt-0.5 h-5 w-5 flex-shrink-0"></i>
+                    <div>
+                        <p class="text-sm font-semibold">Action non aboutie</p>
+                        <p class="text-sm">{{ session('error') }}</p>
+                    </div>
+                </div>
+            @endif
 
 
             <!-- Contenu principal -->
@@ -265,6 +275,15 @@
                 if (window.innerWidth < 1024) {
                     closeSidebar();
                 }
+
+                // Sur mobile, fermer le menu apres clic sur un lien de navigation.
+                sidebar?.querySelectorAll("a").forEach((link) => {
+                    link.addEventListener("click", () => {
+                        if (window.innerWidth < 1024) {
+                            closeSidebar();
+                        }
+                    });
+                });
             });
         </script>
         <script src="//unpkg.com/alpinejs" defer></script>
@@ -272,20 +291,27 @@
             //ouvrir le modal
             function openModal(id) {
                 console.log(id);
-                document.getElementById(id).classList.remove("hidden");
+                const modal = document.getElementById(id);
+                modal.classList.remove("hidden");
+                modal.classList.add("flex");
             }
             function closeModal(id) {
-                document.getElementById(id).classList.add("hidden");
+                const modal = document.getElementById(id);
+                modal.classList.remove("flex");
+                modal.classList.add("hidden");
             }
             //action du modal
 
-            document
-                .getElementById("sup")
-                .addEventListener("click", function (e) {
+            const deleteTrigger = document.getElementById("sup");
+            const deleteForm = document.getElementById("delete-event-form");
+
+            if (deleteTrigger && deleteForm) {
+                deleteTrigger.addEventListener("click", function (e) {
                     e.preventDefault();
                     // Soumettre un formulaire
-                    document.getElementById("delete-event-form").submit();
+                    deleteForm.submit();
                 });
+            }
         </script>
     </body>
 </html>

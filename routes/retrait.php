@@ -1,6 +1,7 @@
 <?php
 
-use App\Http\Controllers\RetraitController;
+use App\Http\Controllers\Web\Organisateur\RetraitController;
+use App\Http\Middleware\AuditTrail;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/retrait', 
@@ -8,12 +9,15 @@ Route::get('/retrait',
     ->name('retrait.index')->middleware(['auth']);
 Route::post('/retrait', 
     [RetraitController::class, 'store'])
+    ->middleware(['auth', AuditTrail::class])
     ->name('retraits.store');
 Route::put('/retrait/{retrait}', 
     [RetraitController::class, 'update'])
+    ->middleware(['auth', AuditTrail::class])
     ->name('retraits.update');
 Route::delete('/retrait/{retrait}', 
     [RetraitController::class, 'destroy'])
+    ->middleware(['auth', AuditTrail::class])
     ->name('retraits.destroy');  
 Route::get('/retrait/{retrait}/edit', 
     [RetraitController::class, 'updateStatut'])
@@ -21,3 +25,9 @@ Route::get('/retrait/{retrait}/edit',
 Route::get('/retrait/create', 
     [RetraitController::class, 'show'])
     ->name('retraits.show');
+
+
+
+
+
+

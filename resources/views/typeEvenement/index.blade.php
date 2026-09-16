@@ -15,8 +15,8 @@
                     <div class="flex flex-wrap items-center gap-3">
                         <!-- Input recherche -->
                         <div class="relative">
-                            <input type="text" id="searchInput" placeholder="Rechercher..."
-                                class="w-96 rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-emerald-400 focus:outline-none">
+                            <x-app-input type="text" id="searchInput" placeholder="Rechercher..." wrapperClass=""
+                                inputClass="w-96 pl-9 pr-3" />
                             <span class="absolute left-2.5 top-2.5">
                                 <img src="https://cdn-icons-png.flaticon.com/512/149/149852.png" class="w-4 h-4 opacity-70" alt="search">
                             </span>
@@ -66,7 +66,7 @@
                                             <form action="{{ route('typeEvenement.update', $type->id) }}" method="POST">
                                                 @csrf
                                                 @method('PUT')
-                                                <input type="text" name="nom_type" value="{{ $type->nom_type }}" class="w-full border rounded px-3 py-2 mb-4">
+                                                <x-app-input type="text" name="nom_type" :value="$type->nom_type" wrapperClass="mb-4" />
                                                 <div class="flex justify-end gap-2">
                                                     <button type="button" onclick="closeModal('updateModal{{ $type->id }}')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Annuler</button>
                                                     <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Enregistrer</button>
@@ -112,7 +112,7 @@
         <h3 class="text-lg font-semibold mb-4">Ajouter un type d'événement</h3>
         <form action="{{ route('typeEvenement.store') }}" method="POST">
             @csrf
-            <input type="text" name="nom_type" placeholder="Nom du type" class="w-full border rounded px-3 py-2 mb-4">
+            <x-app-input type="text" name="nom_type" placeholder="Nom du type" wrapperClass="mb-4" />
             <div class="flex justify-end gap-2">
                 <button type="button" onclick="closeModal('storeModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Annuler</button>
                 <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Ajouter</button>

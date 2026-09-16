@@ -1,58 +1,61 @@
 @extends('layouts.main')
+@section('title', 'Types de billets')
 
 @section('content')
 <div class="container mx-auto px-6 py-10">
     <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-extrabold text-gray-800">🎟️ Gestion des Types de Billets</h1>
+        <h1 class="text-3xl font-extrabold text-gray-800">Gestion des types de billets</h1>
         <button onclick="openModal()" 
                 class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow transition">
             + Ajouter un Type de Billet
         </button>
     </div>
 
+    <form method="GET" action="{{ route('type_billet.index') }}" class="mb-6 grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-12 md:items-end">
+        <div class="md:col-span-8">
+            <label for="q" class="mb-1.5 block text-sm font-medium text-slate-600">Recherche</label>
+            <x-app-input id="q" name="q" :value="$search" placeholder="Rechercher un type de billet..." wrapperClass="mb-0" />
+        </div>
+
+        <div class="md:col-span-4 flex gap-2">
+            <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700">
+                Filtrer
+            </button>
+            <a href="{{ route('type_billet.index') }}" class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                Réinitialiser
+            </a>
+        </div>
+    </form>
+
     {{-- Tableau des types --}}
-    <div class="overflow-x-auto bg-white shadow-lg rounded-lg border border-gray-200">
-        <table class="min-w-full text-sm text-gray-700">
-            <thead class="bg-gray-100 text-gray-700 uppercase text-xs font-semibold">
-                <tr>
-                    <th class="py-3 px-6 text-left">ID</th>
-                    <th class="py-3 px-6 text-left">Nom</th>
-                    <th class="py-3 px-6 text-left">Date de création</th>
-                    <th class="py-3 px-6 text-center">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200">
+    <x-app-table minWidth="900px" tableClass="[&>tbody>tr:hover]:bg-slate-50" stickyHeader="true">
+        <x-slot:head>
+            <tr>
+                <x-app-th>#</x-app-th>
+                <x-app-th>Nom</x-app-th>
+                <x-app-th>Date de création</x-app-th>
+            </tr>
+        </x-slot:head>
+
+        <x-slot:body>
                 @forelse($typeBillets as $typeBillet)
-                    <tr class="hover:bg-gray-50 transition">
-                        <td class="py-3 px-6">{{ $typeBillet->id }}</td>
-                        <td class="py-3 px-6 font-medium">{{ $typeBillet->nom_type }}</td>
-                        <td class="py-3 px-6">{{ $typeBillet->created_at->format('d/m/Y') }}</td>
-                        <td class="py-3 px-6 text-center flex justify-center space-x-4">
-                            <a href="{{ route('type_billet.edit', $typeBillet->id) }}" 
-                               class="text-blue-600 hover:text-blue-800 font-medium transition">
-                               ✏️ Éditer
-                            </a>
-                            <form action="{{ route('type_billet.destroy', $typeBillet->id) }}" 
-                                  method="POST" 
-                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce type de billet ?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" 
-                                        class="text-red-600 hover:text-red-800 font-medium transition">
-                                    🗑️ Supprimer
-                                </button>
-                            </form>
-                        </td>
+                    <tr class="transition">
+                        <x-app-td>{{ ($typeBillets->firstItem() ?? 0) + $loop->index }}</x-app-td>
+                        <x-app-td class="font-medium">{{ $typeBillet->nom_type }}</x-app-td>
+                        <x-app-td :nowrap="true">{{ $typeBillet->created_at->format('d/m/Y') }}</x-app-td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="py-6 text-center text-gray-500 italic">
+                        <td colspan="3" class="py-6 text-center text-gray-500 italic">
                             Aucun type de billet trouvé.
                         </td>
                     </tr>
                 @endforelse
-            </tbody>
-        </table>
+        </x-slot:body>
+    </x-app-table>
+
+    <div class="mt-5">
+        {{ $typeBillets->links() }}
     </div>
 </div>
 
@@ -65,9 +68,7 @@
             @csrf
             <div>
                 <label class="block text-gray-700 font-medium mb-1">Nom du type</label>
-                <input type="text" name="nom_type" 
-                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                       placeholder="Ex : VIP, Standard..." required>
+                <x-app-input type="text" name="nom_type" placeholder="Ex : VIP, Standard..." required wrapperClass="mb-0" />
             </div>
 
             <div class="flex justify-end space-x-3 mt-6">

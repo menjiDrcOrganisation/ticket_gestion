@@ -67,6 +67,26 @@
 
   <!-- Scanner -->
   <div class="p-6 w-full max-w-xl mx-auto mt-8 bg-white rounded-2xl shadow-lg">
+    @if(isset($evenementsOrganisateur) && $evenementsOrganisateur->count() > 0)
+      <form method="GET" action="{{ route('scanneur.showScanner') }}" class="mb-4">
+        <label for="event_id" class="mb-1.5 block text-sm font-medium text-gray-700">Événement à scanner</label>
+        <div class="flex gap-2">
+          <select id="event_id" name="event_id" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200">
+            @foreach($evenementsOrganisateur as $eventOption)
+              <option value="{{ $eventOption->id }}" @selected((int) $selectedEventId === (int) $eventOption->id)>
+                {{ $eventOption->nom }}
+              </option>
+            @endforeach
+          </select>
+          <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Appliquer</button>
+        </div>
+      </form>
+    @endif
+
+    @if(isset($evenementsOrganisateur) && $evenementsOrganisateur->count() === 0)
+      <p class="mb-4 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">Aucun événement disponible pour ce compte.</p>
+    @endif
+
     <h1 class="text-xl font-bold mb-4 text-center">Scanner un QR Code</h1>
     <div class="flex justify-center mb-6 scanner-frame relative">
       <div id="reader" class="w-64 h-64 bg-white"></div>
@@ -87,6 +107,7 @@
 <script>
 const verifyUrl = "{{ url('/scanneur/scanne-preview') }}";
 const storeUrl = "{{ route('scanneur.processScan') }}";
+const selectedEventId = {{ (int) ($selectedEventId ?? 0) }};
 const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
 let html5QrCode = null;
@@ -268,7 +289,7 @@ async function handleScan(decodedText) {
         "Content-Type": "application/json", 
         "X-CSRF-TOKEN": csrfToken 
       },
-      body: JSON.stringify({ code: decodedText })
+      body: JSON.stringify({ code: decodedText, event_id: selectedEventId })
     });
     
     const data = await response.json();
@@ -322,6 +343,7 @@ scanForm.addEventListener('submit', async (e) => {
   
   try {
     const formData = new FormData(scanForm);
+    formData.append('event_id', selectedEventId);
     const response = await fetch(storeUrl, {
       method: 'POST',
       headers: { "X-CSRF-TOKEN": csrfToken },

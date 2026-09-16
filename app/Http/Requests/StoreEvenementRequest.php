@@ -23,6 +23,8 @@ class StoreEvenementRequest extends FormRequest
     {
         return [
             'nom_evenement' => 'required|string|max:255',
+            'type_evenement_id' => 'nullable|integer|exists:type_evenements,id|required_without:type_evenement_nom',
+            'type_evenement_nom' => 'nullable|string|max:255|required_without:type_evenement_id',
             'nom_organisateur' => 'required|string|max:255',
             'email_organisateur' => 'required|email|max:255|unique:users,email',
             'adresse' => 'required|string|max:255',
