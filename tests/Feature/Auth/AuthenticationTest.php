@@ -17,9 +17,19 @@ class AuthenticationTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_users_can_authenticate_using_the_login_screen(): void
+    public static function redirectionParRole(): array
     {
-        $user = User::factory()->create();
+        return [
+            'admin' => ['admin', 'dashboard.admin.viewDash'],
+            'organisateur' => ['organisateur', 'dashboard_orginasateur.show'],
+            'scanneur' => ['scanneur', 'dashboard_orginasateur.show'],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('redirectionParRole')]
+    public function test_users_can_authenticate_using_the_login_screen(string $role, string $route): void
+    {
+        $user = User::factory()->create(['role' => $role]);
 
         $response = $this->post('/login', [
             'email' => $user->email,
@@ -27,7 +37,7 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect(route($route, absolute: false));
     }
 
     public function test_users_can_not_authenticate_with_invalid_password(): void
@@ -49,6 +59,6 @@ class AuthenticationTest extends TestCase
         $response = $this->actingAs($user)->post('/logout');
 
         $this->assertGuest();
-        $response->assertRedirect('/');
+        $response->assertRedirect(route('login'));
     }
 }

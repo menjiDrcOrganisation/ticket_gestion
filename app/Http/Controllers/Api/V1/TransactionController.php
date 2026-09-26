@@ -107,41 +107,42 @@ class TransactionController extends Controller
 
     public function validerPaiement(string $reference): JsonResponse
     {
-        $transaction = DB::transaction(function () use ($reference): Transaction {
-            $locked = Transaction::with(['evenement', 'typeBillet'])
-                ->lockForUpdate()
-                ->where('reference', $reference)
-                ->first();
-
-            if (!$locked) {
-                throw new Exception('NOT_FOUND');
-            }
-
-            if (in_array($locked->statut, ['paye', 'paye_sans_billet'], true)) {
-                throw new Exception('ALREADY_PAID');
-            }
-
-            if (
-                $locked->statut === 'paiement_en_cours'
-                && $locked->payment_started_at
-                && $locked->payment_started_at->gt(now()->subMinutes(5))
-            ) {
-                throw new Exception('ACTIVE_PAYMENT');
-            }
-
-            if ($locked->expires_at && $locked->expires_at->isPast()) {
-                throw new Exception('EXPIRED');
-            }
-
-            $locked->update([
-                'statut' => 'paiement_en_cours',
-                'payment_started_at' => now(),
-            ]);
-
-            return $locked->fresh(['evenement', 'typeBillet']);
-        });
-
         try {
+            // Dans le try : les exceptions métier (NOT_FOUND, ALREADY_PAID, ...) sont converties en réponses HTTP plus bas.
+            $transaction = DB::transaction(function () use ($reference): Transaction {
+                $locked = Transaction::with(['evenement', 'typeBillet'])
+                    ->lockForUpdate()
+                    ->where('reference', $reference)
+                    ->first();
+
+                if (!$locked) {
+                    throw new Exception('NOT_FOUND');
+                }
+
+                if (in_array($locked->statut, ['paye', 'paye_sans_billet'], true)) {
+                    throw new Exception('ALREADY_PAID');
+                }
+
+                if (
+                    $locked->statut === 'paiement_en_cours'
+                    && $locked->payment_started_at
+                    && $locked->payment_started_at->gt(now()->subMinutes(5))
+                ) {
+                    throw new Exception('ACTIVE_PAYMENT');
+                }
+
+                if ($locked->expires_at && $locked->expires_at->isPast()) {
+                    throw new Exception('EXPIRED');
+                }
+
+                $locked->update([
+                    'statut' => 'paiement_en_cours',
+                    'payment_started_at' => now(),
+                ]);
+
+                return $locked->fresh(['evenement', 'typeBillet']);
+            });
+
             $payment = MobileMoneyService::initiatePayment([
                 'transaction_reference' => $transaction->reference,
                 'total' => (float) $transaction->montant,

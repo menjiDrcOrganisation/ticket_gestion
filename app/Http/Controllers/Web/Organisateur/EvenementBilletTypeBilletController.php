@@ -117,11 +117,7 @@ class EvenementBilletTypeBilletController extends Controller
         $revenusCDF = $achats->where('devise', 'CDF')->sum(fn($a) => $a->prix_unitaire * $a->quantite);
         $revenusUSD = $achats->where('devise', 'USD')->sum(fn($a) => $a->prix_unitaire * $a->quantite);
 
-        // Taux de remplissage basé sur le nombre total disponible
-        $totalBilletsDisponibles = $typesBillets->sum('nombre_billet');
-        $tauxRemplissage = $totalBilletsDisponibles > 0 
-            ? round(($totalBilletsVendus / $totalBilletsDisponibles) * 100, 1)
-            : 0;
+        $tauxRemplissage = $evenement->tauxRemplissage();
 
         // Achats récents
         $derniersAchats = $achats->sortByDesc('date_achat')->take(5);
