@@ -3,9 +3,13 @@
 <?php
 use App\Http\Controllers\Web\Admin\EvenementController;
 use App\Http\Middleware\AuditTrail;
+use App\Http\Middleware\RoleMiddleware;
 Route::prefix('evenements')->name('evenements.')->group(function () {
         Route::get('/', [EvenementController::class, 'index'])->name('index');      
-        Route::get('/create', [EvenementController::class, 'create'])->name('create');  
+        Route::get('/create', [EvenementController::class, 'create'])->name('create');
+        Route::get('/organisateur-lookup', [EvenementController::class, 'lookupOrganisateur'])
+            ->middleware(['auth', RoleMiddleware::class . ':admin'])
+            ->name('organisateurLookup');
         Route::post('/', [EvenementController::class, 'store'])->middleware([AuditTrail::class])->name('web.store');         
         Route::get('/{id}', [EvenementController::class, 'show'])->name('show');        
         Route::get('/{id}/edit', [EvenementController::class, 'edit'])->name('edit');   

@@ -1,6 +1,17 @@
 @extends('layouts.main')
 @section('title', 'Événements')
 @section('content')
+@if(session('scanneur_credentials'))
+    @php($scanneurCredentials = session('scanneur_credentials'))
+    <div class="max-w-7xl mx-auto mb-4 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-blue-900 shadow-sm">
+        <p class="text-sm font-semibold">Identifiants du scanneur — {{ $scanneurCredentials['evenement'] }}</p>
+        <p class="text-xs text-blue-700 mb-2">Compte dédié à cet événement. Ces identifiants ne seront plus affichés : notez-les ou utilisez « Renvoyer le mail ».</p>
+        <ul class="text-sm">
+            <li><span class="font-medium">Email :</span> <code>{{ $scanneurCredentials['email'] }}</code></li>
+            <li><span class="font-medium">Mot de passe :</span> <code>{{ $scanneurCredentials['mot_de_passe'] }}</code></li>
+        </ul>
+    </div>
+@endif
 <div class="max-w-7xl mx-auto bg-gray-50 p-6 rounded-2xl shadow-sm mb-4">
 
     <!-- Statistiques -->

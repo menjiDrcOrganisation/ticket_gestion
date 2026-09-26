@@ -11,14 +11,11 @@ use App\Models\TypeBillet;
 use App\Models\TypeEvenement;
 use App\Models\Ressource;
 
-use App\Mail\EnvoiMotDePasseMail;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use App\Services\EvenementCreationService;
+use App\Services\EvenementMailService;
 
 class EvenementController extends Controller
 {
@@ -87,54 +84,29 @@ class EvenementController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(\App\Http\Requests\StoreEvenementRequest $request, EvenementCreationService $evenementCreationService)
+    public function store(\App\Http\Requests\StoreEvenementRequest $request, EvenementCreationService $evenementCreationService, EvenementMailService $evenementMailService)
     {
         $validated = $request->validated();
 
         try {
             $creation = $evenementCreationService->create($validated, true);
-            $evenement = $creation['evenement'];
-            $code_organi = $creation['organisateur_code'];
-            $code_scanneur = $creation['scanneur_code'];
-            $email_scanneur = $creation['scanneur_email'];
-            
-             try {
-                
-                Mail::to($validated['email_organisateur'])->send(new EnvoiMotDePasseMail(
-                    $validated['nom_organisateur'],
-                    $validated['email_organisateur'],
-                    (string) $code_organi,
-                    env('ACHAT_URL', 'https://kimiaticket.com') . "/" . $evenement->url_evenement,
-                    (string) $email_scanneur,
-                    (string) $code_scanneur
-                ));
+            $mailEnvoye = $evenementMailService->envoyerApresCreation($creation);
 
-                $evenement->update([
-                    'mail_send_attempts' => ((int) $evenement->mail_send_attempts) + 1,
-                    'mail_sent_at' => now(),
-                    'last_mail_error' => null,
+            $message = $creation['organisateur_existant']
+                ? 'Votre événement a été créé avec succès. Il a été rattaché au compte organisateur existant.'
+                : 'Votre événement a été créé avec succès. Le compte organisateur a été créé avec un mot de passe temporaire.';
+
+            $message .= $mailEnvoye
+                ? ' Les informations ont été envoyées par e-mail à l’organisateur.'
+                : ' Le mail n\'a pas pu être envoyé : vous pouvez le renvoyer depuis le tableau.';
+
+            return redirect()->route('evenements.index')
+                ->with('success', $message)
+                ->with('scanneur_credentials', [
+                    'evenement' => $creation['evenement']->nom,
+                    'email' => $creation['scanneur_email'],
+                    'mot_de_passe' => $creation['scanneur_code'],
                 ]);
-            
-                $message = 'Événement créé avec succès et mail envoyé à l’organisateur.';
-            } catch (\Exception $e) {
-
-                Log::error('Echec envoi mail apres creation evenement', [
-                    'evenement_id' => $evenement->id ?? null,
-                    'organisateur_email' => $validated['email_organisateur'] ?? null,
-                    'error_message' => $e->getMessage(),
-                    'exception' => $e,
-                ]);
-
-                $evenement->update([
-                    'mail_send_attempts' => ((int) $evenement->mail_send_attempts) + 1,
-                    'mail_sent_at' => null,
-                    'last_mail_error' => 'MAIL_SEND_FAILED',
-                ]);
-
-                $message = 'Événement créé avec succès, mais le mail n\'a pas pu être envoyé. Vous pouvez le renvoyer depuis le tableau.';
-            }
-
-            return redirect()->route('evenements.index')->with('success', $message);
         } catch (ValidationException $e) {
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Throwable $th) {
@@ -146,6 +118,36 @@ class EvenementController extends Controller
 
             return redirect()->back()->withInput()->with('error', 'Une erreur est survenue lors de la création de l\'événement.');
         }
+    }
+
+    /**
+     * Indique au formulaire de création si l’e-mail saisi correspond à un organisateur existant,
+     * afin de ne pas redemander ses informations.
+     */
+    public function lookupOrganisateur(Request $request)
+    {
+        $user = EvenementCreationService::findUserByEmail((string) $request->query('email', ''));
+
+        if (!$user) {
+            return response()->json(['exists' => false]);
+        }
+
+        if ($user->role !== 'organisateur') {
+            return response()->json([
+                'exists' => false,
+                'conflict' => true,
+                'message' => 'Cette adresse e-mail est déjà utilisée par un compte qui n\'est pas un organisateur.',
+            ]);
+        }
+
+        $organisateur = $user->organisateur;
+
+        return response()->json([
+            'exists' => true,
+            'name' => $user->name,
+            'telephone' => $organisateur?->telephone,
+            'evenements_count' => $organisateur ? $organisateur->evenements()->count() : 0,
+        ]);
     }
 
     
@@ -260,43 +262,17 @@ class EvenementController extends Controller
     return redirect()->back()->with('success', 'Statut de l’événement mis à jour avec succès.');
 }
 
-    public function resendMail($id)
+    public function resendMail($id, EvenementMailService $evenementMailService)
     {
         try {
             $evenement = Evenement::with(['organisateur.user', 'scanneur.user'])->findOrFail($id);
 
-            $organisateurUser = $evenement->organisateur?->user;
-            $scanneurUser = $evenement->scanneur?->user;
-
-            if (!$organisateurUser || !$scanneurUser) {
+            if (!$evenement->organisateur?->user || !$evenement->scanneur?->user) {
                 return redirect()->back()->with('error', 'Impossible de renvoyer le mail: organisateur ou scanneur introuvable.');
             }
 
-            $organisateurCode = substr((string) Str::uuid(), 0, 10);
-            $scanneurCode = substr((string) Str::uuid(), 0, 8);
-
-            $organisateurUser->update([
-                'password' => Hash::make($organisateurCode),
-            ]);
-
-            $scanneurUser->update([
-                'password' => Hash::make($scanneurCode),
-            ]);
-
-            Mail::to($organisateurUser->email)->send(new EnvoiMotDePasseMail(
-                $organisateurUser->name,
-                $organisateurUser->email,
-                $organisateurCode,
-                env('ACHAT_URL', 'https://kimiaticket.com') . '/' . $evenement->url_evenement,
-                $scanneurUser->email,
-                $scanneurCode
-            ));
-
-            $evenement->update([
-                'mail_send_attempts' => ((int) $evenement->mail_send_attempts) + 1,
-                'mail_sent_at' => now(),
-                'last_mail_error' => null,
-            ]);
+            // Régénère le mot de passe du scanneur ; celui de l'organisateur uniquement s'il est encore temporaire.
+            $evenementMailService->renvoyer($evenement);
 
             return redirect()->back()->with('success', 'Mail renvoyé avec succès pour l\'événement sélectionné.');
         } catch (\Throwable $th) {
@@ -305,14 +281,6 @@ class EvenementController extends Controller
                 'error_message' => $th->getMessage(),
                 'exception' => $th,
             ]);
-
-            if (isset($evenement) && $evenement instanceof Evenement) {
-                $evenement->update([
-                    'mail_send_attempts' => ((int) $evenement->mail_send_attempts) + 1,
-                    'mail_sent_at' => null,
-                    'last_mail_error' => 'MAIL_RESEND_FAILED',
-                ]);
-            }
 
             return redirect()->back()->with('error', 'Le renvoi du mail a échoué. Veuillez réessayer plus tard.');
         }

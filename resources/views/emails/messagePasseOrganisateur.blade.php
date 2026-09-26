@@ -2,24 +2,22 @@
 <html>
   <body style="font-family: Arial, sans-serif; color: #333;">
     <h2>Bonjour {{ $nom_client }},</h2>
-    <p>Bienvenue sur notre plateforme !</p>
+    <p>Bienvenue sur notre plateforme ! Votre compte organisateur a été créé.</p>
     <p>Voici vos identifiants de connexion pour la partie gestion à ce lien :</p>
-    <a href="{{ request()->getSchemeAndHttpHost() }}">{{ request()->getSchemeAndHttpHost() }}</a>
+    <a href="{{ route('login') }}">{{ route('login') }}</a>
 
     <ul>
       <li><strong>Email :</strong> {{ $email }}</li>
-      <li><strong>Mot de passe :</strong> {{ $mot_de_passe }}</li>
-      <li><strong>Identifiants de vos scanneurs :</strong></li>
-      <ul>
-        <li>Email : {{ $email_scanneur }}</li>
-        <li>Mot de passe : {{ $mot_de_passe_scanneur }}</li>
-      </ul>
-      <li><strong>Lien pour acheter le billet :</strong>
-        <a href="{{ $url }}">{{ $url }}</a>
-      </li>
+      <li><strong>Mot de passe temporaire :</strong> {{ $mot_de_passe }}</li>
     </ul>
 
-    <p>Nous vous recommandons de modifier votre mot de passe après votre première connexion.</p>
+    <p style="padding: 10px; background: #fff7ed; border: 1px solid #fdba74; border-radius: 6px;">
+      <strong>Important :</strong> ce mot de passe est temporaire. Vous devrez obligatoirement le changer lors de votre première connexion.
+    </p>
+
+    @include('emails.partials.evenement-scanneur')
+
+    <p>Vous pourrez créer vos prochains événements avec la même adresse e-mail : ils seront automatiquement rattachés à ce compte.</p>
     <p>Merci d’utiliser nos services.</p>
 
     <br>

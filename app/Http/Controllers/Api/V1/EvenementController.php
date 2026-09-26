@@ -7,22 +7,27 @@ use App\Http\Requests\Api\V1\StoreEvenementApiRequest;
 use Illuminate\Http\Request;
 use App\Models\Evenement;
 use App\Services\EvenementCreationService;
+use App\Services\EvenementMailService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class EvenementController extends Controller
 {
-    public function store(StoreEvenementApiRequest $request, EvenementCreationService $evenementCreationService)
+    public function store(StoreEvenementApiRequest $request, EvenementCreationService $evenementCreationService, EvenementMailService $evenementMailService)
     {
         try {
             $validated = $request->validated();
             $creation = $evenementCreationService->create($validated, true);
+            $mailEnvoye = $evenementMailService->envoyerApresCreation($creation);
             $evenement = $creation['evenement']->load(['organisateur.user', 'scanneur.user', 'typeBillets', 'ressource', 'typeEvenement']);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Evenement cree avec succes',
+                'message' => 'Votre événement a été créé avec succès',
                 'data' => $evenement,
+                'organisateur_existant' => $creation['organisateur_existant'],
+                'changement_mot_de_passe_requis' => !$creation['organisateur_existant'],
+                'mail_envoye' => $mailEnvoye,
                 'credentials' => [
                     'organisateur_code' => $creation['organisateur_code'],
                     'scanneur_code' => $creation['scanneur_code'],
