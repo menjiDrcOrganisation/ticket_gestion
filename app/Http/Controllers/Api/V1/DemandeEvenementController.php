@@ -11,7 +11,30 @@ class DemandeEvenementController extends Controller
 {
     public function storeDemande(StoreDemandeEvenementApiRequest $request)
     {
-        $validated = $request->validated();
+        $validated = $request->validate([
+    'nom_evenement' => 'required|string|max:255',
+
+    'contact_organisateur' => [
+        'required',
+        'string',
+        'max:255',
+        function ($attribute, $value, $fail) {
+            $isEmail = filter_var($value, FILTER_VALIDATE_EMAIL);
+
+            // Exemple : +243812345678, 0812345678, 081 234 56 78
+            $isPhone = preg_match('/^\+?[0-9][0-9\s\-]{7,20}$/', $value);
+
+            if (!$isEmail && !$isPhone) {
+                $fail('Le contact doit être un numéro de téléphone ou une adresse email valide.');
+            }
+        },
+    ],
+
+    'description' => 'required|string',
+    'type_evenement' => 'required|string|max:255',
+    'statut' => 'required|string|in:en_attente,valide,ferme',
+    'affiche' => 'nullable|image|max:2048',
+]);
 
         // Upload affiche si existe
         $affichePath = null;

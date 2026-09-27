@@ -56,6 +56,12 @@ return [
 
     'super_admin_email' => env('SUPER_ADMIN_EMAIL'),
 
+    // Domaine utilisé pour générer les identifiants (e-mails) des comptes scanneur.
+    'scanneur_email_domain' => env('SCANNEUR_EMAIL_DOMAIN', 'scanneur.kimiaticket.com'),
+
+    // URL publique de la billetterie (lien d'achat communiqué à l'organisateur).
+    'achat_url' => env('ACHAT_URL', 'https://kimiaticket.com'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

@@ -14,7 +14,8 @@ class UpdateEvenementStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'statut' => 'required|string|in:encours,ferme,actif,inactif',
+            // Valeurs autorisées par la colonne evenements.statut (enum).
+            'statut' => 'required|string|in:encours,ferme',
         ];
     }
 }
