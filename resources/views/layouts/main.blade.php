@@ -17,6 +17,13 @@
                 icon="document-text"
             />
         @endif
+
+        <x-nav-element
+            title="Notifications"
+            action="{{ route('admin.notifications.index') }}"
+            :active="request()->routeIs('admin.notifications.*')"
+            icon="envelope"
+        />
     </div>
 
     <div class="mb-4">

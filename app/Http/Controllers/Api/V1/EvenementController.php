@@ -27,7 +27,9 @@ class EvenementController extends Controller
                 'data' => $evenement,
                 'organisateur_existant' => $creation['organisateur_existant'],
                 'changement_mot_de_passe_requis' => !$creation['organisateur_existant'],
+                // Le mail est traité en arrière-plan : true signifie « mis en file d'attente ».
                 'mail_envoye' => $mailEnvoye,
+                'mail_en_file_attente' => $mailEnvoye,
                 'credentials' => [
                     'organisateur_code' => $creation['organisateur_code'],
                     'scanneur_code' => $creation['scanneur_code'],

@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Contracts\SuitLesNotifications;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use App\Models\TypeEvenement;
 
-class Evenement extends Model
+class Evenement extends Model implements SuitLesNotifications
 {
     /** @use HasFactory<\Database\Factories\EvenementFactory> */
     use HasFactory;
@@ -99,7 +101,50 @@ class Evenement extends Model
         return self::calculerTauxRemplissage($this->billetsVendus(), $this->capaciteTotale());
     }
 
+    public function notificationEnvois(): MorphMany
+    {
+        return $this->morphMany(NotificationEnvoi::class, 'sujet');
+    }
 
+    // ---- Suivi du mail d'accès (colonnes mail_sent_at / last_mail_error / mail_send_attempts) ----
 
+    public function notificationEnFile(NotificationEnvoi $notification): void
+    {
+        if (!$this->concerneLeMailDAcces($notification)) {
+            return;
+        }
 
+        $this->update(['mail_sent_at' => null, 'last_mail_error' => null]);
+    }
+
+    public function notificationEnvoyee(NotificationEnvoi $notification): void
+    {
+        if (!$this->concerneLeMailDAcces($notification)) {
+            return;
+        }
+
+        $this->update([
+            'mail_send_attempts' => ((int) $this->mail_send_attempts) + 1,
+            'mail_sent_at' => now(),
+            'last_mail_error' => null,
+        ]);
+    }
+
+    public function notificationEchouee(NotificationEnvoi $notification): void
+    {
+        if (!$this->concerneLeMailDAcces($notification)) {
+            return;
+        }
+
+        $this->update([
+            'mail_send_attempts' => ((int) $this->mail_send_attempts) + 1,
+            'mail_sent_at' => null,
+            'last_mail_error' => $notification->type === 'evenement.renvoi' ? 'MAIL_RESEND_FAILED' : 'MAIL_SEND_FAILED',
+        ]);
+    }
+
+    private function concerneLeMailDAcces(NotificationEnvoi $notification): bool
+    {
+        return in_array($notification->type, ['evenement.creation', 'evenement.renvoi'], true);
+    }
 }

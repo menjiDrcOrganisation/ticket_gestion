@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use App\Services\EvenementCreationService;
 use App\Services\EvenementMailService;
+use App\Services\MailDejaEnFileException;
 
 class EvenementController extends Controller
 {
@@ -97,7 +98,7 @@ class EvenementController extends Controller
                 : 'Votre événement a été créé avec succès. Le compte organisateur a été créé avec un mot de passe temporaire.';
 
             $message .= $mailEnvoye
-                ? ' Les informations ont été envoyées par e-mail à l’organisateur.'
+                ? ' Les informations vont être envoyées par e-mail à l’organisateur (envoi en file d’attente).'
                 : ' Le mail n\'a pas pu être envoyé : vous pouvez le renvoyer depuis le tableau.';
 
             return redirect()->route('evenements.index')
@@ -272,9 +273,12 @@ class EvenementController extends Controller
             }
 
             // Régénère le mot de passe du scanneur ; celui de l'organisateur uniquement s'il est encore temporaire.
+            // Le mail est mis en file d'attente : le worker l'enverra en arrière-plan.
             $evenementMailService->renvoyer($evenement);
 
-            return redirect()->back()->with('success', 'Mail renvoyé avec succès pour l\'événement sélectionné.');
+            return redirect()->back()->with('success', 'Le mail a été mis en file d\'attente : il sera envoyé dans quelques instants.');
+        } catch (MailDejaEnFileException) {
+            return redirect()->back()->with('error', 'Un mail d\'accès est déjà en cours d\'envoi pour cet événement. Patientez avant de le renvoyer.');
         } catch (\Throwable $th) {
             Log::error('Echec renvoi mail evenement', [
                 'evenement_id' => $id,
