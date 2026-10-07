@@ -5,6 +5,7 @@ use App\Models\EvenementBilletTypeBillet;
 
 use App\Models\Evenement;
 use App\Models\Billet;
+use App\Models\EvenementTypeBillet;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -45,7 +46,15 @@ class DashboardController extends Controller
             $billetsQuery->where('evenement_id', $selectedEventId);
         }
 
-        $billets = $billetsQuery->get();
+        // Les billets annulés (remboursés) ne comptent ni dans les ventes ni dans le remplissage.
+        $billets = $billetsQuery->get()->reject->estAnnule()->values();
+
+        // Remplissage du périmètre affiché (un événement ou tous) : capacité = stock restant + billets vendus.
+        $evenementIdsPerimetre = $selectedEventId > 0 ? [$selectedEventId] : $allowedEventIds;
+        $remplissageVendus = (int) $billets->sum('quantite');
+        $remplissageCapacite = (int) EvenementTypeBillet::whereIn('evenement_id', $evenementIdsPerimetre)->sum('nombre_billet')
+            + $remplissageVendus;
+        $evolutionRemplissage = Evenement::construireEvolution($billets, $remplissageCapacite);
 
         $totalBilletsVendus=0;
         $revenusCDF = 0;
@@ -94,7 +103,10 @@ class DashboardController extends Controller
             'revenusUSD',
             'typesBillets',
             'billetsScannes',
-            'derniersAchats'
+            'derniersAchats',
+            'remplissageVendus',
+            'remplissageCapacite',
+            'evolutionRemplissage'
         ));
     }
 }
