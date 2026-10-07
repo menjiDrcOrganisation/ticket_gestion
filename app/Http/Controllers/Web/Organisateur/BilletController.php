@@ -220,6 +220,13 @@ class BilletController extends Controller
             return redirect()->back()->with('error', 'Billet introuvable.');
         }
 
+        // Seul l'organisateur de l'événement du billet peut le supprimer.
+        $organisateurId = Auth::user()->organisateur?->id;
+        $estProprietaire = $organisateurId !== null
+            && Evenement::whereKey($billet->evenement_id)->where('organisateur_id', $organisateurId)->exists();
+
+        abort_unless($estProprietaire, 403, 'Accès refusé : ce billet n’appartient pas à vos événements.');
+
         // Supprimer le billet
         $billet->delete();
 
