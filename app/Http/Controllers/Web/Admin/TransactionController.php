@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
+use App\Models\Billet;
+use App\Services\AnnulationBilletService;
 use App\Services\GenerationBilletService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
@@ -182,19 +184,31 @@ class TransactionController extends Controller
     /**
      * Marquer comme remboursé
      */
-    public function markAsRefunded($id)
+    public function markAsRefunded($id, AnnulationBilletService $annulationBilletService)
     {
         $transaction = Transaction::findOrFail($id);
 
-        $transaction->update([
-            'type' => 'remboursement',
-            'statut' => 'annulee',
-        ]);
+        if ($transaction->type === 'remboursement') {
+            return back()->with('error', 'Cette transaction est déjà remboursée.');
+        }
+
+        // Le billet remboursé libère ses places : le taux de remplissage est recalculé.
+        DB::transaction(function () use ($transaction, $annulationBilletService) {
+            $transaction->update([
+                'type' => 'remboursement',
+                'statut' => 'annulee',
+            ]);
+
+            if ($transaction->billet) {
+                $annulationBilletService->annuler($transaction->billet);
+            }
+        });
 
         Log::info(
             'Transaction remboursée',
             [
                 'transaction_id' => $transaction->id,
+                'billet_id' => $transaction->billet_id,
             ]
         );
 

@@ -11,6 +11,8 @@ class Billet extends Model
     /** @use HasFactory<\Database\Factories\BilletFactory> */
     use HasFactory;
 
+    public const STATUT_ANNULE = 'annule';
+
     private static ?string $billetImageColumn = null;
 
     protected   $fillable = [
@@ -56,10 +58,15 @@ private function resolveBilletImageColumn(): string
     return self::$billetImageColumn;
 }
 
-/** Toutes les entrées du billet ont déjà été scannées : il ne donne plus accès à l'événement. */
-public function estEntierementUtilise(): bool
+public function estAnnule(): bool
 {
-    return $this->statut === 'utilisee' || (int) $this->quantite_fictif <= 0;
+    return $this->statut === self::STATUT_ANNULE;
+}
+
+/** Billets comptés comme vendus (tout sauf les billets annulés). */
+public function scopeNonAnnules($query)
+{
+    return $query->where('statut', '!=', self::STATUT_ANNULE);
 }
 
 public function evenement()
