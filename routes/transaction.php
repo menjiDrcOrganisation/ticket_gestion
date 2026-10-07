@@ -1,9 +1,12 @@
- <?php
+<?php
 
 use App\Http\Controllers\Web\Admin\TransactionController;
 use App\Http\Middleware\AuditTrail;
+use App\Http\Middleware\RoleMiddleware;
 
+// Supervision des transactions : réservée aux administrateurs.
 Route::prefix('admin')
+    ->middleware(['auth', RoleMiddleware::class . ':admin'])
     ->group(function () {
 
         Route::get(
@@ -19,15 +22,10 @@ Route::prefix('admin')
         Route::post(
             '/transactions/{id}/force-generate',
             [TransactionController::class, 'forceGenerate']
-        )->middleware(['auth', AuditTrail::class])->name('transactions.force-generate');
+        )->middleware([AuditTrail::class])->name('transactions.force-generate');
 
         Route::post(
             '/transactions/{id}/refund',
             [TransactionController::class, 'markAsRefunded']
-        )->middleware(['auth', AuditTrail::class])->name('transactions.refund');
+        )->middleware([AuditTrail::class])->name('transactions.refund');
     });
-
-
-
-
-

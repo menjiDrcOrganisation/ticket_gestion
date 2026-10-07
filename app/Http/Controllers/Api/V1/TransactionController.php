@@ -4,13 +4,12 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Requests\Api\V1\InitierTransactionRequest;
 use App\Http\Controllers\Controller;
-use App\Jobs\RegenerateTicketPdfJob;
 use App\Models\Billet;
 use App\Models\EvenementTypeBillet;
 use App\Models\Transaction;
 use App\Services\ExchangeRateService;
+use App\Services\GenerationBilletService;
 use App\Services\MobileMoneyService;
-use App\Services\TicketPdfService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,7 +22,7 @@ class TransactionController extends Controller
 {
     public function __construct(
         private readonly ExchangeRateService $exchangeRateService,
-        private readonly TicketPdfService $ticketPdfService
+        private readonly GenerationBilletService $generationBilletService
     ) {
     }
 
@@ -544,33 +543,7 @@ class TransactionController extends Controller
                 ];
             }
 
-            $type = EvenementTypeBillet::lockForUpdate()
-                ->where('type_billet_id', $locked->type_billet_id)
-                ->where('evenement_id', $locked->evenement_id)
-                ->first();
-
-            if (!$type) {
-                throw new Exception('Stock introuvable.');
-            }
-
-            if ($type->nombre_billet < $locked->nombre_billet) {
-                throw new Exception('Stock insuffisant au moment de la confirmation.');
-            }
-
-            $type->decrement('nombre_billet', (int) $locked->nombre_billet);
-
-            $billet = Billet::create([
-                'nom_auteur' => $locked->nom_complet_client,
-                'numero' => $locked->numero_telephone,
-                'billetImage' => '',
-                'code_billet' => 'TCK-' . strtoupper(uniqid()),
-                'evenement_id' => $locked->evenement_id,
-                'type_billet_id' => $locked->type_billet_id,
-                'quantite' => $locked->nombre_billet,
-                'quantite_fictif' => $locked->nombre_billet,
-                'statut' => 'valide',
-                'date_achat' => now(),
-            ]);
+            $billet = $this->generationBilletService->creerBillet($locked);
 
             $locked->update([
                 'billet_id' => $billet->id,
@@ -591,31 +564,7 @@ class TransactionController extends Controller
             /** @var Transaction $updatedTransaction */
             $updatedTransaction = $result['transaction'];
 
-            try {
-                $this->ticketPdfService->generate(
-                    $billet,
-                    (float) $updatedTransaction->montant_unitaire,
-                    $updatedTransaction->devise,
-                    (float) $updatedTransaction->montant,
-                    $updatedTransaction->reference
-                );
-
-                $updatedTransaction->update([
-                    'statut' => 'paye',
-                ]);
-            } catch (Exception $e) {
-                $updatedTransaction->update([
-                    'statut' => 'paye_sans_billet',
-                ]);
-
-                RegenerateTicketPdfJob::dispatch($updatedTransaction->id);
-
-                Log::error('Erreur generation billet apres paiement.', [
-                    'transaction_id' => $updatedTransaction->id,
-                    'reference' => $updatedTransaction->reference,
-                    'error' => $e->getMessage(),
-                ]);
-            }
+            $this->generationBilletService->genererPdf($updatedTransaction, $billet);
 
             return [
                 'status' => true,

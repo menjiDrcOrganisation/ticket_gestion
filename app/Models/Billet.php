@@ -56,6 +56,12 @@ private function resolveBilletImageColumn(): string
     return self::$billetImageColumn;
 }
 
+/** Toutes les entrées du billet ont déjà été scannées : il ne donne plus accès à l'événement. */
+public function estEntierementUtilise(): bool
+{
+    return $this->statut === 'utilisee' || (int) $this->quantite_fictif <= 0;
+}
+
 public function evenement()
 {
     return $this->belongsTo(Evenement::class);
