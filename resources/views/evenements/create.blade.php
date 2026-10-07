@@ -335,11 +335,7 @@
 
     <div>
         <label class="block font-semibold text-gray-700 mb-1">Photo de l'affiche</label>
-        <x-app-file-input name="photo_affiche" wrapperClass="" inputClass="rounded p-2" />
-
-        @error('photo_affiche')
-            <p class="text-red-600 text-sm">{{ $message }}</p>
-        @enderror
+        <x-app-file-input name="photo_affiche" wrapperClass="" inputClass="rounded p-2" required />
     </div>
 
     <div class="text-center flex justify-center gap-3">

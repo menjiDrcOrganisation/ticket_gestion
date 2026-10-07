@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\FichierTeleverse;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreEvenementRequest extends FormRequest
@@ -43,7 +44,7 @@ class StoreEvenementRequest extends FormRequest
             'nom_artiste'=> 'required|string|max:255',
             'acroche'=> 'required|string|max:255',
             'a_propos'=> 'required|string',
-            'photo_affiche'=> 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'photo_affiche'=> ['required', new FichierTeleverse('affiche')],
             'devise'=> 'required|array',
             'devise.*' => 'required|in:USD,CDF',
         ];

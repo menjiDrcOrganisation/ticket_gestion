@@ -217,6 +217,22 @@
                 </div>
             @endif
 
+            {{-- Erreurs de fichier : les champs d'upload sont souvent dans des modales fermées après redirection. --}}
+            @php
+                $erreursFichier = collect(array_keys(config('uploads.champs')))
+                    ->flatMap(fn ($champ) => $errors->get($champ));
+            @endphp
+            @if($erreursFichier->isNotEmpty())
+                <div class="mb-4 flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-800 shadow-sm" role="alert">
+                    <i data-lucide="triangle-alert" class="mt-0.5 h-5 w-5 flex-shrink-0"></i>
+                    <div>
+                        <p class="text-sm font-semibold">Fichier refusé</p>
+                        @foreach($erreursFichier as $erreur)
+                            <p class="text-sm">{{ $erreur }}</p>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
 
             <!-- Contenu principal -->
             @yield('content')
