@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Evenement;
 
+use App\Rules\FichierTeleverse;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateEvenementRequest extends FormRequest
@@ -20,7 +21,7 @@ class UpdateEvenementRequest extends FormRequest
             'adresse' => 'nullable|string|max:255',
             'salle' => 'nullable|string|max:255',
             'url_evenement' => 'nullable|string|max:255',
-            'photo_affiche' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'photo_affiche' => ['nullable', new FichierTeleverse('affiche')],
         ];
     }
 }

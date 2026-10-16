@@ -407,8 +407,7 @@
 
                                 <div>
                                     <label class="text-sm text-gray-600">Changer la photo de l'affiche</label>
-                                    <input type="file" name="photo_affiche" accept="image/*"
-                                        class="w-full border rounded-lg p-2">
+                                    <x-app-file-input name="photo_affiche" id="photo_affiche_{{ $evenement->id }}" wrapperClass="" inputClass="rounded-lg p-2" />
                                     @if(isset($evenement->ressource[0]) && !empty($evenement->ressource[0]->photo_affiche))
                                         <p class="text-xs text-gray-500 mt-1">Photo actuelle: {{ $evenement->ressource[0]->photo_affiche }}</p>
                                     @endif

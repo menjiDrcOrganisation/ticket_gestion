@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Rules\FichierTeleverse;
 use App\Http\Requests\Api\V1\StoreDemandeEvenementApiRequest;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -33,7 +34,7 @@ class DemandeEvenementController extends Controller
     'description' => 'required|string',
     'type_evenement' => 'required|string|max:255',
     'statut' => 'required|string|in:en_attente,valide,ferme',
-    'affiche' => 'nullable|image|max:2048',
+    'affiche' => ['nullable', new FichierTeleverse('affiche')],
 ]);
 
         // Upload affiche si existe
