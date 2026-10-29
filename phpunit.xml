@@ -31,5 +31,15 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <env name="SUPER_ADMIN_EMAIL" value="superadmin@example.test" force="true"/>
+        <env name="SCANNEUR_EMAIL_DOMAIN" value="scanneur.example.test" force="true"/>
+        <!-- Passerelle de paiement factice : aucun appel réel n'est effectué (Http::fake / preventStrayRequests). -->
+        <env name="MOBILE_MONEY_GATEWAY_MODE" value="0" force="true"/>
+        <env name="MOBILE_MONEY_URL" value="https://gateway.example.test/pay" force="true"/>
+        <env name="MOBILE_MONEY_VERIFY_URL" value="" force="true"/>
+        <env name="MOBILE_MONEY_CALLBACK_BASE_URL" value="" force="true"/>
+        <env name="MOBILE_MONEY_RELAXED_LOCAL_CALLBACK" value="false" force="true"/>
+        <env name="MAISHAPAY_PUBLIC_KEY_TEST" value="pk_test_fake" force="true"/>
+        <env name="MAISHAPAY_SECRET_KEY_TEST" value="sk_test_fake" force="true"/>
     </php>
 </phpunit>

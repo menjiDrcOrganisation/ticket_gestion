@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
-use App\Models\Billet;
+use App\Services\GenerationBilletService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -105,68 +106,77 @@ class TransactionController extends Controller
     }
 
     /**
-     * Forcer la génération du billet
+     * Forcer la génération du billet d'une transaction restée sans billet
+     * (ex. callback fournisseur jamais reçu) : même logique que le callback de paiement.
      */
-    public function forceGenerate($id)
+    public function forceGenerate($id, GenerationBilletService $generationBilletService)
     {
-        DB::beginTransaction();
+        $transaction = null;
+        $billet = null;
 
         try {
+            // Renvoie [type, message] si la génération est refusée, null sinon.
+            $refus = DB::transaction(function () use ($id, $generationBilletService, &$transaction, &$billet) {
+                $transaction = Transaction::lockForUpdate()->findOrFail($id);
 
-            $transaction = Transaction::findOrFail($id);
+                // Vérifier si billet déjà généré
+                if ($transaction->billet_id) {
+                    return ['warning', 'Le billet existe déjà.'];
+                }
 
-            // Vérifier si billet déjà généré
-            if ($transaction->billet_id) {
+                if ($transaction->type === 'remboursement' || $transaction->statut === 'annulee') {
+                    return ['error', 'Impossible de générer un billet pour une transaction annulée ou remboursée.'];
+                }
 
-                return back()->with(
-                    'warning',
-                    'Le billet existe déjà.'
-                );
-            }
+                if (!$transaction->evenement_id || !$transaction->type_billet_id || !$transaction->nombre_billet) {
+                    return ['error', 'Transaction incomplète : événement, type ou nombre de billets manquant.'];
+                }
 
-            // Génération manuelle du billet
-            $billet = Billet::create([
-                'reference' => 'BLT-' . strtoupper(Str::random(10)),
-                'transaction_id' => $transaction->id,
-            ]);
+                $billet = $generationBilletService->creerBillet($transaction);
 
-            // Mise à jour transaction
-            $transaction->update([
-                'billet_id' => $billet->id,
-                'statut' => 'paye',
-            ]);
-
-            Log::info(
-                'Billet généré manuellement',
-                [
-                    'transaction_id' => $transaction->id,
+                $transaction->update([
                     'billet_id' => $billet->id,
-                ]
-            );
+                    'paid_at' => $transaction->paid_at ?? now(),
+                ]);
 
-            DB::commit();
-
-            return back()->with(
-                'success',
-                'Billet généré avec succès.'
-            );
-
+                return null;
+            });
+        } catch (ModelNotFoundException $e) {
+            throw $e;
         } catch (\Exception $e) {
-
-            DB::rollBack();
-
             Log::error(
                 'Erreur génération billet',
                 [
+                    'transaction_id' => $id,
                     'message' => $e->getMessage(),
                 ]
             );
 
             return back()->with(
                 'error',
-                'Erreur lors de la génération.'
+                'Erreur lors de la génération : ' . $e->getMessage()
             );
         }
+
+        if ($refus) {
+            return back()->with(...$refus);
+        }
+
+        // Hors transaction DB : un échec du PDF ne doit pas annuler le billet (statut paye_sans_billet + relance).
+        $generationBilletService->genererPdf($transaction, $billet);
+
+        Log::info(
+            'Billet généré manuellement',
+            [
+                'transaction_id' => $transaction->id,
+                'billet_id' => $billet->id,
+            ]
+        );
+
+        return back()->with(
+            'success',
+            'Billet généré avec succès.'
+        );
     }
 
     /**

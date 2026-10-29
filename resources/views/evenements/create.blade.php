@@ -272,35 +272,42 @@
         @endforeach
     </div>
 
-    <p class="text-sm font-semibold mb-2 text-gray-700">Ajouter un nouvel organisateur :</p>
+    <p class="text-sm font-semibold mb-1 text-gray-700">Organisateur :</p>
+    <p class="text-xs text-gray-500 mb-2">Saisissez d'abord l'e-mail. S'il correspond à un organisateur existant, l'événement sera rattaché à son compte et ses informations ne seront pas redemandées.</p>
 
     <div class="mb-6 p-4 rounded border border-gray-200 shadow-sm">
-         <x-app-input type="text" name="nom_organisateur"
-             :value="old('nom_organisateur')"
-             placeholder="Nom de l'organisateur"
-             inputClass="rounded p-2" wrapperClass="mb-2" required />
-
-        @error('nom_organisateur')
-            <p class="text-red-600 text-sm">{{ $message }}</p>
-        @enderror
-
-         <x-app-input type="email" name="email_organisateur"
+         <x-app-input type="email" name="email_organisateur" id="email_organisateur"
              :value="old('email_organisateur')"
              placeholder="email"
-             inputClass="rounded p-2" wrapperClass="mb-2" required />
+             inputClass="rounded p-2" wrapperClass="mb-2" required
+             data-lookup-url="{{ route('evenements.organisateurLookup') }}" />
 
         @error('email_organisateur')
             <p class="text-red-600 text-sm">{{ $message }}</p>
         @enderror
 
-         <x-app-input type="text" name="telephone"
-             :value="old('telephone')"
-             placeholder="telephone"
-             inputClass="rounded p-2" wrapperClass="" required />
+        <div id="organisateur-existant" class="hidden mb-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800"></div>
+        <p id="organisateur-conflit" class="hidden mb-2 text-sm text-red-600"></p>
 
-        @error('telephone')
-            <p class="text-red-600 text-sm">{{ $message }}</p>
-        @enderror
+        <div id="organisateur-nouveau-champs">
+             <x-app-input type="text" name="nom_organisateur" id="nom_organisateur"
+                 :value="old('nom_organisateur')"
+                 placeholder="Nom de l'organisateur"
+                 inputClass="rounded p-2" wrapperClass="mb-2" required />
+
+            @error('nom_organisateur')
+                <p class="text-red-600 text-sm">{{ $message }}</p>
+            @enderror
+
+             <x-app-input type="text" name="telephone" id="telephone_organisateur"
+                 :value="old('telephone')"
+                 placeholder="telephone"
+                 inputClass="rounded p-2" wrapperClass="" required />
+
+            @error('telephone')
+                <p class="text-red-600 text-sm">{{ $message }}</p>
+            @enderror
+        </div>
     </div>
 
     <!-- Partie artiste -->
@@ -673,6 +680,65 @@
                 alert('Ajoutez au moins un type de billet avec une quantite et un prix superieurs a 0.');
             }
         });
+    }
+
+    // Détection d'un organisateur existant : ses informations ne sont pas redemandées.
+    const emailOrganisateurInput = document.getElementById('email_organisateur');
+    const organisateurExistantBox = document.getElementById('organisateur-existant');
+    const organisateurConflit = document.getElementById('organisateur-conflit');
+    const organisateurNouveauChamps = document.getElementById('organisateur-nouveau-champs');
+    const nomOrganisateurInput = document.getElementById('nom_organisateur');
+    const telephoneOrganisateurInput = document.getElementById('telephone_organisateur');
+
+    function setNouveauOrganisateurChamps(visible) {
+        organisateurNouveauChamps?.classList.toggle('hidden', !visible);
+        [nomOrganisateurInput, telephoneOrganisateurInput].forEach((input) => {
+            if (!input) return;
+            input.required = visible;
+            input.disabled = !visible;
+        });
+    }
+
+    async function verifierOrganisateur() {
+        const email = (emailOrganisateurInput?.value || '').trim();
+        organisateurExistantBox?.classList.add('hidden');
+        organisateurConflit?.classList.add('hidden');
+        setNouveauOrganisateurChamps(true);
+
+        if (!email || !emailOrganisateurInput.checkValidity()) {
+            return;
+        }
+
+        try {
+            const url = new URL(emailOrganisateurInput.dataset.lookupUrl, window.location.origin);
+            url.searchParams.set('email', email);
+            const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+            if (!response.ok) return;
+            const data = await response.json();
+
+            if (data.exists) {
+                setNouveauOrganisateurChamps(false);
+                const titre = document.createElement('strong');
+                titre.textContent = 'Organisateur existant : ' + (data.name || email);
+                const details = document.createElement('p');
+                details.textContent = `Téléphone : ${data.telephone || 'non renseigné'} · Événements déjà créés : ${data.evenements_count}. `
+                    + 'Le nouvel événement sera rattaché à ce compte ; aucun nouveau compte organisateur ne sera créé.';
+                organisateurExistantBox.replaceChildren(titre, details);
+                organisateurExistantBox.classList.remove('hidden');
+            } else if (data.conflict) {
+                organisateurConflit.textContent = data.message;
+                organisateurConflit.classList.remove('hidden');
+            }
+        } catch (error) {
+            // En cas d'échec, le formulaire reste en mode "nouvel organisateur" ; le serveur tranchera.
+        }
+    }
+
+    if (emailOrganisateurInput) {
+        emailOrganisateurInput.addEventListener('change', verifierOrganisateur);
+        if (emailOrganisateurInput.value) {
+            verifierOrganisateur();
+        }
     }
 </script>
 

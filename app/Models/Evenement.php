@@ -66,6 +66,39 @@ class Evenement extends Model
         return $this->belongsTo(TypeEvenement::class, 'type_evenement_id');
     }
 
+    /**
+     * Taux de remplissage en pourcentage (arrondi à 0,1), borné entre 0 et 100.
+     */
+    public static function calculerTauxRemplissage(int $billetsVendus, int $capaciteTotale): float
+    {
+        if ($capaciteTotale <= 0 || $billetsVendus <= 0) {
+            return 0.0;
+        }
+
+        return round(min(100, ($billetsVendus / $capaciteTotale) * 100), 1);
+    }
+
+    public function billetsVendus(): int
+    {
+        return (int) $this->billets()->sum('quantite');
+    }
+
+    /**
+     * Capacité totale = stock restant + billets vendus
+     * (le stock evenement_type_billets.nombre_billet est décrémenté à chaque vente).
+     */
+    public function capaciteTotale(): int
+    {
+        $stockRestant = (int) EvenementTypeBillet::where('evenement_id', $this->id)->sum('nombre_billet');
+
+        return $stockRestant + $this->billetsVendus();
+    }
+
+    public function tauxRemplissage(): float
+    {
+        return self::calculerTauxRemplissage($this->billetsVendus(), $this->capaciteTotale());
+    }
+
 
 
 

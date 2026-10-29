@@ -80,6 +80,15 @@ class ScanneController extends Controller
                     'message' => 'Aucune correspondance trouvée pour ce billet'
                 ], 404);
             }
+            if ($billet->estEntierementUtilise()) {
+                return response()->json([
+                    'valid' => false,
+                    'nom' => $billet->nom_auteur ?? '',
+                    'quantite_fictif' => 0,
+                    'message' => 'Billet déjà utilisé'
+                ], 422);
+            }
+
              if ($billet->quantite_fictif > 1) {
                 $message = 'Billet validé';
             } else {
@@ -146,6 +155,15 @@ class ScanneController extends Controller
                     'valid' => false,
                     'message' => 'Aucune correspondance trouvée pour ce billet'
                 ], 404);
+            }
+
+            if ($billet->estEntierementUtilise()) {
+                return response()->json([
+                    'valid' => false,
+                    'nom' => $billet->nom_auteur ?? '',
+                    'quantite_fictif' => 0,
+                    'message' => 'Billet déjà utilisé'
+                ], 422);
             }
 
             if ($billet->quantite_fictif > 1) {
