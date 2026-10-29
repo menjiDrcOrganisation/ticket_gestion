@@ -27,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('view-audit-logs', function (User $user): bool {
             return $user->isSuperAdmin();
         });
+
+        Gate::define('manage-notifications', fn (User $user): bool => $user->role === 'admin');
     }
 }
-

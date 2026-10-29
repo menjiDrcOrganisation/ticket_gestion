@@ -21,6 +21,16 @@ Laravel is a web application framework with expressive, elegant syntax. We belie
 
 Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
+## Notifications
+
+Les administrateurs peuvent gérer l’historique, envoyer ou renvoyer des notifications par e-mail/SMS, planifier un envoi et enregistrer des groupes de destinataires depuis **Administration > Notifications**. Les groupes peuvent contenir une adresse e-mail, un numéro de téléphone, ou les deux (format d’une ligne : `Nom ; email ; téléphone`). Les acheteurs d’un événement et les organisateurs peuvent également être sélectionnés directement.
+
+Des notifications automatiques sont générées après un achat confirmé, à la création/mise à jour/annulation d’un événement et 24 heures avant un événement. Les coordonnées e-mail d’un acheteur peuvent être transmises à l’API de paiement dans le champ facultatif `email_client`; son numéro est déjà fourni dans `numero_client`.
+
+Configurez un mailer réel dans l’environnement de production. Pour les SMS, renseignez `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` et `TWILIO_FROM` dans `.env`. Les erreurs d’envoi sont conservées dans l’historique et les canaux concernés peuvent être renvoyés.
+
+Après `php artisan migrate`, activez le planificateur Laravel chaque minute. En développement, lancez `php artisan schedule:work`; en production, configurez le planificateur système pour exécuter `php artisan schedule:run` chaque minute.
+
 ## Learning Laravel
 
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.

@@ -15,6 +15,7 @@ class Transaction extends Model
         'montant_unitaire',
         'nombre_billet',
         'numero_telephone',
+        'email_client',
         'nom_complet_client',
         'statut',
         'type',

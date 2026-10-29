@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use App\Services\EvenementCreationService;
+use App\Services\NotificationDispatchService;
 
 class EvenementController extends Controller
 {
@@ -87,7 +88,7 @@ class EvenementController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(\App\Http\Requests\StoreEvenementRequest $request, EvenementCreationService $evenementCreationService)
+    public function store(\App\Http\Requests\StoreEvenementRequest $request, EvenementCreationService $evenementCreationService, NotificationDispatchService $notificationDispatch)
     {
         $validated = $request->validated();
 
@@ -132,6 +133,21 @@ class EvenementController extends Controller
                 ]);
 
                 $message = 'Événement créé avec succès, mais le mail n\'a pas pu être envoyé. Vous pouvez le renvoyer depuis le tableau.';
+            }
+
+            try {
+                $notificationDispatch->notifyOrganizer(
+                    $evenement,
+                    'Nouvel événement créé',
+                    sprintf("Bonjour %s,\n\nL’événement « %s » vient d’être créé sur la plateforme.", $validated['nom_organisateur'], $evenement->nom),
+                    'event_created',
+                    'event-created-' . $evenement->id
+                );
+            } catch (\Throwable $exception) {
+                Log::error('Échec de la notification de création d’événement', [
+                    'evenement_id' => $evenement->id,
+                    'error' => $exception->getMessage(),
+                ]);
             }
 
             return redirect()->route('evenements.index')->with('success', $message);
@@ -181,7 +197,7 @@ class EvenementController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateEvenementRequest $request, $id)
+    public function update(UpdateEvenementRequest $request, $id, NotificationDispatchService $notificationDispatch)
     {
         $validated = $request->validated();
 
@@ -220,6 +236,21 @@ class EvenementController extends Controller
                 }
             }
 
+            try {
+                $notificationDispatch->notifyEventBuyers(
+                    $evenement,
+                    'Mise à jour de votre événement',
+                    sprintf("Bonjour,\n\nLes informations de l’événement « %s » ont été mises à jour. Consultez vos informations d’achat pour les détails.", $evenement->nom),
+                    'event_updated',
+                    'event-updated-' . $evenement->id . '-' . (string) Str::uuid()
+                );
+            } catch (\Throwable $exception) {
+                Log::error('Échec de la notification de mise à jour d’événement', [
+                    'evenement_id' => $evenement->id,
+                    'error' => $exception->getMessage(),
+                ]);
+            }
+
             return redirect()->back()->with('success', 'Evenement modifie avec succes.');
         } catch (\Throwable $th) {
             Log::error('Erreur mise a jour evenement', [
@@ -236,10 +267,24 @@ class EvenementController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id)
+    public function destroy($id, NotificationDispatchService $notificationDispatch)
     {
           try {
         $evenement = Evenement::with('typeBillets')->findOrFail($id);
+        try {
+            $notificationDispatch->notifyEventBuyers(
+                $evenement,
+                'Annulation de votre événement',
+                sprintf("Bonjour,\n\nL’événement « %s » a été annulé. Veuillez contacter l’organisateur pour toute question.", $evenement->nom),
+                'event_cancelled',
+                'event-cancelled-' . $evenement->id
+            );
+        } catch (\Throwable $exception) {
+            Log::error('Échec de la notification d’annulation d’événement', [
+                'evenement_id' => $evenement->id,
+                'error' => $exception->getMessage(),
+            ]);
+        }
         $evenement->typeBillets()->detach();
         $evenement->delete();
         return redirect()->route('evenements.index')->with('success', 'Événement supprimé avec succès.');
@@ -250,15 +295,33 @@ class EvenementController extends Controller
     }
 
 
-    public function updateStatus(UpdateEvenementStatusRequest $request, $id)
+    public function updateStatus(UpdateEvenementStatusRequest $request, $id, NotificationDispatchService $notificationDispatch)
 {
      $validated = $request->validated();
     $evenement = Evenement::findOrFail($id);
-     $evenement->statut = $validated['statut'];
-    $evenement->save();
+        $previousStatus = $evenement->statut;
+         $evenement->statut = $validated['statut'];
+        $evenement->save();
 
-    return redirect()->back()->with('success', 'Statut de l’événement mis à jour avec succès.');
-}
+        if ($previousStatus !== $evenement->statut) {
+            try {
+                $notificationDispatch->notifyEventBuyers(
+                    $evenement,
+                    'Changement de statut de votre événement',
+                    sprintf("Bonjour,\n\nLe statut de l’événement « %s » est désormais « %s ».", $evenement->nom, $evenement->statut),
+                    'event_status_changed',
+                    'event-status-' . $evenement->id . '-' . (string) Str::uuid()
+                );
+            } catch (\Throwable $exception) {
+                Log::error('Échec de la notification de changement de statut', [
+                    'evenement_id' => $evenement->id,
+                    'error' => $exception->getMessage(),
+                ]);
+            }
+        }
+
+        return redirect()->back()->with('success', 'Statut de l’événement mis à jour avec succès.');
+    }
 
     public function resendMail($id)
     {
