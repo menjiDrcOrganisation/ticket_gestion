@@ -85,12 +85,18 @@ class EvenementController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(\App\Http\Requests\StoreEvenementRequest $request, EvenementCreationService $evenementCreationService, NotificationDispatchService $notificationDispatch)
+    public function store(
+        \App\Http\Requests\StoreEvenementRequest $request,
+        EvenementCreationService $evenementCreationService,
+        EvenementMailService $evenementMailService,
+        NotificationDispatchService $notificationDispatch
+    )
     {
         $validated = $request->validated();
 
         try {
             $creation = $evenementCreationService->create($validated, true);
+            $evenement = $creation['evenement'];
             $mailEnvoye = $evenementMailService->envoyerApresCreation($creation);
 
             $message = $creation['organisateur_existant']
@@ -105,7 +111,7 @@ class EvenementController extends Controller
                 $notificationDispatch->notifyOrganizer(
                     $evenement,
                     'Nouvel événement créé',
-                    sprintf("Bonjour %s,\n\nL’événement « %s » vient d’être créé sur la plateforme.", $validated['nom_organisateur'], $evenement->nom),
+                    sprintf("Bonjour %s,\n\nL’événement « %s » vient d’être créé sur la plateforme.", $evenement->organisateur?->user?->name ?? '', $evenement->nom),
                     'event_created',
                     'event-created-' . $evenement->id
                 );
@@ -116,7 +122,17 @@ class EvenementController extends Controller
                 ]);
             }
 
-            return redirect()->route('evenements.index')->with('success', $message);
+            $response = redirect()->route('evenements.index')->with('success', $message);
+
+            if ($creation['scanneur_email'] !== null && $creation['scanneur_code'] !== null) {
+                $response->with('scanneur_credentials', [
+                    'evenement' => $evenement->nom,
+                    'email' => $creation['scanneur_email'],
+                    'mot_de_passe' => $creation['scanneur_code'],
+                ]);
+            }
+
+            return $response;
         } catch (ValidationException $e) {
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Throwable $th) {
