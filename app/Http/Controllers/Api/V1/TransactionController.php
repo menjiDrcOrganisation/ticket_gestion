@@ -65,6 +65,7 @@ class TransactionController extends Controller
                 'montant_unitaire' => $montantUnitaireConverti,
                 'nombre_billet' => $validated['nombre_reel'],
                 'numero_telephone' => $validated['numero_client'],
+                'email_client' => $validated['email_client'] ?? null,
                 'nom_complet_client' => $validated['nom_complet_client'],
                 'statut' => 'en_attente',
                 'type' => 'paiement',
@@ -543,7 +544,34 @@ class TransactionController extends Controller
                 ];
             }
 
-            $billet = $this->generationBilletService->creerBillet($locked);
+            $type = EvenementTypeBillet::lockForUpdate()
+                ->where('type_billet_id', $locked->type_billet_id)
+                ->where('evenement_id', $locked->evenement_id)
+                ->first();
+
+            if (!$type) {
+                throw new Exception('Stock introuvable.');
+            }
+
+            if ($type->nombre_billet < $locked->nombre_billet) {
+                throw new Exception('Stock insuffisant au moment de la confirmation.');
+            }
+
+            $type->decrement('nombre_billet', (int) $locked->nombre_billet);
+
+            $billet = Billet::create([
+                'nom_auteur' => $locked->nom_complet_client,
+                'numero' => $locked->numero_telephone,
+                'email' => $locked->email_client,
+                'billetImage' => '',
+                'code_billet' => 'TCK-' . strtoupper(uniqid()),
+                'evenement_id' => $locked->evenement_id,
+                'type_billet_id' => $locked->type_billet_id,
+                'quantite' => $locked->nombre_billet,
+                'quantite_fictif' => $locked->nombre_billet,
+                'statut' => 'valide',
+                'date_achat' => now(),
+            ]);
 
             $locked->update([
                 'billet_id' => $billet->id,
@@ -566,6 +594,33 @@ class TransactionController extends Controller
 
             $this->generationBilletService->genererPdf($updatedTransaction, $billet);
 
+            try {
+                app(\App\Services\NotificationDispatchService::class)->createCampaign([
+                    'name' => 'Confirmation d’achat de billet',
+                    'subject' => 'Confirmation de votre achat - ' . ($updatedTransaction->evenement?->nom ?? 'événement'),
+                    'message' => sprintf(
+                        "Bonjour %s,\n\nVotre paiement pour l’événement « %s » est confirmé.\nRéférence : %s\nQuantité : %s billet(s).\n\nMerci pour votre achat.",
+                        $updatedTransaction->nom_complet_client,
+                        $updatedTransaction->evenement?->nom ?? 'événement',
+                        $updatedTransaction->reference,
+                        $updatedTransaction->nombre_billet
+                    ),
+                    'channels' => ['email', 'sms'],
+                    'trigger' => 'purchase',
+                    'event_id' => $updatedTransaction->evenement_id,
+                    'source_key' => 'purchase-' . $updatedTransaction->reference,
+                ], [[
+                    'name' => $updatedTransaction->nom_complet_client,
+                    'email' => $updatedTransaction->email_client,
+                    'phone' => $updatedTransaction->numero_telephone,
+                ]]);
+            } catch (\Throwable $exception) {
+                Log::error('Échec de création de notification de confirmation d’achat', [
+                    'transaction_id' => $updatedTransaction->id,
+                    'error' => $exception->getMessage(),
+                ]);
+            }
+
             return [
                 'status' => true,
                 'message' => 'Paiement confirme.',
@@ -580,6 +635,5 @@ class TransactionController extends Controller
         return $result;
     }
 }
-
 
 

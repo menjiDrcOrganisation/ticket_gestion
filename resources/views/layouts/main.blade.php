@@ -16,6 +16,14 @@
                 :active="request()->routeIs('admin.audit.*')"
                 icon="document-text"
             />
+            @endif
+        @if(auth()->user()?->role === 'admin')
+            <x-nav-element
+                title="Notifications"
+                action="{{ route('admin.notifications.index') }}"
+                :active="request()->routeIs('admin.notifications.*')"
+                icon="bell"
+            />
         @endif
     </div>
 
