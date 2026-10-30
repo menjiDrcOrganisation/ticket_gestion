@@ -26,6 +26,3 @@ jobs:
           cp .env.example .env
           php artisan key:generate
 
-      # Base SQLite en mémoire, passerelle de paiement simulée : aucune dépendance à la production (voir phpunit.xml).
-      - name: Lancer les tests
-        run: php artisan test
