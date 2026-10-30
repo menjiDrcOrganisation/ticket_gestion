@@ -38,6 +38,19 @@
         <x-indic-dashboard :value="number_format($revenusUSD, 2, ',', ' ') . ' USD'" title="Total encaissé" subtitle="Dollar" icon="currency-dollar" tone="amber" />
     </div>
 
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 class="text-lg font-semibold text-slate-800">Taux de remplissage</h2>
+            <p class="mb-4 text-xs text-slate-500">Billets vendus sur la capacité totale (stock initial)</p>
+            <x-taux-remplissage :vendus="$remplissageVendus" :capacite="$remplissageCapacite" />
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2">
+            <h2 class="mb-4 text-lg font-semibold text-slate-800">Évolution du remplissage</h2>
+            <x-evolution-remplissage :evolution="$evolutionRemplissage" :capacite="$remplissageCapacite" />
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <h2 class="mb-4 text-lg font-semibold text-slate-800">Types de billets utilisés</h2>

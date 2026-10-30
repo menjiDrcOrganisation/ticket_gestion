@@ -84,6 +84,7 @@
                     <th class="px-4 py-3 whitespace-nowrap hidden lg:table-cell">Salle</th>
                     <th class="px-4 py-3 whitespace-nowrap hidden lg:table-cell">Type</th>
                     <th class="px-4 py-3 whitespace-nowrap">Statut événement</th>
+                    <th class="px-4 py-3 whitespace-nowrap">Remplissage</th>
                     <th class="px-4 py-3 whitespace-nowrap hidden xl:table-cell">Mail</th>
                     <th class="px-4 py-3 whitespace-nowrap hidden xl:table-cell">Tentatives</th>
                     <th class="px-4 py-3 whitespace-nowrap hidden xl:table-cell">URL</th>
@@ -92,6 +93,11 @@
             </thead>
             <tbody class="divide-y divide-gray-200">
                 @forelse ($evenements as $evenement)
+                @php
+                    // Calculé à partir des relations billets et typeBillets déjà chargées (pas de requête par ligne).
+                    $billetsVendus = $evenement->billetsVendus();
+                    $capaciteTotale = $evenement->capaciteTotale();
+                @endphp
                 <tr class="hover:bg-gray-50 transition">
                     <td class="px-4 py-4 whitespace-nowrap">{{ ($evenements->firstItem() ?? 0) + $loop->index }}</td>
                     <td class="px-4 py-4 font-medium whitespace-nowrap">{{ $evenement->nom }}</td>
@@ -109,6 +115,9 @@
                         @else
                             <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs">À venir</span>
                         @endif
+                    </td>
+                    <td class="px-4 py-4">
+                        <x-taux-remplissage :vendus="$billetsVendus" :capacite="$capaciteTotale" compact />
                     </td>
                     <td class="px-4 py-4 whitespace-nowrap hidden xl:table-cell">
                         @if($evenement->mail_sent_at)
@@ -316,18 +325,22 @@
                                         </div>
 
 
-                                        @if($evenement->capacite_max)
                                         <div class="flex items-start gap-3">
                                             <i data-lucide="users" class="w-4 h-4 text-gray-400 mt-0.5"></i>
-                                            <div>
-                                                <p class="font-medium text-gray-700">Capacité</p>
-                                                <p class="text-gray-600">{{ $evenement->capacite_max }} personnes</p>
+                                            <div class="flex-1">
+                                                <p class="font-medium text-gray-700">Taux de remplissage</p>
+                                                <x-taux-remplissage :vendus="$billetsVendus" :capacite="$capaciteTotale" class="mt-1" />
                                             </div>
                                         </div>
-                                        @endif
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Évolution du remplissage -->
+                        <div class="mt-6 pt-4 border-t border-gray-200">
+                            <h3 class="text-sm font-semibold text-gray-500 uppercase mb-3">Évolution du remplissage</h3>
+                            <x-evolution-remplissage :evolution="$evenement->evolutionRemplissage()" :capacite="$capaciteTotale" />
                         </div>
 
                         <!-- Description -->
@@ -435,7 +448,7 @@
 
                 @empty
                 <tr>
-                    <td colspan="12" class="text-center py-6 text-gray-500">Aucun événement trouvé.</td>
+                    <td colspan="13" class="text-center py-6 text-gray-500">Aucun événement trouvé.</td>
                 </tr>
                 @endforelse
             </tbody>
