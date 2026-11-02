@@ -17,7 +17,9 @@ class TauxRemplissageEvenementTest extends TestCase
     use RefreshDatabase;
 
     private Evenement $evenement;
+
     private TypeBillet $vip;
+
     private TypeBillet $standard;
 
     protected function setUp(): void

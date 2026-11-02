@@ -58,9 +58,6 @@ jobs:
     name: Style du code (Pint)
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Le code existant n'est pas encore formaté selon Pint : le job informe sans bloquer.
-    # Retirer `continue-on-error` après un `vendor/bin/pint` global.
-    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v4
@@ -87,8 +84,10 @@ jobs:
 
       # Dépendances (composer.lock, package-lock.json), secrets et mauvaises configurations.
       # Échoue sur les failles HIGH/CRITICAL pour lesquelles un correctif existe.
+      # Épinglée par SHA de commit (et non par tag) : en mars 2026, les tags de trivy-action ont été
+      # détournés (CVE-2026-33634). v0.36.0 installe Trivy v0.70.0, postérieur à l'incident.
       - name: Analyse du dépôt
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: fs
           scan-ref: .

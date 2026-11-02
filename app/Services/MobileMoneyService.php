@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Exception;
 
 class MobileMoneyService
 {
@@ -35,7 +35,7 @@ class MobileMoneyService
         try {
             $credentials = self::credentialSet();
             $transactionReference = $data['transaction_reference']
-                ?? ('TX-' . now()->format('YmdHis') . '-' . rand(1000, 9999));
+                ?? ('TX-'.now()->format('YmdHis').'-'.rand(1000, 9999));
 
             $payload = [
                 'transactionReference' => $transactionReference,
@@ -52,7 +52,7 @@ class MobileMoneyService
                     'channel' => 'MOBILEMONEY',
                     'provider' => $data['service'],
                     'walletID' => $data['numero_client'],
-                    'callbackUrl' => $data['callback_url'] ?? (config('app.url') . '/api/transactions/callback'),
+                    'callbackUrl' => $data['callback_url'] ?? (config('app.url').'/api/transactions/callback'),
                 ],
             ];
 
@@ -77,7 +77,7 @@ class MobileMoneyService
             $isDefinitiveClientError =
                 $httpCode >= 400
                 && $httpCode < 500
-                && !in_array($httpCode, [408, 429], true);
+                && ! in_array($httpCode, [408, 429], true);
             $providerMessage = $responseData['errors']['message']
                 ?? $responseData['title']
                 ?? 'Erreur fournisseur lors de l\'initiation du paiement.';
@@ -88,10 +88,10 @@ class MobileMoneyService
                 'reference' => $transactionReference,
                 'message' => is_array($providerMessage) ? json_encode($providerMessage) : (string) $providerMessage,
                 'http_code' => $httpCode,
-                'uncertain' => !$isDefinitiveClientError,
+                'uncertain' => ! $isDefinitiveClientError,
             ];
         } catch (Exception $e) {
-            Log::error("Erreur MobileMoneyService initiation: " . $e->getMessage());
+            Log::error('Erreur MobileMoneyService initiation: '.$e->getMessage());
 
             return [
                 'status' => false,
@@ -154,7 +154,7 @@ class MobileMoneyService
                 'data' => $responseData,
             ];
         } catch (Exception $e) {
-            Log::error("Erreur MobileMoneyService verification: " . $e->getMessage());
+            Log::error('Erreur MobileMoneyService verification: '.$e->getMessage());
 
             return [
                 'status' => false,

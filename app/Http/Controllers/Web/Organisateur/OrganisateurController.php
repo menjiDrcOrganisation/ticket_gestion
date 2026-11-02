@@ -15,25 +15,27 @@ class OrganisateurController extends Controller
      */
     public function registerOrganisateur(RegisterOrganisateurRequest $request)
     {
-      try {
-        $validated = $request->validated();
-        $UserOrganisateur = User::create([
-          'name' => $validated['name'],
-          'email' => $validated['email'],
-          'password' => $validated['password'],
-          'role' => $validated['role'],
-        ])->organisateur()->create([
-          'telephone' => $validated['telephone'],
-        ]); 
-        return response()->json([
-          'message' => 'Organisateur creer avec  succes',
-          'data' => $UserOrganisateur
-        ], 201);  
+        try {
+            $validated = $request->validated();
+            $UserOrganisateur = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => $validated['password'],
+                'role' => $validated['role'],
+            ])->organisateur()->create([
+                'telephone' => $validated['telephone'],
+            ]);
 
-      } catch (\Throwable $th) {
-        
-      }  
+            return response()->json([
+                'message' => 'Organisateur creer avec  succes',
+                'data' => $UserOrganisateur,
+            ], 201);
+
+        } catch (\Throwable $th) {
+
+        }
     }
+
     public function index()
     {
         //

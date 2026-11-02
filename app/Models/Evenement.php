@@ -4,17 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\TypeEvenement;
 
 class Evenement extends Model
 {
     /** @use HasFactory<\Database\Factories\EvenementFactory> */
     use HasFactory;
 
-     protected $fillable = [
+    protected $fillable = [
         'organisateur_id',
         'scanneur_id',
-          'type_evenement_id',
+        'type_evenement_id',
         'nom',
         'url_evenement',
         'date_debut',
@@ -39,13 +38,13 @@ class Evenement extends Model
     public function typeBillets()
     {
         return $this->belongsToMany(TypeBillet::class, 'evenement_type_billets')
-                    ->withPivot('nombre_billet')
-                    ->withPivot('prix_unitaire')
-                    ->withPivot('devise')
-                    ->withTimestamps();
+            ->withPivot('nombre_billet')
+            ->withPivot('prix_unitaire')
+            ->withPivot('devise')
+            ->withTimestamps();
     }
 
-     public function ressource()
+    public function ressource()
     {
         return $this->hasMany(Ressource::class);
     }
@@ -54,7 +53,6 @@ class Evenement extends Model
     {
         return $this->hasMany(Billet::class, 'evenement_id');
     }
-
 
     public function scanneur()
     {
@@ -98,8 +96,4 @@ class Evenement extends Model
     {
         return self::calculerTauxRemplissage($this->billetsVendus(), $this->capaciteTotale());
     }
-
-
-
-
 }

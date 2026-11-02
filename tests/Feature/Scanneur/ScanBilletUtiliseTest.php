@@ -19,7 +19,9 @@ class ScanBilletUtiliseTest extends TestCase
     use RefreshDatabase;
 
     private Scanneur $scanneur;
+
     private Evenement $evenement;
+
     private TypeBillet $typeBillet;
 
     protected function setUp(): void

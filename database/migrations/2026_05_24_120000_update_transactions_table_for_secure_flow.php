@@ -10,43 +10,43 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('transactions', function (Blueprint $table): void {
-            if (!Schema::hasColumn('transactions', 'montant_unitaire')) {
+            if (! Schema::hasColumn('transactions', 'montant_unitaire')) {
                 $table->decimal('montant_unitaire', 10, 2)->nullable()->after('montant');
             }
 
-            if (!Schema::hasColumn('transactions', 'nom_complet_client')) {
+            if (! Schema::hasColumn('transactions', 'nom_complet_client')) {
                 $table->string('nom_complet_client')->nullable()->after('numero_telephone');
             }
 
-            if (!Schema::hasColumn('transactions', 'evenement_id')) {
+            if (! Schema::hasColumn('transactions', 'evenement_id')) {
                 $table->foreignId('evenement_id')->nullable()->constrained('evenements')->nullOnDelete()->after('billet_id');
             }
 
-            if (!Schema::hasColumn('transactions', 'type_billet_id')) {
+            if (! Schema::hasColumn('transactions', 'type_billet_id')) {
                 $table->foreignId('type_billet_id')->nullable()->constrained('type_billets')->nullOnDelete()->after('evenement_id');
             }
 
-            if (!Schema::hasColumn('transactions', 'provider_reference')) {
+            if (! Schema::hasColumn('transactions', 'provider_reference')) {
                 $table->string('provider_reference')->nullable()->after('description');
             }
 
-            if (!Schema::hasColumn('transactions', 'gateway_reference')) {
+            if (! Schema::hasColumn('transactions', 'gateway_reference')) {
                 $table->string('gateway_reference')->nullable()->after('provider_reference');
             }
 
-            if (!Schema::hasColumn('transactions', 'callback_payload')) {
+            if (! Schema::hasColumn('transactions', 'callback_payload')) {
                 $table->json('callback_payload')->nullable()->after('gateway_reference');
             }
 
-            if (!Schema::hasColumn('transactions', 'payment_started_at')) {
+            if (! Schema::hasColumn('transactions', 'payment_started_at')) {
                 $table->timestamp('payment_started_at')->nullable()->after('callback_payload');
             }
 
-            if (!Schema::hasColumn('transactions', 'paid_at')) {
+            if (! Schema::hasColumn('transactions', 'paid_at')) {
                 $table->timestamp('paid_at')->nullable()->after('payment_started_at');
             }
 
-            if (!Schema::hasColumn('transactions', 'failed_at')) {
+            if (! Schema::hasColumn('transactions', 'failed_at')) {
                 $table->timestamp('failed_at')->nullable()->after('paid_at');
             }
         });

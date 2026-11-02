@@ -34,7 +34,7 @@ class DispatchScheduledNotifications extends Command
                     'Rappel : votre événement a lieu demain',
                     sprintf("Bonjour,\n\nRappel : l’événement « %s » commence le %s à %s, à %s.", $event->nom, $event->date_debut, $event->adresse, $event->salle),
                     'event_reminder_24h',
-                    'event-reminder-24h-' . $event->id
+                    'event-reminder-24h-'.$event->id
                 );
             });
 

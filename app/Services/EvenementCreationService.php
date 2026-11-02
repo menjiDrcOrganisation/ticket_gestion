@@ -106,8 +106,8 @@ class EvenementCreationService
                 'type_evenement_id' => $typeEvenementId,
                 'adresse' => $validated['adresse'],
                 'salle' => $validated['salle'],
-                'date_debut' => Carbon::parse($validated['date_debut'] . ' ' . $validated['heure_debut']),
-                'date_fin' => Carbon::parse($validated['date_fin'] . ' ' . $validated['heure_fin']),
+                'date_debut' => Carbon::parse($validated['date_debut'].' '.$validated['heure_debut']),
+                'date_fin' => Carbon::parse($validated['date_fin'].' '.$validated['heure_fin']),
                 'heure_debut' => $validated['heure_debut'],
                 'heure_fin' => $validated['heure_fin'],
                 'statut' => 'encours',
@@ -141,12 +141,12 @@ class EvenementCreationService
         $typeEvenementId = $validated['type_evenement_id'] ?? null;
         $typeEvenementNom = trim((string) ($validated['type_evenement_nom'] ?? ''));
 
-        if (!$typeEvenementId && $typeEvenementNom !== '') {
+        if (! $typeEvenementId && $typeEvenementNom !== '') {
             $typeEvenement = TypeEvenement::query()
                 ->whereRaw('LOWER(nom_type) = ?', [mb_strtolower($typeEvenementNom)])
                 ->first();
 
-            if (!$typeEvenement) {
+            if (! $typeEvenement) {
                 $typeEvenement = TypeEvenement::create([
                     'nom_type' => $typeEvenementNom,
                 ]);
@@ -190,7 +190,7 @@ class EvenementCreationService
             );
 
             // Complète uniquement une information manquante, sans écraser l'existant.
-            if (empty($organisateur->telephone) && !empty($validated['telephone'])) {
+            if (empty($organisateur->telephone) && ! empty($validated['telephone'])) {
                 $organisateur->update(['telephone' => $validated['telephone']]);
             }
 
@@ -239,7 +239,7 @@ class EvenementCreationService
 
         $userScanneur = User::create([
             'email' => $scanneurEmail,
-            'name' => Str::limit('Scanneur - ' . $nomEvenement, 250, ''),
+            'name' => Str::limit('Scanneur - '.$nomEvenement, 250, ''),
             'password' => Hash::make($scanneurCode),
             'role' => 'scanneur',
         ]);
@@ -255,10 +255,10 @@ class EvenementCreationService
     {
         $domain = (string) config('app.scanneur_email_domain', 'scanneur.kimiaticket.com');
         $slug = Str::limit(Str::slug($nomEvenement), 20, '');
-        $prefix = 'scan-' . ($slug !== '' ? rtrim($slug, '-') . '-' : '');
+        $prefix = 'scan-'.($slug !== '' ? rtrim($slug, '-').'-' : '');
 
         do {
-            $email = $prefix . Str::lower(Str::random(6)) . '@' . $domain;
+            $email = $prefix.Str::lower(Str::random(6)).'@'.$domain;
         } while (User::query()->where('email', $email)->exists());
 
         return $email;
@@ -318,7 +318,7 @@ class EvenementCreationService
         $counter = 2;
 
         while (Evenement::where('url_evenement', $slug)->exists()) {
-            $slug = $baseSlug . '-' . $counter;
+            $slug = $baseSlug.'-'.$counter;
             $counter++;
         }
 

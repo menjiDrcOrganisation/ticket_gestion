@@ -9,6 +9,7 @@ class Retrait extends Model
 {
     /** @use HasFactory<\Database\Factories\RetraitFactory> */
     use HasFactory;
+
     protected $fillable = [
         'organisateur_id',
         'montant',
@@ -16,9 +17,9 @@ class Retrait extends Model
         'date',
         'statut',
     ];
+
     public function organisateur()
     {
         return $this->belongsTo(Organisateur::class);
     }
-    
 }

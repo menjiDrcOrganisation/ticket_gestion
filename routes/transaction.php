@@ -6,7 +6,7 @@ use App\Http\Middleware\RoleMiddleware;
 
 // Supervision des transactions : réservée aux administrateurs.
 Route::prefix('admin')
-    ->middleware(['auth', RoleMiddleware::class . ':admin'])
+    ->middleware(['auth', RoleMiddleware::class.':admin'])
     ->group(function () {
 
         Route::get(

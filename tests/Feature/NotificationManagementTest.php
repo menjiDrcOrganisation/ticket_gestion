@@ -5,12 +5,12 @@ namespace Tests\Feature;
 use App\Models\NotificationCampaign;
 use App\Models\NotificationGroup;
 use App\Models\User;
+use App\Services\NotificationDispatchService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request as HttpRequest;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
-use App\Services\NotificationDispatchService;
 use Tests\TestCase;
 
 class NotificationManagementTest extends TestCase

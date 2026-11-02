@@ -29,7 +29,9 @@ class TransactionAdminTest extends TestCase
     use RefreshDatabase;
 
     private Evenement $evenement;
+
     private TypeBillet $typeBillet;
+
     private EvenementTypeBillet $stock;
 
     protected function setUp(): void
@@ -55,7 +57,7 @@ class TransactionAdminTest extends TestCase
     private function creerTransaction(array $attributs = []): Transaction
     {
         return Transaction::create(array_merge([
-            'reference' => 'CMD-' . Str::upper(Str::random(12)),
+            'reference' => 'CMD-'.Str::upper(Str::random(12)),
             'montant' => 50,
             'montant_unitaire' => 25,
             'nombre_billet' => 2,

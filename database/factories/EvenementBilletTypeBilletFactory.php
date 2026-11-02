@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\Evenement;
 use App\Models\Billet;
+use App\Models\Evenement;
 use App\Models\TypeBillet;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class EvenementBilletTypeBilletFactory extends Factory
 {
@@ -14,24 +14,27 @@ class EvenementBilletTypeBilletFactory extends Factory
         return [
             'evenement_id' => $this->faker->randomElement([1, 2, 3, 4]),
             'billet_id' => Billet::factory(),
-            'type_billet_id' => $this->faker->randomElement([1, 2, 3, 4]), 
+            'type_billet_id' => $this->faker->randomElement([1, 2, 3, 4]),
             'statut' => $this->faker->randomElement(['disponible', 'épuisé', 'annulé']),
             'quantite' => 40,
             'quantite_fictif' => 40,
         ];
 
     }
+
     // EvenementBilletTypeBillet.php
-public function evenement() {
-    return $this->belongsTo(Evenement::class);
-}
+    public function evenement()
+    {
+        return $this->belongsTo(Evenement::class);
+    }
 
-public function billet() {
-    return $this->belongsTo(Billet::class);
-}
+    public function billet()
+    {
+        return $this->belongsTo(Billet::class);
+    }
 
-public function type_billet() {
-    return $this->belongsTo(TypeBillet::class);
-}
-
+    public function type_billet()
+    {
+        return $this->belongsTo(TypeBillet::class);
+    }
 }

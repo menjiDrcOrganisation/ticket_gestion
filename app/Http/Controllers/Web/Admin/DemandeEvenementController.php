@@ -22,9 +22,9 @@ class DemandeEvenementController extends Controller
         $demandeEvenements = DemandeEvenement::query()
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
-                    $subQuery->where('nom_evenement', 'like', '%' . $search . '%')
-                        ->orWhere('contact_organisateur', 'like', '%' . $search . '%')
-                        ->orWhere('description', 'like', '%' . $search . '%');
+                    $subQuery->where('nom_evenement', 'like', '%'.$search.'%')
+                        ->orWhere('contact_organisateur', 'like', '%'.$search.'%')
+                        ->orWhere('description', 'like', '%'.$search.'%');
                 });
             })
             ->when($status !== '', function ($query) use ($status) {
@@ -59,7 +59,7 @@ class DemandeEvenementController extends Controller
         $validated = $request->validated();
 
         $affichePath = null;
-        if($request->hasFile('affiche')){
+        if ($request->hasFile('affiche')) {
             $affichePath = $request->file('affiche')->store('affiches', 'public');
         }
 
@@ -80,9 +80,9 @@ class DemandeEvenementController extends Controller
     {
         $validated = $request->validated();
 
-        if($request->hasFile('affiche')){
+        if ($request->hasFile('affiche')) {
             // Supprimer l'ancienne affiche si elle existe
-            if($demandeEvenement->affiche){
+            if ($demandeEvenement->affiche) {
                 Storage::disk('public')->delete($demandeEvenement->affiche);
             }
             $demandeEvenement->affiche = $request->file('affiche')->store('affiches', 'public');
@@ -102,23 +102,23 @@ class DemandeEvenementController extends Controller
     // Supprimer une demande
     public function destroy(DemandeEvenement $demandeEvenement)
     {
-        if($demandeEvenement->affiche){
+        if ($demandeEvenement->affiche) {
             Storage::disk('public')->delete($demandeEvenement->affiche);
         }
         $demandeEvenement->delete();
 
         return redirect()->back()->with('success', 'Demande supprimée avec succès.');
     }
+
     // Changer le statut rapidement
-public function changeStatus(ChangeDemandeEvenementStatusRequest $request, DemandeEvenement $demandeEvenement)
-{
-    $validated = $request->validated();
+    public function changeStatus(ChangeDemandeEvenementStatusRequest $request, DemandeEvenement $demandeEvenement)
+    {
+        $validated = $request->validated();
 
-    $demandeEvenement->update([
-        'statut' => $validated['statut']
-    ]);
+        $demandeEvenement->update([
+            'statut' => $validated['statut'],
+        ]);
 
-    return redirect()->back()->with('success', 'Statut mis à jour avec succès.');
-}
-
+        return redirect()->back()->with('success', 'Statut mis à jour avec succès.');
+    }
 }

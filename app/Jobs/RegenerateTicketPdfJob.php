@@ -16,19 +16,17 @@ class RegenerateTicketPdfJob implements ShouldQueue
 
     public int $tries = 3;
 
-    public function __construct(public int $transactionId)
-    {
-    }
+    public function __construct(public int $transactionId) {}
 
     public function handle(TicketPdfService $ticketPdfService): void
     {
         $transaction = Transaction::with(['billet', 'evenement', 'typeBillet'])->find($this->transactionId);
 
-        if (!$transaction || !$transaction->billet) {
+        if (! $transaction || ! $transaction->billet) {
             return;
         }
 
-        if (!empty($transaction->billet->billetImage)) {
+        if (! empty($transaction->billet->billetImage)) {
             return;
         }
 
@@ -62,10 +60,10 @@ class RegenerateTicketPdfJob implements ShouldQueue
             ->values()
             ->all();
 
-        if (!empty($emails)) {
+        if (! empty($emails)) {
             Mail::raw(
                 'Echec de generation du billet PDF apres 3 tentatives. Reference transaction: '
-                    . ($transaction?->reference ?? 'N/A'),
+                    .($transaction?->reference ?? 'N/A'),
                 function ($message) use ($emails): void {
                     $message->to($emails)->subject('Alerte: generation billet en echec');
                 }

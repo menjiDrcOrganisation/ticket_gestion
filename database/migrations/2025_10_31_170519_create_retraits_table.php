@@ -12,14 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('retraits', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('organisateur_id')->constrained('organisateurs')->onDelete('cascade');
-    $table->string('nom_detenteur');
-    $table->decimal('montant', 15, 2);
-    $table->dateTime('date');
-    $table->string('statut');
-    $table->timestamps();
-});
+            $table->id();
+            $table->foreignId('organisateur_id')->constrained('organisateurs')->onDelete('cascade');
+            $table->string('nom_detenteur');
+            $table->decimal('montant', 15, 2);
+            $table->dateTime('date');
+            $table->string('statut');
+            $table->timestamps();
+        });
 
     }
 

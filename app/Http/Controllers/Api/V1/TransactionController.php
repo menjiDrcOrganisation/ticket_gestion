@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Http\Requests\Api\V1\InitierTransactionRequest;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\InitierTransactionRequest;
 use App\Models\Billet;
 use App\Models\EvenementTypeBillet;
 use App\Models\Transaction;
@@ -23,8 +23,7 @@ class TransactionController extends Controller
     public function __construct(
         private readonly ExchangeRateService $exchangeRateService,
         private readonly GenerationBilletService $generationBilletService
-    ) {
-    }
+    ) {}
 
     public function initier(InitierTransactionRequest $request): JsonResponse
     {
@@ -35,7 +34,7 @@ class TransactionController extends Controller
             ->where('evenement_id', $validated['id_evenement'])
             ->first();
 
-        if (!$typeBillet) {
+        if (! $typeBillet) {
             return response()->json([
                 'status' => false,
                 'message' => 'Type de billet introuvable pour cet evenement.',
@@ -56,7 +55,7 @@ class TransactionController extends Controller
             (int) $validated['nombre_reel']
         );
 
-        $transaction = DB::transaction(function () use ($validated, $typeBillet, $montantUnitaireConverti, $total): Transaction {
+        $transaction = DB::transaction(function () use ($validated, $montantUnitaireConverti, $total): Transaction {
             $reference = $this->generateReadableReference();
 
             return Transaction::create([
@@ -91,7 +90,7 @@ class TransactionController extends Controller
             ->where('reference', $reference)
             ->first();
 
-        if (!$transaction) {
+        if (! $transaction) {
             return response()->json([
                 'status' => false,
                 'message' => 'Transaction introuvable.',
@@ -115,7 +114,7 @@ class TransactionController extends Controller
                     ->where('reference', $reference)
                     ->first();
 
-                if (!$locked) {
+                if (! $locked) {
                     throw new Exception('NOT_FOUND');
                 }
 
@@ -153,7 +152,7 @@ class TransactionController extends Controller
                 'callback_url' => $this->resolveCallbackUrl(),
             ]);
 
-            if (!$payment['status']) {
+            if (! $payment['status']) {
                 $isUncertain = (bool) ($payment['uncertain'] ?? false);
 
                 if ($isUncertain) {
@@ -265,7 +264,7 @@ class TransactionController extends Controller
             ->where('reference', $reference)
             ->first();
 
-        if (!$transaction) {
+        if (! $transaction) {
             return response()->json([
                 'status' => false,
                 'message' => 'Transaction introuvable.',
@@ -279,7 +278,7 @@ class TransactionController extends Controller
             ]);
         }
 
-        if (!$this->isSuccessfulStatus($callbackStatus)) {
+        if (! $this->isSuccessfulStatus($callbackStatus)) {
             $transaction->update([
                 'statut' => 'echoue',
                 'failed_at' => now(),
@@ -333,7 +332,7 @@ class TransactionController extends Controller
             $verified = MobileMoneyService::verifyPayment($transaction->reference, (float) $transaction->montant);
         }
 
-        if (!$verified['status']) {
+        if (! $verified['status']) {
             if ($this->isLocalCallbackRelaxed() && $isSuccessfulCallback) {
                 $verified = [
                     'status' => true,
@@ -348,7 +347,7 @@ class TransactionController extends Controller
             }
         }
 
-        if (!($verified['verified'] ?? false)) {
+        if (! ($verified['verified'] ?? false)) {
             $transaction->update([
                 'statut' => 'echoue',
                 'failed_at' => now(),
@@ -373,7 +372,7 @@ class TransactionController extends Controller
             ->where('reference', $reference)
             ->first();
 
-        if (!$transaction) {
+        if (! $transaction) {
             return response()->json([
                 'status' => false,
                 'message' => 'Transaction introuvable.',
@@ -396,21 +395,21 @@ class TransactionController extends Controller
             ->where('reference', $reference)
             ->first();
 
-        if (!$transaction || !$transaction->billet || !$transaction->billet->billetImage) {
+        if (! $transaction || ! $transaction->billet || ! $transaction->billet->billetImage) {
             return response()->json([
                 'status' => false,
                 'message' => 'Billet non disponible.',
             ], 404);
         }
 
-        if (!in_array($transaction->statut, ['paye', 'paye_sans_billet'], true)) {
+        if (! in_array($transaction->statut, ['paye', 'paye_sans_billet'], true)) {
             return response()->json([
                 'status' => false,
                 'message' => 'Paiement non valide.',
             ], 422);
         }
 
-        if (!Storage::disk('public')->exists($transaction->billet->billetImage)) {
+        if (! Storage::disk('public')->exists($transaction->billet->billetImage)) {
             return response()->json([
                 'status' => false,
                 'message' => 'Fichier billet introuvable.',
@@ -422,7 +421,7 @@ class TransactionController extends Controller
         $acheteur = $acheteur !== '' ? $acheteur : 'acheteur';
         $filename = "billet_{$acheteur}_{$transaction->reference}";
         if ($extension !== '') {
-            $filename .= '.' . strtolower($extension);
+            $filename .= '.'.strtolower($extension);
         }
 
         return Storage::disk('public')->download(
@@ -519,7 +518,7 @@ class TransactionController extends Controller
         $baseUrl = rtrim((string) env('MOBILE_MONEY_CALLBACK_BASE_URL', ''), '/');
 
         if ($baseUrl !== '') {
-            return $baseUrl . '/api/transactions/callback';
+            return $baseUrl.'/api/transactions/callback';
         }
 
         return route('transactions.callback');
@@ -549,7 +548,7 @@ class TransactionController extends Controller
                 ->where('evenement_id', $locked->evenement_id)
                 ->first();
 
-            if (!$type) {
+            if (! $type) {
                 throw new Exception('Stock introuvable.');
             }
 
@@ -564,7 +563,7 @@ class TransactionController extends Controller
                 'numero' => $locked->numero_telephone,
                 'email' => $locked->email_client,
                 'billetImage' => '',
-                'code_billet' => 'TCK-' . strtoupper(uniqid()),
+                'code_billet' => 'TCK-'.strtoupper(uniqid()),
                 'evenement_id' => $locked->evenement_id,
                 'type_billet_id' => $locked->type_billet_id,
                 'quantite' => $locked->nombre_billet,
@@ -597,7 +596,7 @@ class TransactionController extends Controller
             try {
                 app(\App\Services\NotificationDispatchService::class)->createCampaign([
                     'name' => 'Confirmation d’achat de billet',
-                    'subject' => 'Confirmation de votre achat - ' . ($updatedTransaction->evenement?->nom ?? 'événement'),
+                    'subject' => 'Confirmation de votre achat - '.($updatedTransaction->evenement?->nom ?? 'événement'),
                     'message' => sprintf(
                         "Bonjour %s,\n\nVotre paiement pour l’événement « %s » est confirmé.\nRéférence : %s\nQuantité : %s billet(s).\n\nMerci pour votre achat.",
                         $updatedTransaction->nom_complet_client,
@@ -608,7 +607,7 @@ class TransactionController extends Controller
                     'channels' => ['email', 'sms'],
                     'trigger' => 'purchase',
                     'event_id' => $updatedTransaction->evenement_id,
-                    'source_key' => 'purchase-' . $updatedTransaction->reference,
+                    'source_key' => 'purchase-'.$updatedTransaction->reference,
                 ], [[
                     'name' => $updatedTransaction->nom_complet_client,
                     'email' => $updatedTransaction->email_client,
@@ -635,5 +634,3 @@ class TransactionController extends Controller
         return $result;
     }
 }
-
-

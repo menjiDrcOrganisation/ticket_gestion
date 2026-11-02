@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\Evenement;
 use App\Models\NotificationCampaign;
 use App\Models\NotificationRecipient;
-use App\Models\Evenement;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Http;
 
 class NotificationDispatchService
 {
@@ -27,7 +27,7 @@ class NotificationDispatchService
     {
         $event->loadMissing('organisateur.user');
         $organizer = $event->organisateur;
-        if (!$organizer) {
+        if (! $organizer) {
             return;
         }
 
@@ -41,8 +41,8 @@ class NotificationDispatchService
     private function createAutomaticCampaign(Evenement $event, string $name, string $message, string $trigger, string $sourceKey, array $recipients): void
     {
         $recipients = collect($recipients)
-            ->filter(fn (array $recipient): bool => !empty($recipient['email']) || !empty($recipient['phone']))
-            ->unique(fn (array $recipient): string => strtolower((string) ($recipient['email'] ?? '')) . '|' . (string) ($recipient['phone'] ?? ''))
+            ->filter(fn (array $recipient): bool => ! empty($recipient['email']) || ! empty($recipient['phone']))
+            ->unique(fn (array $recipient): string => strtolower((string) ($recipient['email'] ?? '')).'|'.(string) ($recipient['phone'] ?? ''))
             ->values()
             ->all();
 
@@ -77,7 +77,7 @@ class NotificationDispatchService
             ]);
         }
 
-        if (!$campaign->scheduled_at) {
+        if (! $campaign->scheduled_at) {
             $this->send($campaign);
         }
 
@@ -101,12 +101,12 @@ class NotificationDispatchService
 
     private function deliver(NotificationCampaign $campaign, NotificationRecipient $recipient, string $channel): void
     {
-        $statusColumn = $channel . '_status';
-        $sentColumn = $channel . '_sent_at';
-        $errorColumn = $channel . '_error';
+        $statusColumn = $channel.'_status';
+        $sentColumn = $channel.'_sent_at';
+        $errorColumn = $channel.'_error';
         $address = $channel === 'email' ? $recipient->email : $recipient->phone;
 
-        if (!$address) {
+        if (! $address) {
             $recipient->update([$statusColumn => 'skipped', $errorColumn => null]);
 
             return;
@@ -162,8 +162,8 @@ class NotificationDispatchService
                 'Body' => $message,
             ]);
 
-        if (!$response->successful()) {
-            throw new \RuntimeException('Twilio a refusé le SMS : ' . $response->body());
+        if (! $response->successful()) {
+            throw new \RuntimeException('Twilio a refusé le SMS : '.$response->body());
         }
     }
 }

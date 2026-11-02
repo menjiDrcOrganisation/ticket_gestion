@@ -22,6 +22,7 @@ class CreationEvenementOrganisateurTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private TypeBillet $typeBillet;
 
     protected function setUp(): void

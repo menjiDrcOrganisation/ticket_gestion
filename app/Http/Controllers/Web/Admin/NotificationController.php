@@ -84,7 +84,7 @@ class NotificationController extends Controller
 
         return redirect()->route('admin.notifications.index')
             ->with('success', $campaign->scheduled_at
-                ? 'Notification planifiée pour le ' . $campaign->scheduled_at->format('d/m/Y à H:i') . '.'
+                ? 'Notification planifiée pour le '.$campaign->scheduled_at->format('d/m/Y à H:i').'.'
                 : 'Notification envoyée. Consultez le détail des envois dans l’historique.');
     }
 
@@ -128,11 +128,11 @@ class NotificationController extends Controller
 
             $parts = array_map('trim', explode(';', $line, 3));
             [$name, $email, $phone] = array_pad($parts, 3, null);
-            if ($email && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                throw ValidationException::withMessages(['members' => 'Adresse e-mail invalide dans la ligne : ' . $line]);
+            if ($email && ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                throw ValidationException::withMessages(['members' => 'Adresse e-mail invalide dans la ligne : '.$line]);
             }
-            if (!$email && !$phone) {
-                throw ValidationException::withMessages(['members' => 'Chaque contact doit avoir un e-mail ou un téléphone : ' . $line]);
+            if (! $email && ! $phone) {
+                throw ValidationException::withMessages(['members' => 'Chaque contact doit avoir un e-mail ou un téléphone : '.$line]);
             }
 
             $members[] = [
@@ -147,7 +147,7 @@ class NotificationController extends Controller
 
     private function eventBuyers(?Evenement $event): array
     {
-        if (!$event) {
+        if (! $event) {
             return [];
         }
 
@@ -179,7 +179,7 @@ class NotificationController extends Controller
                 continue;
             }
 
-            $key = $email . '|' . $phone;
+            $key = $email.'|'.$phone;
             $unique[$key] = [
                 'name' => $recipient['name'] ?? null,
                 'email' => $email !== '' ? $email : null,

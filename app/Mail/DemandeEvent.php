@@ -26,9 +26,9 @@ class DemandeEvent extends Mailable
     public function build()
     {
         return $this->subject('Nouvelle demande d\'événement')
-                    ->view('emails.messageDemandeEvent')
-                    ->with([
-                        'event' => $this->event
-                    ]);
+            ->view('emails.messageDemandeEvent')
+            ->with([
+                'event' => $this->event,
+            ]);
     }
 }

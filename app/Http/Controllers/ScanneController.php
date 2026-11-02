@@ -6,10 +6,9 @@ use Illuminate\Http\Request;
 
 class ScanneController extends Controller
 {
-      
-  public function showScanner()
+    public function showScanner()
     {
-        
+
         return view('scanne.scanner');
     }
 
@@ -26,12 +25,12 @@ class ScanneController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Donnée trouvée',
-                'data' => $result
+                'data' => $result,
             ]);
         } else {
             return response()->json([
                 'success' => false,
-                'message' => 'Donnée non trouvée'
+                'message' => 'Donnée non trouvée',
             ]);
         }
     }

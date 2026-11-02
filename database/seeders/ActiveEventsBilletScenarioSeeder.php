@@ -46,8 +46,8 @@ class ActiveEventsBilletScenarioSeeder extends Seeder
                         ['code_billet' => $seedCode],
                         [
                             'date_achat' => now()->subHours(2),
-                            'nom_auteur' => 'Client Seed ' . $typeBillet->nom_type . ' #' . $i,
-                            'numero' => '+2439700' . str_pad((string) (($typeBillet->id * 100) + $i), 5, '0', STR_PAD_LEFT),
+                            'nom_auteur' => 'Client Seed '.$typeBillet->nom_type.' #'.$i,
+                            'numero' => '+2439700'.str_pad((string) (($typeBillet->id * 100) + $i), 5, '0', STR_PAD_LEFT),
                             'email' => sprintf('seed.%s.event%d.%d@example.com', $buyerSlug ?: 'client', $event->id, $i),
                             // Certaines bases en production ont cette colonne en NOT NULL.
                             'billetImage' => $imagePath,
@@ -89,7 +89,7 @@ class ActiveEventsBilletScenarioSeeder extends Seeder
                     ->generate($content);
 
                 return [
-                    'path' => $imageBasePath . '.svg',
+                    'path' => $imageBasePath.'.svg',
                     'content' => $svg,
                 ];
             }
@@ -100,15 +100,15 @@ class ActiveEventsBilletScenarioSeeder extends Seeder
         $safeContent = htmlspecialchars($content, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $fallbackSvg = sprintf(
             '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">'
-            . '<rect width="400" height="400" fill="#ffffff" stroke="#111827" stroke-width="4"/>'
-            . '<text x="200" y="190" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#111827">QR non disponible</text>'
-            . '<text x="200" y="226" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#4b5563">%s</text>'
-            . '</svg>',
+            .'<rect width="400" height="400" fill="#ffffff" stroke="#111827" stroke-width="4"/>'
+            .'<text x="200" y="190" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#111827">QR non disponible</text>'
+            .'<text x="200" y="226" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#4b5563">%s</text>'
+            .'</svg>',
             $safeContent
         );
 
         return [
-            'path' => $imageBasePath . '.svg',
+            'path' => $imageBasePath.'.svg',
             'content' => $fallbackSvg,
         ];
     }

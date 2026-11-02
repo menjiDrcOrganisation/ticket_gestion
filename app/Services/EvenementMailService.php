@@ -19,7 +19,7 @@ use Illuminate\Support\Str;
 class EvenementMailService
 {
     /**
-     * @param array $creation Résultat de EvenementCreationService::create()
+     * @param  array  $creation  Résultat de EvenementCreationService::create()
      * @return bool true si le mail est parti, false sinon (l'erreur est journalisée et tracée sur l'événement).
      */
     public function envoyerApresCreation(array $creation): bool
@@ -28,7 +28,7 @@ class EvenementMailService
         $evenement = $creation['evenement'];
         $organisateurUser = $creation['organisateur']?->user;
 
-        if (!$organisateurUser || empty($creation['scanneur_email'])) {
+        if (! $organisateurUser || empty($creation['scanneur_email'])) {
             return false;
         }
 
@@ -72,7 +72,7 @@ class EvenementMailService
         $organisateurUser = $evenement->organisateur?->user;
         $scanneurUser = $evenement->scanneur?->user;
 
-        if (!$organisateurUser || !$scanneurUser) {
+        if (! $organisateurUser || ! $scanneurUser) {
             throw new \RuntimeException('Organisateur ou scanneur introuvable.');
         }
 
@@ -98,7 +98,7 @@ class EvenementMailService
 
     public static function urlAchat(Evenement $evenement): string
     {
-        return rtrim((string) config('app.achat_url'), '/') . '/' . $evenement->url_evenement;
+        return rtrim((string) config('app.achat_url'), '/').'/'.$evenement->url_evenement;
     }
 
     private function envoyer(Evenement $evenement, User $organisateurUser, ?string $motDePasseTemporaire, string $scanneurEmail, string $scanneurCode): void

@@ -31,6 +31,12 @@ Configurez un mailer réel dans l’environnement de production. Pour les SMS, r
 
 Après `php artisan migrate`, activez le planificateur Laravel chaque minute. En développement, lancez `php artisan schedule:work`; en production, configurez le planificateur système pour exécuter `php artisan schedule:run` chaque minute.
 
+## Hooks Git (Husky)
+
+Un hook `pre-commit` est installé par [Husky](https://typicode.github.io/husky) lors d’un `npm install` (script `prepare`). À chaque commit, il lance le lint (`php vendor/bin/pint --test`), identique à celui de la CI. Si le commit est refusé, corrigez le style avec `php vendor/bin/pint`, puis réindexez les fichiers modifiés (`git add`).
+
+Pour contourner exceptionnellement le hook : `git commit --no-verify`. La CI (`.github/workflows/ci.yml`) lance les tests, le lint Pint et l’analyse de sécurité Trivy.
+
 ## Learning Laravel
 
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
