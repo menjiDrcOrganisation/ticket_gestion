@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+  workflow_dispatch:
+
+# Annule l'exécution précédente d'une même branche/PR quand un nouveau commit arrive.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Tests (PHP 8.3)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: copie des fichiers
+        uses: actions/checkout@v4
+
+      - name: installation de l'environement
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_sqlite, sqlite3, gd, dom, fileinfo, bcmath, intl
+          coverage: none
+
+      - name: Récupérer le dossier de cache Composer
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
+      - name: Installer les dépendances
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Préparer l'environnement
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      # Base SQLite en mémoire, passerelle de paiement simulée : aucune dépendance à la production (voir phpunit.xml).
+      - name: Lancer les tests
+        run: php artisan test
+
+  lint:
+    name: Style du code (Pint)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Le code existant n'est pas encore formaté selon Pint : le job informe sans bloquer.
+    # Retirer `continue-on-error` après un `vendor/bin/pint` global.
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, dom, fileinfo
+          coverage: none
+
+      - name: Installer les dépendances
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Vérifier le style
+        run: vendor/bin/pint --test
+
+  trivy:
+    name: Sécurité (Trivy)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Dépendances (composer.lock, package-lock.json), secrets et mauvaises configurations.
+      # Échoue sur les failles HIGH/CRITICAL pour lesquelles un correctif existe.
+      - name: Analyse du dépôt
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          skip-dirs: vendor,node_modules,storage
+          format: table
+          exit-code: '1'

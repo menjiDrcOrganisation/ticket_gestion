@@ -1,0 +1,33 @@
+# Installation : pip install pre-commit && pre-commit install
+# Lancer sur tout le dépôt : pre-commit run --all-files
+exclude: ^(public/|storage/|composer\.lock|package-lock\.json)
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=1024']
+      - id: detect-private-key
+
+  - repo: local
+    hooks:
+      # Formate automatiquement les fichiers PHP indexés (Laravel Pint).
+      - id: pint
+        name: Laravel Pint
+        entry: php vendor/bin/pint
+        language: system
+        types: [php]
+
+      # Détecte les secrets dans le dépôt (nécessite Trivy : https://trivy.dev).
+      - id: trivy-secrets
+        name: Trivy (secrets)
+        entry: trivy fs --scanners secret --exit-code 1 --skip-dirs vendor,node_modules,storage .
+        language: system
+        pass_filenames: false
+        always_run: true
