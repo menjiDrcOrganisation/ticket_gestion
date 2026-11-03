@@ -518,7 +518,7 @@ class TransactionController extends Controller
         $baseUrl = rtrim((string) env('MOBILE_MONEY_CALLBACK_BASE_URL', ''), '/');
 
         if ($baseUrl !== '') {
-            return $baseUrl.'/api/transactions/callback';
+            return $baseUrl.route('transactions.callback', [], false);
         }
 
         return route('transactions.callback');
