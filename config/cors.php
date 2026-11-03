@@ -93,12 +93,17 @@ return [
     |--------------------------------------------------------------------------
     |
     | Par défaut, JavaScript ne lit qu'une poignée d'en-têtes de réponse.
-    | Content-Disposition est exposé pour récupérer le nom du fichier renvoyé
-    | par /api/v1/transactions/{reference}/download-billet.
+    | Content-Disposition donne le nom du fichier renvoyé par
+    | /api/v1/transactions/{reference}/download-billet ; Retry-After et
+    | X-RateLimit-* disent au front quand réessayer après un 429
+    | (voir config/ratelimit.php).
     |
     */
 
-    'exposed_headers' => $liste('CORS_EXPOSED_HEADERS', 'Content-Disposition'),
+    'exposed_headers' => $liste(
+        'CORS_EXPOSED_HEADERS',
+        'Content-Disposition,Retry-After,X-RateLimit-Limit,X-RateLimit-Remaining',
+    ),
 
     /*
     |--------------------------------------------------------------------------
