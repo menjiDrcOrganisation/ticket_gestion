@@ -1,5 +1,5 @@
-
 <?php
+
 use App\Http\Controllers\Web\Scanneur\ScanneController;
 
 Route::prefix('scanneur')->name('scanneur.')->group(function () {

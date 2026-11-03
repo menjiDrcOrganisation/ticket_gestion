@@ -1,4 +1,4 @@
-    <?php
+<?php
 
 use App\Http\Controllers\Web\Admin\UserController;
 use App\Http\Middleware\AuditTrail;

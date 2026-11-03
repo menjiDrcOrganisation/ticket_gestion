@@ -28,12 +28,3 @@ Route::patch('/demande-retrait/{id}/statut',
 Route::get('/demande-retrait/{id}/edit',
     [DemandeRetraitAdminController::class, 'show'])
     ->name('dmd_retrait.show');
-
-?>
-
-
-
-
-
-
-
