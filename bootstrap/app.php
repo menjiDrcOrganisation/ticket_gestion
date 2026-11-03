@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\EnsurePasswordIsChanged::class,
         ]);
+
+        // Rate limiting sur toutes les routes api/* (limiteur "api" déclaré dans AppServiceProvider).
+        $middleware->throttleApi();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
