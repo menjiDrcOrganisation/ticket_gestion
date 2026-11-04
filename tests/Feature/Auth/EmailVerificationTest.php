@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
@@ -54,5 +55,24 @@ class EmailVerificationTest extends TestCase
         $this->actingAs($user)->get($verificationUrl);
 
         $this->assertFalse($user->fresh()->hasVerifiedEmail());
+    }
+
+    public function test_email_verification_notification_uses_the_centralized_template(): void
+    {
+        Mail::fake();
+        $user = User::factory()->unverified()->create();
+
+        $this->actingAs($user)
+            ->post(route('verification.send'))
+            ->assertSessionHas('status', 'verification-link-sent');
+
+        Mail::assertSent(\App\Mail\EmailVerificationMail::class, function (\App\Mail\EmailVerificationMail $mail) use ($user): bool {
+            $content = $mail->render();
+            $escapedUrl = str_replace('&', '&amp;', $mail->verificationUrl);
+
+            return $mail->hasTo($user->email)
+                && str_contains($content, 'Confirmer mon adresse e-mail')
+                && str_contains($content, $escapedUrl);
+        });
     }
 }

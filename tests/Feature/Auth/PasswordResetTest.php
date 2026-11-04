@@ -34,6 +34,11 @@ class PasswordResetTest extends TestCase
         return $envoye;
     }
 
+    private function tokenFrom(EnvoiMotDePasseOublieMail $mail): string
+    {
+        return basename((string) parse_url($mail->resetUrl, PHP_URL_PATH));
+    }
+
     public function test_reset_password_link_screen_can_be_rendered(): void
     {
         $response = $this->get('/forgot-password');
@@ -47,13 +52,14 @@ class PasswordResetTest extends TestCase
 
         $mail = $this->demanderLien($user);
 
-        $this->assertStringContainsString($mail->token, $mail->resetUrl);
+        $this->assertNotSame('', $this->tokenFrom($mail));
+        $this->assertStringContainsString($mail->resetUrl, $mail->render());
     }
 
     public function test_reset_password_link_is_refused_for_unknown_email(): void
     {
         $this->post('/forgot-password', ['email' => 'inconnu@example.com'])
-            ->assertSessionHasErrors('email');
+            ->assertSessionHas('status', 'Si un compte correspond à cette adresse, un lien de réinitialisation lui sera envoyé.');
 
         Mail::assertNothingSent();
     }
@@ -64,7 +70,7 @@ class PasswordResetTest extends TestCase
 
         $mail = $this->demanderLien($user);
 
-        $this->get('/reset-password/'.$mail->token)->assertStatus(200);
+        $this->get('/reset-password/'.$this->tokenFrom($mail))->assertStatus(200);
     }
 
     public function test_password_can_be_reset_with_valid_token(): void
@@ -74,7 +80,7 @@ class PasswordResetTest extends TestCase
         $mail = $this->demanderLien($user);
 
         $this->post('/reset-password', [
-            'token' => $mail->token,
+            'token' => $this->tokenFrom($mail),
             'email' => $user->email,
             'password' => 'NouveauMotDePasse1',
             'password_confirmation' => 'NouveauMotDePasse1',

@@ -25,7 +25,7 @@ class EnsurePasswordIsChanged
     {
         $user = $request->user();
 
-        if (!$user || !$user->must_change_password || $request->routeIs(...self::ROUTES_AUTORISEES)) {
+        if (! $user || ! $user->must_change_password || $request->routeIs(...self::ROUTES_AUTORISEES)) {
             return $next($request);
         }
 

@@ -8,9 +8,7 @@ use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    public function __construct(private DashboardMetricsService $dashboardMetricsService)
-    {
-    }
+    public function __construct(private DashboardMetricsService $dashboardMetricsService) {}
 
     public function index(Request $request)
     {
@@ -56,8 +54,3 @@ class DashboardController extends Controller
         }
     }
 }
-
-
-
-
-

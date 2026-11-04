@@ -13,10 +13,10 @@ class Evenement extends Model
     /** @use HasFactory<\Database\Factories\EvenementFactory> */
     use HasFactory;
 
-     protected $fillable = [
+    protected $fillable = [
         'organisateur_id',
         'scanneur_id',
-          'type_evenement_id',
+        'type_evenement_id',
         'nom',
         'url_evenement',
         'date_debut',
@@ -29,9 +29,18 @@ class Evenement extends Model
         'url_evenement',
         'mail_send_attempts',
         'mail_sent_at',
+        'mail_queued_at',
         'last_mail_error',
 
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'mail_sent_at' => 'datetime',
+            'mail_queued_at' => 'datetime',
+        ];
+    }
 
     public function organisateur()
     {
@@ -41,13 +50,13 @@ class Evenement extends Model
     public function typeBillets()
     {
         return $this->belongsToMany(TypeBillet::class, 'evenement_type_billets')
-                    ->withPivot('nombre_billet')
-                    ->withPivot('prix_unitaire')
-                    ->withPivot('devise')
-                    ->withTimestamps();
+            ->withPivot('nombre_billet')
+            ->withPivot('prix_unitaire')
+            ->withPivot('devise')
+            ->withTimestamps();
     }
 
-     public function ressource()
+    public function ressource()
     {
         return $this->hasMany(Ressource::class);
     }
@@ -56,7 +65,6 @@ class Evenement extends Model
     {
         return $this->hasMany(Billet::class, 'evenement_id');
     }
-
 
     public function scanneur()
     {

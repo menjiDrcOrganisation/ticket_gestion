@@ -9,6 +9,7 @@ class Scanneur extends Model
 {
     /** @use HasFactory<\Database\Factories\ScanneurFactory> */
     use HasFactory;
+
     protected $fillable = [
         'user_id',
         'telephone',
@@ -23,6 +24,4 @@ class Scanneur extends Model
     {
         return $this->hasOne(Evenement::class);
     }
-
-
 }

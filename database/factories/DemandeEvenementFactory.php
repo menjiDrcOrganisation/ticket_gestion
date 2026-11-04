@@ -12,7 +12,7 @@ class DemandeEvenementFactory extends Factory
     {
         return [
             'type_evenement' => $this->faker->randomElement([
-                'Concert', 'Conférence', 'Atelier', 'Exposition', 'Séminaire'
+                'Concert', 'Conférence', 'Atelier', 'Exposition', 'Séminaire',
             ]),
             'contact_organisateur' => $this->faker->name(),
             'nom_evenement' => $this->faker->sentence(3),

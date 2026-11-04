@@ -32,7 +32,9 @@ class PaiementIntegrationTest extends TestCase
     private const PASSERELLE = 'https://gateway.example.test/pay';
 
     private Evenement $evenement;
+
     private TypeBillet $typeBillet;
+
     private EvenementTypeBillet $stock;
 
     protected function setUp(): void

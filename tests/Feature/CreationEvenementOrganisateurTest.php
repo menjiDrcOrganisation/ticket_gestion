@@ -22,6 +22,7 @@ class CreationEvenementOrganisateurTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private TypeBillet $typeBillet;
 
     protected function setUp(): void
@@ -89,11 +90,16 @@ class CreationEvenementOrganisateurTest extends TestCase
         $this->assertNotNull($evenement->mail_sent_at);
 
         Mail::assertSent(EnvoiMotDePasseMail::class, function (EnvoiMotDePasseMail $mail) use ($user, $evenement) {
+            $content = $mail->render();
+
             return $mail->hasTo('orga@example.com')
                 && Hash::check($mail->mot_de_passe, $user->password)
                 && $mail->email_scanneur === $evenement->scanneur->user->email
                 && Hash::check($mail->mot_de_passe_scanneur, $evenement->scanneur->user->password)
-                && $mail->evenement?->is($evenement);
+                && $mail->evenement?->is($evenement)
+                && str_contains($content, route('login'))
+                && str_contains($content, $evenement->nom)
+                && str_contains($content, $mail->mot_de_passe_scanneur);
         });
         Mail::assertNotSent(EvenementCreeMail::class);
     }
@@ -104,6 +110,19 @@ class CreationEvenementOrganisateurTest extends TestCase
 
         $response->assertSessionHasErrors(['nom_organisateur', 'telephone']);
         $this->assertSame(0, Evenement::count());
+    }
+
+    public function test_email_de_creation_evenement_est_mis_en_file_si_la_file_est_active(): void
+    {
+        config(['queue.default' => 'database']);
+
+        $this->creerViaWeb();
+
+        $evenement = Evenement::firstOrFail();
+        $this->assertNull($evenement->mail_sent_at);
+        $this->assertNotNull($evenement->mail_queued_at);
+        Mail::assertQueued(EnvoiMotDePasseMail::class, fn (EnvoiMotDePasseMail $mail): bool => $mail->hasTo('orga@example.com'));
+        $this->get(route('evenements.index'))->assertSee('En file d’attente');
     }
 
     // ---- Cas 2 : organisateur existant -----------------------------------------------

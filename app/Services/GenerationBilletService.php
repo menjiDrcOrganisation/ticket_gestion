@@ -15,9 +15,7 @@ use Illuminate\Support\Facades\Log;
  */
 class GenerationBilletService
 {
-    public function __construct(private readonly TicketPdfService $ticketPdfService)
-    {
-    }
+    public function __construct(private readonly TicketPdfService $ticketPdfService) {}
 
     /**
      * Décrémente le stock du type de billet et crée le billet de la transaction.
@@ -32,7 +30,7 @@ class GenerationBilletService
             ->where('evenement_id', $transaction->evenement_id)
             ->first();
 
-        if (!$type) {
+        if (! $type) {
             throw new Exception('Stock introuvable.');
         }
 
@@ -46,7 +44,7 @@ class GenerationBilletService
             'nom_auteur' => $transaction->nom_complet_client,
             'numero' => $transaction->numero_telephone,
             'billetImage' => '',
-            'code_billet' => 'TCK-' . strtoupper(uniqid()),
+            'code_billet' => 'TCK-'.strtoupper(uniqid()),
             'evenement_id' => $transaction->evenement_id,
             'type_billet_id' => $transaction->type_billet_id,
             'quantite' => $transaction->nombre_billet,

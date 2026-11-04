@@ -122,6 +122,8 @@
                     <td class="px-4 py-4 whitespace-nowrap hidden xl:table-cell">
                         @if($evenement->mail_sent_at)
                             <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs">Envoyé</span>
+                        @elseif($evenement->mail_queued_at)
+                            <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs">En file d’attente</span>
                         @elseif($evenement->last_mail_error)
                             <span class="bg-rose-100 text-rose-700 px-3 py-1 rounded-full text-xs">Échec</span>
                         @else
@@ -195,6 +197,8 @@
 
                             @if($evenement->mail_sent_at)
                                 <span class="text-[11px] text-emerald-600 whitespace-nowrap">mail envoye</span>
+                            @elseif($evenement->mail_queued_at)
+                                <span class="text-[11px] text-amber-600 whitespace-nowrap">mail en file d’attente</span>
                             @else
                                 <span class="text-[11px] text-rose-600 whitespace-nowrap">mail non envoye</span>
                             @endif

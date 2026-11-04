@@ -30,7 +30,7 @@ class StoreEvenementRequest extends FormRequest
             'type_evenement_nom' => 'nullable|string|max:255|required_without:type_evenement_id',
             // Nom et téléphone ne sont exigés que pour un nouvel organisateur :
             // un organisateur existant est identifié par son e-mail et ses informations sont réutilisées.
-            'nom_organisateur' => [Rule::requiredIf(fn () => !$this->organisateurExiste()), 'nullable', 'string', 'max:255'],
+            'nom_organisateur' => [Rule::requiredIf(fn () => ! $this->organisateurExiste()), 'nullable', 'string', 'max:255'],
             'email_organisateur' => ['required', 'email', 'max:255', function (string $attribute, mixed $value, Closure $fail) {
                 $user = EvenementCreationService::findUserByEmail($value);
                 if ($user && $user->role !== 'organisateur') {
@@ -49,12 +49,12 @@ class StoreEvenementRequest extends FormRequest
             'quantite.*' => 'nullable|integer|min:0',
             'prix' => 'required|array',
             'prix.*' => 'nullable|numeric|min:0',
-            'telephone' => [Rule::requiredIf(fn () => !$this->organisateurExiste()), 'nullable', 'string', 'max:30'],
-            'nom_artiste'=> 'required|string|max:255',
-            'acroche'=> 'required|string|max:255',
-            'a_propos'=> 'required|string',
-            'photo_affiche'=> 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
-            'devise'=> 'required|array',
+            'telephone' => [Rule::requiredIf(fn () => ! $this->organisateurExiste()), 'nullable', 'string', 'max:30'],
+            'nom_artiste' => 'required|string|max:255',
+            'acroche' => 'required|string|max:255',
+            'a_propos' => 'required|string',
+            'photo_affiche' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'devise' => 'required|array',
             'devise.*' => 'required|in:USD,CDF',
         ];
     }

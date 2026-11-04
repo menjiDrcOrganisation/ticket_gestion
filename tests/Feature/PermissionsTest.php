@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Http\Middleware\RoleMiddleware;
-use App\Models\Evenement;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
@@ -20,7 +19,7 @@ class PermissionsTest extends TestCase
 
     private function routeProtegee(string $roles): string
     {
-        Route::middleware(['web', RoleMiddleware::class . ':' . $roles])
+        Route::middleware(['web', RoleMiddleware::class.':'.$roles])
             ->get('/_test/protegee', fn () => 'ok');
 
         return '/_test/protegee';

@@ -4,6 +4,7 @@ namespace App\Mail;
 
 use App\Models\Evenement;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
@@ -11,16 +12,22 @@ use Illuminate\Queue\SerializesModels;
  * Mail envoyé à un NOUVEL organisateur : identifiants de connexion (mot de passe temporaire
  * à changer obligatoirement), informations de l'événement et identifiants du scanneur.
  */
-class EnvoiMotDePasseMail extends Mailable
+class EnvoiMotDePasseMail extends Mailable implements ShouldBeEncrypted
 {
     use Queueable, SerializesModels;
 
     public $nom_client;
+
     public $email;
+
     public $mot_de_passe;
+
     public $url;
+
     public $email_scanneur;
+
     public $mot_de_passe_scanneur;
+
     public ?Evenement $evenement;
 
     /**
@@ -42,7 +49,33 @@ class EnvoiMotDePasseMail extends Mailable
      */
     public function build()
     {
-        return $this->subject('Vos identifiants de connexion')
-                    ->view('emails.messagePasseOrganisateur');
+        return $this->subject('Bienvenue sur '.config('app.name'))
+            ->view('emails.messagePasseOrganisateur');
+    }
+
+    public function send($mailer)
+    {
+        $result = parent::send($mailer);
+
+        if ($this->evenement) {
+            $this->evenement->forceFill([
+                'mail_sent_at' => now(),
+                'mail_queued_at' => null,
+                'last_mail_error' => null,
+            ])->save();
+        }
+
+        return $result;
+    }
+
+    public function failed(\Throwable $exception): void
+    {
+        if ($this->evenement) {
+            $this->evenement->forceFill([
+                'mail_sent_at' => null,
+                'mail_queued_at' => null,
+                'last_mail_error' => 'MAIL_SEND_FAILED',
+            ])->save();
+        }
     }
 }

@@ -10,20 +10,17 @@ class Ressource extends Model
     /** @use HasFactory<\Database\Factories\RessourceFactory> */
     use HasFactory;
 
-       protected $fillable = [
+    protected $fillable = [
         'nom_artiste',
         'phrase_accroche',
         'a_propos',
         'photo_affiche',
-        'evenement_id'
+        'evenement_id',
     ];
-
 
     public function evenements()
     {
         return $this->belongsTo(Evenement::class);
-        
+
     }
 }
-
-

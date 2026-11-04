@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Transaction;
-use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class TransactionSeeder extends Seeder
 {
@@ -15,7 +15,7 @@ class TransactionSeeder extends Seeder
     public function run(): void
     {
         Transaction::create([
-            'reference' => 'TRX-' . strtoupper(Str::random(10)),
+            'reference' => 'TRX-'.strtoupper(Str::random(10)),
             'montant' => 25000,
             'nombre_billet' => 2,
             'numero_telephone' => '0991234567',
@@ -29,7 +29,7 @@ class TransactionSeeder extends Seeder
         ]);
 
         Transaction::create([
-            'reference' => 'TRX-' . strtoupper(Str::random(10)),
+            'reference' => 'TRX-'.strtoupper(Str::random(10)),
             'montant' => 15000,
             'nombre_billet' => 1,
             'numero_telephone' => '0819876543',
@@ -43,7 +43,7 @@ class TransactionSeeder extends Seeder
         ]);
 
         Transaction::create([
-            'reference' => 'TRX-' . strtoupper(Str::random(10)),
+            'reference' => 'TRX-'.strtoupper(Str::random(10)),
             'montant' => 10000,
             'nombre_billet' => 1,
             'numero_telephone' => '0821112233',
