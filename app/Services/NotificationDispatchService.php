@@ -2,15 +2,17 @@
 
 namespace App\Services;
 
+use App\Mail\CampaignNotificationMail;
 use App\Models\Evenement;
 use App\Models\NotificationCampaign;
 use App\Models\NotificationRecipient;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class NotificationDispatchService
 {
+    public function __construct(private EmailDeliveryService $emailDelivery) {}
+
     public function notifyEventBuyers(Evenement $event, string $name, string $message, string $trigger, string $sourceKey): void
     {
         $recipients = $event->billets()->get(['nom_auteur', 'email', 'numero'])
@@ -114,10 +116,25 @@ class NotificationDispatchService
 
         try {
             if ($channel === 'email') {
-                Mail::raw($campaign->message, function ($mail) use ($campaign, $recipient): void {
-                    $mail->to($recipient->email)
-                        ->subject($campaign->subject ?: $campaign->name);
-                });
+                $queued = $this->emailDelivery->send(
+                    new CampaignNotificationMail(
+                        $recipient->id,
+                        $recipient->name,
+                        $campaign->subject ?: $campaign->name,
+                        $campaign->message,
+                    ),
+                    $recipient->email,
+                );
+
+                if ($queued) {
+                    $recipient->update([
+                        $statusColumn => 'queued',
+                        $sentColumn => null,
+                        $errorColumn => null,
+                    ]);
+
+                    return;
+                }
             } elseif ($channel === 'sms') {
                 $this->sendSms($address, $campaign->message);
             } else {

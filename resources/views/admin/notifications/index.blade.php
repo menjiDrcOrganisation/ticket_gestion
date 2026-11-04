@@ -80,6 +80,7 @@
             @forelse($campaigns as $campaign)
                 @php
                     $sent = $campaign->recipients->sum(fn ($recipient) => (int) ($recipient->email_status === 'sent') + (int) ($recipient->sms_status === 'sent'));
+                    $queued = $campaign->recipients->where('email_status', 'queued')->count();
                     $failed = $campaign->recipients->sum(fn ($recipient) => (int) ($recipient->email_status === 'failed') + (int) ($recipient->sms_status === 'failed'));
                 @endphp
                 <article class="rounded-xl border border-slate-200 p-4">
@@ -90,9 +91,10 @@
                             <p class="mt-1 text-sm">
                                 @if($campaign->cancelled_at)<span class="text-rose-700">Annulée {{ $campaign->cancelled_at->format('d/m/Y H:i') }}</span>
                                 @elseif($campaign->scheduled_at && !$campaign->sent_at)<span class="text-amber-700">Planifiée le {{ $campaign->scheduled_at->format('d/m/Y H:i') }}</span>
+                                @elseif($queued > 0)<span class="text-amber-700">Envoi(s) mis en file le {{ $campaign->sent_at?->format('d/m/Y H:i') }}</span>
                                 @elseif($campaign->sent_at)<span class="text-emerald-700">Traitée le {{ $campaign->sent_at->format('d/m/Y H:i') }}</span>
                                 @else<span class="text-slate-500">En attente</span>@endif
-                                · {{ $sent }} envoyé(s) · {{ $failed }} échec(s)
+                                · {{ $sent }} envoyé(s) · {{ $queued }} en file d’attente · {{ $failed }} échec(s)
                             </p>
                         </div>
                         <div class="flex gap-2">

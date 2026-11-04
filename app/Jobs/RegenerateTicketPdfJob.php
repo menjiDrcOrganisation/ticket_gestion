@@ -2,13 +2,14 @@
 
 namespace App\Jobs;
 
+use App\Mail\TicketGenerationFailedMail;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Services\EmailDeliveryService;
 use App\Services\TicketPdfService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class RegenerateTicketPdfJob implements ShouldQueue
 {
@@ -61,13 +62,10 @@ class RegenerateTicketPdfJob implements ShouldQueue
             ->all();
 
         if (! empty($emails)) {
-            Mail::raw(
-                'Echec de generation du billet PDF apres 3 tentatives. Reference transaction: '
-                    .($transaction?->reference ?? 'N/A'),
-                function ($message) use ($emails): void {
-                    $message->to($emails)->subject('Alerte: generation billet en echec');
-                }
-            );
+            $emailDelivery = app(EmailDeliveryService::class);
+            foreach ($emails as $email) {
+                $emailDelivery->send(new TicketGenerationFailedMail($transaction?->reference), $email);
+            }
         }
 
         Log::error('Echec de regeneration du billet PDF apres 3 tentatives.', [

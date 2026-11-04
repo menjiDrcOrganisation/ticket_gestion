@@ -1,17 +1,13 @@
-<!DOCTYPE html>
-<html>
-  <body style="font-family: Arial, sans-serif; color: #333;">
-    <h2>Bonjour {{ $nom_client }},</h2>
-    <p><strong>Votre événement a été créé avec succès.</strong></p>
-    <p>Il a été rattaché à votre compte organisateur existant. Connectez-vous avec vos identifiants habituels pour le gérer :</p>
-    <a href="{{ route('login') }}">{{ route('login') }}</a>
+@extends('emails.layouts.base')
+
+@section('title', 'Votre événement est créé')
+@section('heading', 'Votre événement est créé')
+@section('greeting', 'Bonjour '.$nom_client.',')
+
+@section('content')
+    <p>Votre nouvel événement a été créé et rattaché à votre compte organisateur.</p>
+    <p>Connectez-vous avec vos identifiants habituels pour gérer votre compte :</p>
+    <p><a href="{{ route('login') }}">Accéder à mon espace organisateur</a></p>
 
     @include('emails.partials.evenement-scanneur')
-
-    <p>Merci d’utiliser nos services.</p>
-
-    <br>
-    <p>Cordialement,</p>
-    <p><strong>L’équipe MenjiDrc</strong></p>
-  </body>
-</html>
+@endsection
