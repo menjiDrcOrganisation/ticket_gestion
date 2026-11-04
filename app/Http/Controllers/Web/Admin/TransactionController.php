@@ -3,13 +3,15 @@
 namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Transaction;
 use App\Models\Billet;
+use App\Models\Transaction;
+use App\Services\AnnulationBilletService;
+use App\Services\GenerationBilletService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
 
 class TransactionController extends Controller
 {
@@ -20,38 +22,32 @@ class TransactionController extends Controller
     {
         $query = Transaction::query();
 
-        // Recherche par statut
         if ($request->filled('statut')) {
             $query->where('statut', $request->statut);
         }
 
-        // Recherche par email utilisateur
         if ($request->filled('email')) {
             $query->whereHas('billet.user', function ($q) use ($request) {
-                $q->where('email', 'like', '%' . $request->email . '%');
+                $q->where('email', 'like', '%'.$request->email.'%');
             });
         }
 
-        // Recherche par référence / numéro de commande
         if ($request->filled('reference')) {
-            $query->where('reference', 'like', '%' . $request->reference . '%');
+            $query->where('reference', 'like', '%'.$request->reference.'%');
         }
 
-        // Recherche par téléphone
         if ($request->filled('numero_telephone')) {
             $query->where(
                 'numero_telephone',
                 'like',
-                '%' . $request->numero_telephone . '%'
+                '%'.$request->numero_telephone.'%'
             );
         }
 
-        // Filtre date début
         if ($request->filled('date_debut')) {
             $query->whereDate('created_at', '>=', $request->date_debut);
         }
 
-        // Filtre date fin
         if ($request->filled('date_fin')) {
             $query->whereDate('created_at', '<=', $request->date_fin);
         }
@@ -65,16 +61,12 @@ class TransactionController extends Controller
         return view('transactions.index', compact('transactions'));
     }
 
-    /**
-     * Voir les détails d'une transaction
-     */
     public function show($id)
     {
         $transaction = Transaction::with([
             'billet',
         ])->findOrFail($id);
 
-        // Timeline simulée
         $timeline = [
             [
                 'titre' => 'Transaction créée',
@@ -85,17 +77,16 @@ class TransactionController extends Controller
                 'date' => $transaction->created_at->addMinute(),
             ],
             [
-                'titre' => 'Statut : ' . $transaction->statut,
+                'titre' => 'Statut : '.$transaction->statut,
                 'date' => $transaction->updated_at,
             ],
         ];
 
-        // Logs techniques simulés
         $logs = [
             'Gateway Response: SUCCESS',
-            'API Payment ID: PAY_' . Str::random(8),
+            'API Payment ID: PAY_'.Str::random(8),
             'IP Client: 127.0.0.1',
-            'Canal: ' . $transaction->methode_paiement,
+            'Canal: '.$transaction->methode_paiement,
         ];
 
         return view(
@@ -104,87 +95,97 @@ class TransactionController extends Controller
         );
     }
 
-    /**
-     * Forcer la génération du billet
-     */
-    public function forceGenerate($id)
+    public function forceGenerate($id, GenerationBilletService $generationBilletService)
     {
-        DB::beginTransaction();
+        $transaction = null;
+        $billet = null;
 
         try {
+            $refus = DB::transaction(function () use ($id, $generationBilletService, &$transaction, &$billet) {
+                $transaction = Transaction::lockForUpdate()->findOrFail($id);
 
-            $transaction = Transaction::findOrFail($id);
+                if ($transaction->billet_id) {
+                    return ['warning', 'Le billet existe déjà.'];
+                }
 
-            // Vérifier si billet déjà généré
-            if ($transaction->billet_id) {
+                if ($transaction->type === 'remboursement' || $transaction->statut === 'annulee') {
+                    return ['error', 'Impossible de générer un billet pour une transaction annulée ou remboursée.'];
+                }
 
-                return back()->with(
-                    'warning',
-                    'Le billet existe déjà.'
-                );
-            }
+                if (! $transaction->evenement_id || ! $transaction->type_billet_id || ! $transaction->nombre_billet) {
+                    return ['error', 'Transaction incomplète : événement, type ou nombre de billets manquant.'];
+                }
 
-            // Génération manuelle du billet
-            $billet = Billet::create([
-                'reference' => 'BLT-' . strtoupper(Str::random(10)),
-                'transaction_id' => $transaction->id,
-            ]);
+                $billet = $generationBilletService->creerBillet($transaction);
 
-            // Mise à jour transaction
-            $transaction->update([
-                'billet_id' => $billet->id,
-                'statut' => 'paye',
-            ]);
-
-            Log::info(
-                'Billet généré manuellement',
-                [
-                    'transaction_id' => $transaction->id,
+                $transaction->update([
                     'billet_id' => $billet->id,
-                ]
-            );
+                    'paid_at' => $transaction->paid_at ?? now(),
+                ]);
 
-            DB::commit();
-
-            return back()->with(
-                'success',
-                'Billet généré avec succès.'
-            );
-
+                return null;
+            });
+        } catch (ModelNotFoundException $e) {
+            throw $e;
         } catch (\Exception $e) {
-
-            DB::rollBack();
-
             Log::error(
                 'Erreur génération billet',
                 [
+                    'transaction_id' => $id,
                     'message' => $e->getMessage(),
                 ]
             );
 
             return back()->with(
                 'error',
-                'Erreur lors de la génération.'
+                'Erreur lors de la génération : '.$e->getMessage()
             );
         }
+
+        if ($refus) {
+            return back()->with(...$refus);
+        }
+
+        $generationBilletService->genererPdf($transaction, $billet);
+
+        Log::info(
+            'Billet généré manuellement',
+            [
+                'transaction_id' => $transaction->id,
+                'billet_id' => $billet->id,
+            ]
+        );
+
+        return back()->with(
+            'success',
+            'Billet généré avec succès.'
+        );
     }
 
-    /**
-     * Marquer comme remboursé
-     */
-    public function markAsRefunded($id)
+    public function markAsRefunded($id, AnnulationBilletService $annulationBilletService)
     {
         $transaction = Transaction::findOrFail($id);
 
-        $transaction->update([
-            'type' => 'remboursement',
-            'statut' => 'annulee',
-        ]);
+        if ($transaction->type === 'remboursement') {
+            return back()->with('error', 'Cette transaction est déjà remboursée.');
+        }
+
+        DB::transaction(function () use ($transaction, $annulationBilletService) {
+            $transaction->update([
+                'type' => 'remboursement',
+                'statut' => 'annulee',
+            ]);
+
+            if ($transaction->billet) {
+                $annulationBilletService->annuler($transaction->billet);
+            }
+        });
 
         Log::info(
             'Transaction remboursée',
             [
                 'transaction_id' => $transaction->id,
+                'billet_id' => $transaction->billet_id,
             ]
         );
 
@@ -194,7 +195,3 @@ class TransactionController extends Controller
         );
     }
 }
-
-
-
-
