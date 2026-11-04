@@ -100,7 +100,7 @@ class EvenementController extends Controller
                 : 'Votre événement a été créé avec succès. Le compte organisateur a été créé avec un mot de passe temporaire.';
 
             $message .= $mailEnvoye
-                ? ' Les informations ont été envoyées par e-mail à l’organisateur.'
+                ? ' Les informations ont été transmises pour envoi à l’organisateur.'
                 : ' Le mail n\'a pas pu être envoyé : vous pouvez le renvoyer depuis le tableau.';
 
             try {
@@ -340,7 +340,7 @@ class EvenementController extends Controller
             // Régénère le mot de passe du scanneur ; celui de l'organisateur uniquement s'il est encore temporaire.
             $evenementMailService->renvoyer($evenement);
 
-            return redirect()->back()->with('success', 'Mail renvoyé avec succès pour l\'événement sélectionné.');
+            return redirect()->back()->with('success', 'Le renvoi du mail a été pris en charge pour l’événement sélectionné.');
         } catch (\Throwable $th) {
             Log::error('Echec renvoi mail evenement', [
                 'evenement_id' => $id,

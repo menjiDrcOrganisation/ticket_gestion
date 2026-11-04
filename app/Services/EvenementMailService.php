@@ -8,7 +8,6 @@ use App\Models\Evenement;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 /**
@@ -18,9 +17,11 @@ use Illuminate\Support\Str;
  */
 class EvenementMailService
 {
+    public function __construct(private EmailDeliveryService $emailDelivery) {}
+
     /**
      * @param  array  $creation  Résultat de EvenementCreationService::create()
-     * @return bool true si le mail est parti, false sinon (l'erreur est journalisée et tracée sur l'événement).
+     * @return bool true si le mail a été envoyé ou mis en file, false en cas d'échec.
      */
     public function envoyerApresCreation(array $creation): bool
     {
@@ -33,7 +34,7 @@ class EvenementMailService
         }
 
         try {
-            $this->envoyer(
+            $queued = $this->envoyer(
                 $evenement,
                 $organisateurUser,
                 $creation['organisateur_existant'] ? null : $creation['organisateur_code'],
@@ -41,15 +42,14 @@ class EvenementMailService
                 (string) $creation['scanneur_code'],
             );
 
-            $this->tracer($evenement, null);
+            $this->tracer($evenement, null, $queued);
 
             return true;
         } catch (\Throwable $e) {
             Log::error('Echec envoi mail apres creation evenement', [
                 'evenement_id' => $evenement->id,
-                'organisateur_email' => $organisateurUser->email,
                 'error_message' => $e->getMessage(),
-                'exception' => $e,
+                'error_type' => $e::class,
             ]);
 
             $this->tracer($evenement, 'MAIL_SEND_FAILED');
@@ -86,9 +86,9 @@ class EvenementMailService
                 $organisateurUser->update(['password' => Hash::make($organisateurCode)]);
             }
 
-            $this->envoyer($evenement, $organisateurUser, $organisateurCode, $scanneurUser->email, $scanneurCode);
+            $queued = $this->envoyer($evenement, $organisateurUser, $organisateurCode, $scanneurUser->email, $scanneurCode);
 
-            $this->tracer($evenement, null);
+            $this->tracer($evenement, null, $queued);
         } catch (\Throwable $e) {
             $this->tracer($evenement, 'MAIL_RESEND_FAILED');
 
@@ -101,7 +101,7 @@ class EvenementMailService
         return rtrim((string) config('app.achat_url'), '/').'/'.$evenement->url_evenement;
     }
 
-    private function envoyer(Evenement $evenement, User $organisateurUser, ?string $motDePasseTemporaire, string $scanneurEmail, string $scanneurCode): void
+    private function envoyer(Evenement $evenement, User $organisateurUser, ?string $motDePasseTemporaire, string $scanneurEmail, string $scanneurCode): bool
     {
         $url = self::urlAchat($evenement);
 
@@ -117,14 +117,15 @@ class EvenementMailService
             )
             : new EvenementCreeMail($organisateurUser->name, $evenement, $url, $scanneurEmail, $scanneurCode);
 
-        Mail::to($organisateurUser->email)->send($mail);
+        return $this->emailDelivery->send($mail, $organisateurUser->email);
     }
 
-    private function tracer(Evenement $evenement, ?string $erreur): void
+    private function tracer(Evenement $evenement, ?string $erreur, bool $queued = false): void
     {
         $evenement->update([
             'mail_send_attempts' => ((int) $evenement->mail_send_attempts) + 1,
-            'mail_sent_at' => $erreur === null ? now() : null,
+            'mail_sent_at' => $erreur === null && ! $queued ? now() : null,
+            'mail_queued_at' => $erreur === null && $queued ? now() : null,
             'last_mail_error' => $erreur,
         ]);
     }

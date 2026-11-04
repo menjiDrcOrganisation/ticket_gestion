@@ -26,9 +26,18 @@ class Evenement extends Model
         'url_evenement',
         'mail_send_attempts',
         'mail_sent_at',
+        'mail_queued_at',
         'last_mail_error',
 
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'mail_sent_at' => 'datetime',
+            'mail_queued_at' => 'datetime',
+        ];
+    }
 
     public function organisateur()
     {
