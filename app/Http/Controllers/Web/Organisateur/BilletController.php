@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Billet;
 use App\Models\Evenement;
 use App\Models\EvenementTypeBillet;
+use App\Services\AnnulationBilletService;
 use App\Services\TicketPdfService;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class BilletController extends Controller
@@ -207,26 +209,32 @@ class BilletController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy($id, AnnulationBilletService $annulationBilletService)
     {
-        // Récupérer le billet par son id
         $billet = Billet::find($id);
 
         if (! $billet) {
             return redirect()->back()->with('error', 'Billet introuvable.');
         }
 
-        // Seul l'organisateur de l'événement du billet peut le supprimer.
-        $organisateurId = Auth::user()->organisateur?->id;
-        $estProprietaire = $organisateurId !== null
-            && Evenement::whereKey($billet->evenement_id)->where('organisateur_id', $organisateurId)->exists();
+        // Seul l'organisateur de cet événement peut supprimer son billet.
+        $user = Auth::user();
+        $organisateurId = $user?->organisateur?->id;
 
-        abort_unless($estProprietaire, 403, 'Accès refusé : ce billet n’appartient pas à vos événements.');
+        $estProprietaire = $user?->role === 'organisateur'
+            && $organisateurId !== null
+            && Evenement::whereKey($billet->evenement_id)
+                ->where('organisateur_id', $organisateurId)
+                ->exists();
 
-        // Supprimer le billet
-        $billet->delete();
+        abort_unless($estProprietaire, 403);
 
-        // Rediriger avec message de succès
+        // Rendre les places au stock avant de supprimer le billet.
+        DB::transaction(function () use ($billet, $annulationBilletService) {
+            $annulationBilletService->restituerStock($billet);
+            $billet->delete();
+        });
+
         return redirect()->back()->with('success', 'Billet supprimé avec succès.');
     }
 

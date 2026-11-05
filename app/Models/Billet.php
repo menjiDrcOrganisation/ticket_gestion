@@ -11,6 +11,8 @@ class Billet extends Model
     /** @use HasFactory<\Database\Factories\BilletFactory> */
     use HasFactory;
 
+    public const STATUT_ANNULE = 'annule';
+
     private static ?string $billetImageColumn = null;
 
     protected $fillable = [
@@ -41,6 +43,17 @@ class Billet extends Model
     {
         $column = $this->resolveBilletImageColumn();
         $this->attributes[$column] = $value;
+    }
+
+    public function estAnnule(): bool
+    {
+        return $this->statut === self::STATUT_ANNULE;
+    }
+
+    /** Billets comptés comme vendus (tout sauf les billets annulés). */
+    public function scopeNonAnnules($query)
+    {
+        return $query->where('statut', '!=', self::STATUT_ANNULE);
     }
 
     private function resolveBilletImageColumn(): string

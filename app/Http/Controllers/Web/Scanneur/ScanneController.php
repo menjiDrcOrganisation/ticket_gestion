@@ -76,6 +76,12 @@ class ScanneController extends Controller
                     'message' => 'Aucune correspondance trouvée pour ce billet',
                 ], 404);
             }
+            if ($billet->estAnnule()) {
+                return response()->json([
+                    'valid' => false,
+                    'message' => 'Billet annulé (remboursé)',
+                ], 422);
+            }
             if ($billet->estEntierementUtilise()) {
                 return response()->json([
                     'valid' => false,
@@ -151,6 +157,12 @@ class ScanneController extends Controller
                 ], 404);
             }
 
+            if ($billet->estAnnule()) {
+                return response()->json([
+                    'valid' => false,
+                    'message' => 'Billet annulé (remboursé)',
+                ], 422);
+            }
             if ($billet->estEntierementUtilise()) {
                 return response()->json([
                     'valid' => false,
@@ -159,7 +171,6 @@ class ScanneController extends Controller
                     'message' => 'Billet déjà utilisé',
                 ], 422);
             }
-
             if ($billet->quantite_fictif > 1) {
                 $billet->decrement('quantite_fictif', $quantite);
                 $message = 'Billet validé';
