@@ -7,8 +7,8 @@ use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -140,17 +140,20 @@ class AuditTrail
         foreach ($payload as $key => $value) {
             if ($this->isSensitiveKey((string) $key)) {
                 $sanitized[$key] = '[FILTERED]';
+
                 continue;
             }
 
             if (is_array($value)) {
                 $sanitized[$key] = $this->sanitizePayload($value);
+
                 continue;
             }
 
             // Les fichiers envoyés ne sont pas sérialisables en JSON : on ne conserve que leur nom.
             if ($value instanceof UploadedFile) {
-                $sanitized[$key] = '[FILE] ' . $value->getClientOriginalName();
+                $sanitized[$key] = '[FILE] '.$value->getClientOriginalName();
+
                 continue;
             }
 

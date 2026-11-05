@@ -31,7 +31,7 @@ class StoreEvenementRequest extends FormRequest
             'type_evenement_nom' => 'nullable|string|max:255|required_without:type_evenement_id',
             // Nom et téléphone ne sont exigés que pour un nouvel organisateur :
             // un organisateur existant est identifié par son e-mail et ses informations sont réutilisées.
-            'nom_organisateur' => [Rule::requiredIf(fn () => !$this->organisateurExiste()), 'nullable', 'string', 'max:255'],
+            'nom_organisateur' => [Rule::requiredIf(fn () => ! $this->organisateurExiste()), 'nullable', 'string', 'max:255'],
             'email_organisateur' => ['required', 'email', 'max:255', function (string $attribute, mixed $value, Closure $fail) {
                 $user = EvenementCreationService::findUserByEmail($value);
                 if ($user && $user->role !== 'organisateur') {

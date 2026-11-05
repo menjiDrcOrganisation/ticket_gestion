@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Models\User;
-use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
@@ -68,10 +67,7 @@ class UserController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(User $user)
-    {
-        
-    }
+    public function edit(User $user) {}
 
     /**
      * Update the specified resource in storage.
@@ -100,6 +96,7 @@ class UserController extends Controller
     {
         try {
             $user->delete();
+
             return redirect()->back()->with('success', 'Utilisateur supprimé avec succès.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Une erreur est survenue lors de la suppression de l\'utilisateur.');

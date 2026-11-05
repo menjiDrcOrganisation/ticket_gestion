@@ -18,6 +18,7 @@ class InitierTransactionRequest extends FormRequest
             'nombre_reel' => 'required|integer|min:1',
             'nom_complet_client' => 'required|string|max:255',
             'numero_client' => 'required|string|max:25',
+            'email_client' => 'nullable|email|max:191',
             'service' => 'required|string|max:50',
             'id_evenement' => 'required|integer',
             'devise' => 'required|string|in:CDF,USD',

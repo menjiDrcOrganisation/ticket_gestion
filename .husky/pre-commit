@@ -1,0 +1,5 @@
+# Même vérification de style que le job "lint" de la CI (.github/workflows/ci.yml).
+php vendor/bin/pint --test || {
+  echo "Style non conforme : lancez 'php vendor/bin/pint' puis réindexez (git add) les fichiers corrigés."
+  exit 1
+}

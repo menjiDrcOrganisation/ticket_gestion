@@ -11,78 +11,94 @@ class Billet extends Model
     /** @use HasFactory<\Database\Factories\BilletFactory> */
     use HasFactory;
 
+    public const STATUT_ANNULE = 'annule';
+
     private static ?string $billetImageColumn = null;
 
-    protected   $fillable = [
-       'date_achat',
-       'nom_auteur',
-       'numero',
-       'email',
-       'billetImage',
-       'billet_image',
-       'code_billet',
-       'statut',
-       'quantite', 
-       'quantite_fictif',
-       'evenement_id',
-       'type_billet_id'
+    protected $fillable = [
+        'date_achat',
+        'nom_auteur',
+        'numero',
+        'email',
+        'billetImage',
+        'billet_image',
+        'code_billet',
+        'statut',
+        'quantite',
+        'quantite_fictif',
+        'evenement_id',
+        'type_billet_id',
     ];
 
-public function getBilletImageAttribute($value)
-{
-    if (!empty($value)) {
-        return $value;
+    public function getBilletImageAttribute($value)
+    {
+        if (! empty($value)) {
+            return $value;
+        }
+
+        return $this->attributes['billet_image'] ?? null;
     }
 
-    return $this->attributes['billet_image'] ?? null;
-}
+    public function setBilletImageAttribute($value): void
+    {
+        $column = $this->resolveBilletImageColumn();
+        $this->attributes[$column] = $value;
+    }
 
-public function setBilletImageAttribute($value): void
-{
-    $column = $this->resolveBilletImageColumn();
-    $this->attributes[$column] = $value;
-}
+    public function estAnnule(): bool
+    {
+        return $this->statut === self::STATUT_ANNULE;
+    }
 
-private function resolveBilletImageColumn(): string
-{
-    if (self::$billetImageColumn !== null) {
+    /** Billets comptés comme vendus (tout sauf les billets annulés). */
+    public function scopeNonAnnules($query)
+    {
+        return $query->where('statut', '!=', self::STATUT_ANNULE);
+    }
+
+    private function resolveBilletImageColumn(): string
+    {
+        if (self::$billetImageColumn !== null) {
+            return self::$billetImageColumn;
+        }
+
+        self::$billetImageColumn = Schema::hasColumn('billets', 'billetImage')
+            ? 'billetImage'
+            : 'billet_image';
+
         return self::$billetImageColumn;
     }
 
-    self::$billetImageColumn = Schema::hasColumn('billets', 'billetImage')
-        ? 'billetImage'
-        : 'billet_image';
+    /** Toutes les entrées du billet ont déjà été scannées : il ne donne plus accès à l'événement. */
+    public function estEntierementUtilise(): bool
+    {
+        return $this->statut === 'utilisee' || (int) $this->quantite_fictif <= 0;
+    }
 
-    return self::$billetImageColumn;
-}
+    public function evenement()
+    {
+        return $this->belongsTo(Evenement::class);
+    }
 
-public function evenement()
-{
-    return $this->belongsTo(Evenement::class);
-}
+    public function type_billet()
+    {
+        return $this->belongsTo(TypeBillet::class);
+    }
 
-public function type_billet()
-{
-    return $this->belongsTo(TypeBillet::class);
-}
+    public function evenementTypeBilletRelation()
+    {
+        return $this->hasOne(EvenementTypeBillet::class, 'type_billet_id', 'type_billet_id');
+    }
 
-public function evenementTypeBilletRelation()
-{
-    return $this->hasOne(EvenementTypeBillet::class, 'type_billet_id', 'type_billet_id');
-}
+    public function evenementTypeBillet()
+    {
+        return $this->evenementTypeBilletRelation()
+            ->where('evenement_id', $this->evenement_id)
+            ->first();
+    }
 
-
-public function evenementTypeBillet()
-{
-    return $this->evenementTypeBilletRelation()
-        ->where('evenement_id', $this->evenement_id)
-        ->first();
-}
-
-public function transactions()
-{
-    return $this->hasMany(Transaction::class);
-}
-
-
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
 }

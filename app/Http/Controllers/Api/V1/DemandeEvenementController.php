@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Rules\FichierTeleverse;
 use App\Http\Requests\Api\V1\StoreDemandeEvenementApiRequest;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\Api\V1\StoreDemandeEvenementApiRequest;
 use App\Models\DemandeEvenement;
 
 class DemandeEvenementController extends Controller
@@ -56,10 +56,7 @@ class DemandeEvenementController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Demande créée avec succès',
-            'data' => $demande
+            'data' => $demande,
         ], 201);
     }
 }
-
-
-

@@ -16,7 +16,7 @@ class RetraitController extends Controller
      */
     public function index()
     {
-        $userOrganisateur  = auth()->user()->organisateur;
+        $userOrganisateur = auth()->user()->organisateur;
         $retraits = Retrait::with('organisateur')->where('organisateur_id', $userOrganisateur->id)->get();
         $evenementsCount = Evenement::where('organisateur_id', $userOrganisateur->id)->count();
 
@@ -36,14 +36,14 @@ class RetraitController extends Controller
      */
     public function store(StoreRetraitRequest $request)
     {
-    
+
         try {
             $validatedData = $request->validated();
-                
+
             Retrait::create($validatedData);
 
             return redirect()->back()
-                             ->with('success', 'Retrait créé avec succès.');
+                ->with('success', 'Retrait créé avec succès.');
         } catch (\Exception $e) {
             Log::error('Erreur creation retrait organisateur', [
                 'error_message' => $e->getMessage(),
@@ -51,7 +51,7 @@ class RetraitController extends Controller
             ]);
 
             return redirect()->back()
-                             ->with('error', 'Une erreur est survenue lors de la création du retrait.');
+                ->with('error', 'Une erreur est survenue lors de la création du retrait.');
         }
     }
 

@@ -18,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\EnsurePasswordIsChanged::class,
         ]);
+
+        // Rate limiting sur toutes les routes api/* (limiteur "api" déclaré dans AppServiceProvider).
+        $middleware->throttleApi();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Requête plus lourde que post_max_size : PHP vide le formulaire avant toute

@@ -2,21 +2,18 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Http\Requests\Api\V1\AchatBilletRequest;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Services\MobileMoneyService;
-use App\Services\ExchangeRateService;
-use App\Models\EvenementTypeBillet;
+use App\Http\Requests\Api\V1\AchatBilletRequest;
 use App\Models\Billet;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use App\Models\EvenementTypeBillet;
+use App\Services\ExchangeRateService;
+use App\Services\MobileMoneyService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Exception;
-use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
-use BaconQrCode\Renderer\ImageRenderer;
-use BaconQrCode\Renderer\Image\SvgImageBackEnd; 
 
 class BilletController extends Controller
 {
@@ -36,12 +33,12 @@ class BilletController extends Controller
                 ->where('evenement_id', $validated['id_evenement'])
                 ->first();
 
-            if (!$type_billet) {
-                throw new Exception("Type de billet introuvable.");
+            if (! $type_billet) {
+                throw new Exception('Type de billet introuvable.');
             }
 
             if ($type_billet->nombre_billet < $validated['nombre_reel']) {
-                throw new Exception("Billets épuisés.");
+                throw new Exception('Billets épuisés.');
             }
 
             $montantUnitaire = (float) $type_billet->prix_unitaire;
@@ -54,14 +51,14 @@ class BilletController extends Controller
             $taux = $this->exchangeRateService->getUSDtoCDF();
 
             if ($taux <= 0) {
-                throw new Exception("Taux de change invalide.");
+                throw new Exception('Taux de change invalide.');
             }
 
             $montantConverti = $montantUnitaire;
 
             if ($deviseBillet !== $deviseClient) {
 
-                if ($deviseClient === "CDF") {
+                if ($deviseClient === 'CDF') {
                     $montantConverti = $montantUnitaire * $taux; // USD → CDF
                 } else {
                     $montantConverti = $montantUnitaire / $taux; // CDF → USD
@@ -77,12 +74,12 @@ class BilletController extends Controller
             // PAIEMENT (IMPORTANT : utiliser montant)
             // =========================
             $paymentPayload = array_merge($validated, [
-                'total' => $total
+                'total' => $total,
             ]);
 
             $payment = MobileMoneyService::sendPayment($paymentPayload);
 
-            if (!$payment['status']) {
+            if (! $payment['status']) {
                 return response()->json($payment, 400);
             }
 
@@ -92,7 +89,7 @@ class BilletController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'Paiement non validé.',
-                    'data' => $payment['data']
+                    'data' => $payment['data'],
                 ], 400);
             }
 
@@ -107,12 +104,12 @@ class BilletController extends Controller
                     ->first();
 
                 if ($type->nombre_billet < $validated['nombre_reel']) {
-                    throw new Exception("Stock insuffisant.");
+                    throw new Exception('Stock insuffisant.');
                 }
 
                 $type->decrement('nombre_billet', $validated['nombre_reel']);
 
-                $code = 'TCK-' . strtoupper(uniqid());
+                $code = 'TCK-'.strtoupper(uniqid());
 
                 return Billet::create([
                     'nom_auteur' => $validated['nom_complet_client'],
@@ -122,24 +119,23 @@ class BilletController extends Controller
                     'type_billet_id' => $validated['type_billet'],
                     'quantite' => $validated['nombre_reel'],
                     'quantite_fictif' => $validated['nombre_reel'],
-                    'statut' => "valide",
-                    'date_achat' => Carbon::now()
+                    'statut' => 'valide',
+                    'date_achat' => Carbon::now(),
                 ]);
             });
 
             $billet->load(['evenement.ressource', 'type_billet']);
 
-        
-        $qrSvg = QrCode::format('svg')
-            ->size(300)
-            ->generate($billet->code_billet);
+            $qrSvg = QrCode::format('svg')
+                ->size(300)
+                ->generate($billet->code_billet);
 
-        // encoder proprement
-        $qrImage = base64_encode($qrSvg);
+            // encoder proprement
+            $qrImage = base64_encode($qrSvg);
 
-        // créer l’URL base64
-        $qrCodeUrl = 'data:image/svg+xml;base64,' . $qrImage;
-            
+            // créer l’URL base64
+            $qrCodeUrl = 'data:image/svg+xml;base64,'.$qrImage;
+
             $data = [
                 'ticket' => [
                     'user_name' => $billet->nom_auteur,
@@ -161,8 +157,8 @@ class BilletController extends Controller
                     'photo_affiche' => $billet->evenement->ressource[0]->photo_affiche ?? null,
 
                     'ticket_id' => strtoupper(substr(md5($billet->code_billet), 0, 8)),
-                    'transaction_ref' => $billet->code_billet
-                ]
+                    'transaction_ref' => $billet->code_billet,
+                ],
             ];
 
             // =========================
@@ -170,12 +166,12 @@ class BilletController extends Controller
             // =========================
             $pdf = Pdf::loadView('billetPdf.billet', $data);
 
-            $fileName = 'billets/' . $billet->nom_auteur . '.pdf';
+            $fileName = 'billets/'.$billet->nom_auteur.'.pdf';
 
             Storage::disk('public')->put($fileName, $pdf->output());
 
             $billet->update([
-                'billetImage' => $fileName
+                'billetImage' => $fileName,
             ]);
 
             // =========================
@@ -185,8 +181,8 @@ class BilletController extends Controller
                 'status' => true,
                 'message' => 'Paiement effectué avec succès.',
                 'billet' => $billet,
-                'pdf_url' => asset('storage/' . $fileName),
-                'reference' => $payment['reference'] ?? null
+                'pdf_url' => asset('storage/'.$fileName),
+                'reference' => $payment['reference'] ?? null,
             ]);
 
         } catch (Exception $e) {
@@ -194,10 +190,8 @@ class BilletController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Erreur serveur',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
 }
-
-

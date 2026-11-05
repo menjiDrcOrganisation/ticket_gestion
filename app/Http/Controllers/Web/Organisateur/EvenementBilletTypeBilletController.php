@@ -14,16 +14,15 @@ class EvenementBilletTypeBilletController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-   
     {
         $evenementsActifs = Evenement::where('statut', 'actif')->count();
 
         $billetsVendus = EvenementBilletTypeBillet::sum('quantite');
 
-        $revenusCDF = EvenementTypeBillet::where('devise', 'CDF')->get()->sum(fn($a) => $a->prix_unitaire * $a->quantite);
-        $revenusUSD = EvenementTypeBillet::where('devise', 'USD')->get()->sum(fn($a) => $a->prix_unitaire * $a->quantite);
+        $revenusCDF = EvenementTypeBillet::where('devise', 'CDF')->get()->sum(fn ($a) => $a->prix_unitaire * $a->quantite);
+        $revenusUSD = EvenementTypeBillet::where('devise', 'USD')->get()->sum(fn ($a) => $a->prix_unitaire * $a->quantite);
 
-        $tauxRemplissage = $evenementsActifs > 0 
+        $tauxRemplissage = $evenementsActifs > 0
             ? round(($billetsVendus / ($evenementsActifs * 100)) * 100, 2)
             : 0;
 
@@ -50,44 +49,43 @@ class EvenementBilletTypeBilletController extends Controller
         ));
     }
 
-
     /**
      * Show the form for creating a new resource.
      */
     public function achatbillet(Request $request, $evenementId)
-{
-    try {
-        // Récupère tous les achats pour l'événement
-        $achats = EvenementBilletTypeBillet::with(['type_billet', 'evenement'])
-            ->where('evenement_id', $evenementId)
-            ->paginate(10);
+    {
+        try {
+            // Récupère tous les achats pour l'événement
+            $achats = EvenementBilletTypeBillet::with(['type_billet', 'evenement'])
+                ->where('evenement_id', $evenementId)
+                ->paginate(10);
 
-        // Récupération des informations de tarification
-        $tarifs = EvenementTypeBillet::where('evenement_id', $evenementId)->get();
+            // Récupération des informations de tarification
+            $tarifs = EvenementTypeBillet::where('evenement_id', $evenementId)->get();
 
-        // Calcul des totaux par devise
-        $totalCDF = $tarifs->where('devise', 'CDF')->sum(function ($item) {
-            return $item->prix_unitaire * $item->nombre_billet;
-        });
+            // Calcul des totaux par devise
+            $totalCDF = $tarifs->where('devise', 'CDF')->sum(function ($item) {
+                return $item->prix_unitaire * $item->nombre_billet;
+            });
 
-        $totalUSD = $tarifs->where('devise', 'USD')->sum(function ($item) {
-            return $item->prix_unitaire * $item->nombre_billet;
-        });
+            $totalUSD = $tarifs->where('devise', 'USD')->sum(function ($item) {
+                return $item->prix_unitaire * $item->nombre_billet;
+            });
 
-        // Total général (CDF + USD convertis si besoin)
-        $totalPaye = $tarifs->sum(function ($item) {
-            return $item->prix_unitaire * $item->nombre_billet;
-        });
+            // Total général (CDF + USD convertis si besoin)
+            $totalPaye = $tarifs->sum(function ($item) {
+                return $item->prix_unitaire * $item->nombre_billet;
+            });
 
-        // Debug ou affichage
-        // dd($achats, $totalPaye, $totalCDF, $totalUSD);
+            // Debug ou affichage
+            // dd($achats, $totalPaye, $totalCDF, $totalUSD);
 
-        return view('organisateurs.achat', compact('achats', 'totalPaye', 'totalCDF', 'totalUSD'));
+            return view('organisateurs.achat', compact('achats', 'totalPaye', 'totalCDF', 'totalUSD'));
 
-    } catch (\Throwable $th) {
-        return redirect()->back()->with('error', 'Erreur lors de la récupération des billets : ' . $th->getMessage());
+        } catch (\Throwable $th) {
+            return redirect()->back()->with('error', 'Erreur lors de la récupération des billets : '.$th->getMessage());
+        }
     }
-}
 
     public function create()
     {
@@ -107,15 +105,15 @@ class EvenementBilletTypeBilletController extends Controller
      */
     public function show($id)
     {
-         $evenement = Evenement::findOrFail($id);
+        $evenement = Evenement::findOrFail($id);
 
         // Récupérer les billets et ventes de l'événement
         $achats = EvenementBilletTypeBillet::where('evenement_id', $id)->get();
         $typesBillets = EvenementTypeBillet::where('evenement_id', $id)->with('type_billet')->get();
 
         $totalBilletsVendus = $achats->sum('quantite');
-        $revenusCDF = $achats->where('devise', 'CDF')->sum(fn($a) => $a->prix_unitaire * $a->quantite);
-        $revenusUSD = $achats->where('devise', 'USD')->sum(fn($a) => $a->prix_unitaire * $a->quantite);
+        $revenusCDF = $achats->where('devise', 'CDF')->sum(fn ($a) => $a->prix_unitaire * $a->quantite);
+        $revenusUSD = $achats->where('devise', 'USD')->sum(fn ($a) => $a->prix_unitaire * $a->quantite);
 
         $tauxRemplissage = $evenement->tauxRemplissage();
 
@@ -132,7 +130,6 @@ class EvenementBilletTypeBilletController extends Controller
             'derniersAchats'
         ));
     }
-
 
     /**
      * Show the form for editing the specified resource.

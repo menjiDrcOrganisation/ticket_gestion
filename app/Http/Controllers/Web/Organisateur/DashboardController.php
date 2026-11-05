@@ -1,11 +1,11 @@
 <?php
 
 namespace App\Http\Controllers\Web\Organisateur;
-use App\Models\EvenementBilletTypeBillet;
 
-use App\Models\Evenement;
-use App\Models\Billet;
 use App\Http\Controllers\Controller;
+use App\Models\Billet;
+use App\Models\Evenement;
+use App\Models\EvenementTypeBillet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -30,7 +30,7 @@ class DashboardController extends Controller
         $selectedEventId = (int) $request->query('event_id', 0);
         $allowedEventIds = $evenementsOrganisateur->pluck('id')->all();
 
-        if ($selectedEventId > 0 && !in_array($selectedEventId, $allowedEventIds, true)) {
+        if ($selectedEventId > 0 && ! in_array($selectedEventId, $allowedEventIds, true)) {
             $selectedEventId = 0;
         }
 
@@ -45,42 +45,50 @@ class DashboardController extends Controller
             $billetsQuery->where('evenement_id', $selectedEventId);
         }
 
-        $billets = $billetsQuery->get();
+        // Les billets annulés (remboursés) ne comptent ni dans les ventes ni dans le remplissage.
+        $billets = $billetsQuery->get()->reject->estAnnule()->values();
 
-        $totalBilletsVendus=0;
+        // Remplissage du périmètre affiché (un événement ou tous) : capacité = stock restant + billets vendus.
+        $evenementIdsPerimetre = $selectedEventId > 0 ? [$selectedEventId] : $allowedEventIds;
+        $remplissageVendus = (int) $billets->sum('quantite');
+        $remplissageCapacite = (int) EvenementTypeBillet::whereIn('evenement_id', $evenementIdsPerimetre)->sum('nombre_billet')
+            + $remplissageVendus;
+        $evolutionRemplissage = Evenement::construireEvolution($billets, $remplissageCapacite);
+
+        $totalBilletsVendus = 0;
         $revenusCDF = 0;
         $revenusUSD = 0;
-        $typesBillets = [[],[],[]];
+        $typesBillets = [[], [], []];
         $billetsScannes = 0;
 
         foreach ($billets as $billet) {
             $eventType = $billet->evenementTypeBillet();
-            if (!$eventType) {
+            if (! $eventType) {
                 continue;
             }
 
-            $totalBilletsVendus+=$billet->quantite;
+            $totalBilletsVendus += $billet->quantite;
 
-                // Montants par devise
-                if ($eventType->devise === "CDF") {
-                    $revenusCDF += $eventType->prix_unitaire * $billet->quantite;
-                }
+            // Montants par devise
+            if ($eventType->devise === 'CDF') {
+                $revenusCDF += $eventType->prix_unitaire * $billet->quantite;
+            }
 
-                if ($eventType->devise === "USD") {
-                    $revenusUSD += $eventType->prix_unitaire * $billet->quantite;
-                }
+            if ($eventType->devise === 'USD') {
+                $revenusUSD += $eventType->prix_unitaire * $billet->quantite;
+            }
 
-                // Compter billets par type
-                
-                $typeName = $billet->type_billet->nom_type ?? "Type";
-                $typesBillets[0][$typeName] = ($typesBillets[0][$typeName] ?? 0) + $billet->quantite;
-                $typesBillets[1][$typeName] = $eventType->prix_unitaire;
-                $typesBillets[2][$typeName] = $eventType->devise;
+            // Compter billets par type
 
-                // Compter billets scannés
-                
-                $billetsScannes+=$billet->quantite-$billet->quantite_fictif;
-                
+            $typeName = $billet->type_billet->nom_type ?? 'Type';
+            $typesBillets[0][$typeName] = ($typesBillets[0][$typeName] ?? 0) + $billet->quantite;
+            $typesBillets[1][$typeName] = $eventType->prix_unitaire;
+            $typesBillets[2][$typeName] = $eventType->devise;
+
+            // Compter billets scannés
+
+            $billetsScannes += $billet->quantite - $billet->quantite_fictif;
+
         }
 
         $derniersAchats = $billets->sortByDesc('created_at')->take(5)->values();
@@ -94,12 +102,10 @@ class DashboardController extends Controller
             'revenusUSD',
             'typesBillets',
             'billetsScannes',
-            'derniersAchats'
+            'derniersAchats',
+            'remplissageVendus',
+            'remplissageCapacite',
+            'evolutionRemplissage'
         ));
     }
 }
-
-
-
-
-

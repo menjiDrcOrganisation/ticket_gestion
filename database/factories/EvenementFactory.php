@@ -2,9 +2,8 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Organisateur;
-use App\Models\Scanneur;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class EvenementFactory extends Factory
 {

@@ -10,7 +10,7 @@ class StoreEvenementApiRequest extends StoreEvenementRequest
 {
     protected function failedValidation(Validator $validator)
     {
-        if (!$this->expectsJson() && !$this->is('api/*')) {
+        if (! $this->expectsJson() && ! $this->is('api/*')) {
             parent::failedValidation($validator);
         }
 
