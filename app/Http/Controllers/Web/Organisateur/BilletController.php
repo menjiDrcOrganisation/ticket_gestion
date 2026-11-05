@@ -209,24 +209,34 @@ class BilletController extends Controller
         }
     }
 
-     public function destroy($id, AnnulationBilletService $annulationBilletService)
-    {
-        // Récupérer le billet par son id
-        $billet = Billet::find($id);
+    public function destroy($id, AnnulationBilletService $annulationBilletService)
+{
+    $billet = Billet::find($id);
 
-        if (! $billet) {
-            return redirect()->back()->with('error', 'Billet introuvable.');
-        }
-
-        // Remettre ses places en stock avant suppression, sinon la capacité de l'événement diminue.
-        DB::transaction(function () use ($billet, $annulationBilletService) {
-            $annulationBilletService->restituerStock($billet);
-            $billet->delete();
-        });
-
-        // Rediriger avec message de succès
-        return redirect()->back()->with('success', 'Billet supprimé avec succès.');
+    if (! $billet) {
+        return redirect()->back()->with('error', 'Billet introuvable.');
     }
+
+    // Seul l'organisateur de cet événement peut supprimer son billet.
+    $user = Auth::user();
+    $organisateurId = $user?->organisateur?->id;
+
+    $estProprietaire = $user?->role === 'organisateur'
+        && $organisateurId !== null
+        && Evenement::whereKey($billet->evenement_id)
+            ->where('organisateur_id', $organisateurId)
+            ->exists();
+
+    abort_unless($estProprietaire, 403);
+
+    // Rendre les places au stock avant de supprimer le billet.
+    DB::transaction(function () use ($billet, $annulationBilletService) {
+        $annulationBilletService->restituerStock($billet);
+        $billet->delete();
+    });
+
+    return redirect()->back()->with('success', 'Billet supprimé avec succès.');
+}
 
     public function regenererDepuisDB($id, TicketPdfService $ticketPdfService)
     {
