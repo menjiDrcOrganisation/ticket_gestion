@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Rules\FichierTeleverse;
 use App\Models\DemandeEvenement;
+use App\Rules\FichierTeleverse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -13,39 +13,40 @@ class DemandeEvenementController extends Controller
     public function index()
     {
         $demandeEvenements = DemandeEvenement::latest()->get();
+
         return view('dmdEvent.index', compact('demandeEvenements'));
     }
 
     // Ajouter une demande
     public function store(Request $request)
     {
-      $request->validate([
-    'nom_evenement' => 'required|string|max:255',
+        $request->validate([
+            'nom_evenement' => 'required|string|max:255',
 
-    'contact_organisateur' => [
-        'required',
-        'string',
-        'max:255',
-        function ($attribute, $value, $fail) {
-            $isEmail = filter_var($value, FILTER_VALIDATE_EMAIL);
+            'contact_organisateur' => [
+                'required',
+                'string',
+                'max:255',
+                function ($attribute, $value, $fail) {
+                    $isEmail = filter_var($value, FILTER_VALIDATE_EMAIL);
 
-            // Exemple : +243812345678, 0812345678, 081 234 56 78
-            $isPhone = preg_match('/^\+?[0-9][0-9\s\-]{7,20}$/', $value);
+                    // Exemple : +243812345678, 0812345678, 081 234 56 78
+                    $isPhone = preg_match('/^\+?[0-9][0-9\s\-]{7,20}$/', $value);
 
-            if (!$isEmail && !$isPhone) {
-                $fail('Le contact doit être un numéro de téléphone ou une adresse email valide.');
-            }
-        },
-    ],
+                    if (! $isEmail && ! $isPhone) {
+                        $fail('Le contact doit être un numéro de téléphone ou une adresse email valide.');
+                    }
+                },
+            ],
 
-    'description' => 'required|string',
-    'type_evenement' => 'required|string|max:255',
-    'statut' => 'required|string|in:en_attente,valide,ferme',
-    'affiche' => ['nullable', new FichierTeleverse('affiche')],
-]);
+            'description' => 'required|string',
+            'type_evenement' => 'required|string|max:255',
+            'statut' => 'required|string|in:en_attente,valide,ferme',
+            'affiche' => ['nullable', new FichierTeleverse('affiche')],
+        ]);
 
         $affichePath = null;
-        if($request->hasFile('affiche')){
+        if ($request->hasFile('affiche')) {
             $affichePath = $request->file('affiche')->store('affiches', 'public');
         }
 
@@ -73,9 +74,9 @@ class DemandeEvenementController extends Controller
             'affiche' => ['nullable', new FichierTeleverse('affiche')],
         ]);
 
-        if($request->hasFile('affiche')){
+        if ($request->hasFile('affiche')) {
             // Supprimer l'ancienne affiche si elle existe
-            if($demandeEvenement->affiche){
+            if ($demandeEvenement->affiche) {
                 Storage::disk('public')->delete($demandeEvenement->affiche);
             }
             $demandeEvenement->affiche = $request->file('affiche')->store('affiches', 'public');
@@ -95,25 +96,25 @@ class DemandeEvenementController extends Controller
     // Supprimer une demande
     public function destroy(DemandeEvenement $demandeEvenement)
     {
-        if($demandeEvenement->affiche){
+        if ($demandeEvenement->affiche) {
             Storage::disk('public')->delete($demandeEvenement->affiche);
         }
         $demandeEvenement->delete();
 
         return redirect()->back()->with('success', 'Demande supprimée avec succès.');
     }
+
     // Changer le statut rapidement
-public function changeStatus(Request $request, DemandeEvenement $demandeEvenement)
-{
-    $request->validate([
-        'statut' => 'required|string|in:en_attente,valide,ferme'
-    ]);
+    public function changeStatus(Request $request, DemandeEvenement $demandeEvenement)
+    {
+        $request->validate([
+            'statut' => 'required|string|in:en_attente,valide,ferme',
+        ]);
 
-    $demandeEvenement->update([
-        'statut' => $request->statut
-    ]);
+        $demandeEvenement->update([
+            'statut' => $request->statut,
+        ]);
 
-    return redirect()->back()->with('success', 'Statut mis à jour avec succès.');
-}
-
+        return redirect()->back()->with('success', 'Statut mis à jour avec succès.');
+    }
 }

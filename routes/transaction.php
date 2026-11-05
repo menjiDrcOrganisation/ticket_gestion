@@ -26,8 +26,3 @@ Route::prefix('admin')
             [TransactionController::class, 'markAsRefunded']
         )->middleware(['auth', AuditTrail::class])->name('transactions.refund');
     });
-
-
-
-
-

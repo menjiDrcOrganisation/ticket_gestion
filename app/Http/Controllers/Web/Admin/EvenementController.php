@@ -6,22 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Evenement\UpdateEvenementRequest;
 use App\Http\Requests\Evenement\UpdateEvenementStatusRequest;
 use App\Models\Evenement;
-use Illuminate\Http\Request;
+use App\Models\Ressource;
 use App\Models\TypeBillet;
 use App\Models\TypeEvenement;
-use App\Models\Ressource;
-
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\ValidationException;
 use App\Services\EvenementCreationService;
 use App\Services\EvenementMailService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class EvenementController extends Controller
 {
-    
-     
-   public function index(Request $request)
+    public function index(Request $request)
     {
         $search = trim((string) $request->query('q', ''));
         $status = (string) $request->query('statut', '');
@@ -30,20 +27,20 @@ class EvenementController extends Controller
         $evenementsQuery = Evenement::with(['organisateur.user', 'typeBillets', 'billets', 'typeEvenement', 'ressource'])
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
-                    $subQuery->where('nom', 'like', '%' . $search . '%')
-                        ->orWhere('url_evenement', 'like', '%' . $search . '%')
-                        ->orWhere('adresse', 'like', '%' . $search . '%')
-                        ->orWhere('salle', 'like', '%' . $search . '%')
+                    $subQuery->where('nom', 'like', '%'.$search.'%')
+                        ->orWhere('url_evenement', 'like', '%'.$search.'%')
+                        ->orWhere('adresse', 'like', '%'.$search.'%')
+                        ->orWhere('salle', 'like', '%'.$search.'%')
                         ->orWhereHas('organisateur.user', function ($userQuery) use ($search) {
-                            $userQuery->where('name', 'like', '%' . $search . '%')
-                                ->orWhere('email', 'like', '%' . $search . '%');
+                            $userQuery->where('name', 'like', '%'.$search.'%')
+                                ->orWhere('email', 'like', '%'.$search.'%');
                         });
                 });
             })
             ->when($status !== '', function ($query) use ($status) {
                 $query->where('statut', $status);
             })
-            ->when(!empty($typeEvenementId), function ($query) use ($typeEvenementId) {
+            ->when(! empty($typeEvenementId), function ($query) use ($typeEvenementId) {
                 $query->where('type_evenement_id', (int) $typeEvenementId);
             })
             ->latest();
@@ -52,15 +49,15 @@ class EvenementController extends Controller
 
         $typeEvenements = TypeEvenement::orderBy('nom_type')->get(['id', 'nom_type']);
 
-        $evenementsEncours= Evenement::where('statut', 'encours')
-        ->with(['organisateur.user', 'typeBillets'])
-        ->latest()
-        ->get()->count();
+        $evenementsEncours = Evenement::where('statut', 'encours')
+            ->with(['organisateur.user', 'typeBillets'])
+            ->latest()
+            ->get()->count();
 
-         $evenementsPasse= Evenement::where('statut', 'ferme')
-        ->with(['organisateur.user', 'typeBillets'])
-        ->latest()
-        ->get()->count();
+        $evenementsPasse = Evenement::where('statut', 'ferme')
+            ->with(['organisateur.user', 'typeBillets'])
+            ->latest()
+            ->get()->count();
 
         return view('evenements.showAll', compact(
             'evenements',
@@ -128,7 +125,7 @@ class EvenementController extends Controller
     {
         $user = EvenementCreationService::findUserByEmail((string) $request->query('email', ''));
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['exists' => false]);
         }
 
@@ -150,27 +147,24 @@ class EvenementController extends Controller
         ]);
     }
 
-    
-    
     public function show($url_evenement)
     {
         try {
             // On récupère l'événement via son URL unique
             $evenement = Evenement::with([
-                'organisateur.user', 
+                'organisateur.user',
                 'typeBillets' => function ($query) {
                     $query->withPivot('nombre_billet');
-                }
+                },
             ])->where('url_evenement', $url_evenement)->firstOrFail();
 
             return view('evenements.show', compact('evenement'));
 
         } catch (\Exception $e) {
             return redirect()->route('evenements.index')
-                            ->with('error', "Événement introuvable.");
+                ->with('error', 'Événement introuvable.');
         }
     }
-
 
     /**
      * Show the form for editing the specified resource.
@@ -203,7 +197,7 @@ class EvenementController extends Controller
                 $imagePath = $request->file('photo_affiche')->store('affiches', 'public');
                 $ressource = $evenement->ressource()->latest('id')->first();
 
-                if ($ressource && !empty($ressource->photo_affiche) && Storage::disk('public')->exists($ressource->photo_affiche)) {
+                if ($ressource && ! empty($ressource->photo_affiche) && Storage::disk('public')->exists($ressource->photo_affiche)) {
                     Storage::disk('public')->delete($ressource->photo_affiche);
                 }
 
@@ -232,7 +226,7 @@ class EvenementController extends Controller
 
             return redirect()->back()->with('error', 'Une erreur est survenue lors de la mise à jour de l\'événement.');
         }
-        
+
     }
 
     /**
@@ -240,34 +234,34 @@ class EvenementController extends Controller
      */
     public function destroy($id)
     {
-          try {
-        $evenement = Evenement::with('typeBillets')->findOrFail($id);
-        $evenement->typeBillets()->detach();
-        $evenement->delete();
-        return redirect()->route('evenements.index')->with('success', 'Événement supprimé avec succès.');
+        try {
+            $evenement = Evenement::with('typeBillets')->findOrFail($id);
+            $evenement->typeBillets()->detach();
+            $evenement->delete();
 
-    } catch (\Exception $e) {
-        return redirect()->route('evenements.index')->with('error', 'Une erreur est survenue lors de la suppression.');
-    }
-    }
+            return redirect()->route('evenements.index')->with('success', 'Événement supprimé avec succès.');
 
+        } catch (\Exception $e) {
+            return redirect()->route('evenements.index')->with('error', 'Une erreur est survenue lors de la suppression.');
+        }
+    }
 
     public function updateStatus(UpdateEvenementStatusRequest $request, $id)
-{
-     $validated = $request->validated();
-    $evenement = Evenement::findOrFail($id);
-     $evenement->statut = $validated['statut'];
-    $evenement->save();
+    {
+        $validated = $request->validated();
+        $evenement = Evenement::findOrFail($id);
+        $evenement->statut = $validated['statut'];
+        $evenement->save();
 
-    return redirect()->back()->with('success', 'Statut de l’événement mis à jour avec succès.');
-}
+        return redirect()->back()->with('success', 'Statut de l’événement mis à jour avec succès.');
+    }
 
     public function resendMail($id, EvenementMailService $evenementMailService)
     {
         try {
             $evenement = Evenement::with(['organisateur.user', 'scanneur.user'])->findOrFail($id);
 
-            if (!$evenement->organisateur?->user || !$evenement->scanneur?->user) {
+            if (! $evenement->organisateur?->user || ! $evenement->scanneur?->user) {
                 return redirect()->back()->with('error', 'Impossible de renvoyer le mail: organisateur ou scanneur introuvable.');
             }
 
@@ -285,5 +279,4 @@ class EvenementController extends Controller
             return redirect()->back()->with('error', 'Le renvoi du mail a échoué. Veuillez réessayer plus tard.');
         }
     }
-
 }

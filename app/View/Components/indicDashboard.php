@@ -18,8 +18,7 @@ class indicDashboard extends Component
         public string $icon = 'chart-bar',
         public string $tone = 'blue',
         public ?string $href = null,
-    ) {
-    }
+    ) {}
 
     /**
      * Get the view / contents that represent the component.

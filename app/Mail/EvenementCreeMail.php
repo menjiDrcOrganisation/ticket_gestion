@@ -21,12 +21,11 @@ class EvenementCreeMail extends Mailable
         public string $url,
         public string $email_scanneur,
         public string $mot_de_passe_scanneur,
-    ) {
-    }
+    ) {}
 
     public function build()
     {
         return $this->subject('Votre événement a été créé avec succès')
-                    ->view('emails.messageEvenementCree');
+            ->view('emails.messageEvenementCree');
     }
 }

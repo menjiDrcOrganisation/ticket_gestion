@@ -72,7 +72,7 @@ class DemoEvenementScenarioSeeder extends Seeder
             $startAt = Carbon::now()->addDays($eventData['jours'])->setTime(18, 0);
             $endAt = (clone $startAt)->addHours(6);
 
-            $slug = Str::slug($eventData['nom']) . '-' . $startAt->format('Ymd');
+            $slug = Str::slug($eventData['nom']).'-'.$startAt->format('Ymd');
 
             $event = Evenement::updateOrCreate(
                 ['url_evenement' => $slug],
@@ -93,9 +93,9 @@ class DemoEvenementScenarioSeeder extends Seeder
             $ressource = Ressource::updateOrCreate(
                 ['evenement_id' => $event->id],
                 [
-                    'nom_artiste' => 'Line-up ' . $eventData['nom'],
+                    'nom_artiste' => 'Line-up '.$eventData['nom'],
                     'phrase_accroche' => $eventData['phrase'],
-                    'photo_affiche' => 'affiches/' . Str::slug($eventData['nom']) . '.jpg',
+                    'photo_affiche' => 'affiches/'.Str::slug($eventData['nom']).'.jpg',
                     'a_propos' => $eventData['a_propos'],
                 ]
             );
@@ -103,10 +103,10 @@ class DemoEvenementScenarioSeeder extends Seeder
             DB::table('photo_ressources')->updateOrInsert(
                 [
                     'ressource_id' => $ressource->id,
-                    'nom' => 'cover-' . Str::slug($eventData['nom']) . '.jpg',
+                    'nom' => 'cover-'.Str::slug($eventData['nom']).'.jpg',
                 ],
                 [
-                    'contenu' => 'galerie/' . Str::slug($eventData['nom']) . '/cover.jpg',
+                    'contenu' => 'galerie/'.Str::slug($eventData['nom']).'/cover.jpg',
                     'updated_at' => $now,
                     'created_at' => $now,
                 ]
@@ -115,10 +115,10 @@ class DemoEvenementScenarioSeeder extends Seeder
             DB::table('photo_ressources')->updateOrInsert(
                 [
                     'ressource_id' => $ressource->id,
-                    'nom' => 'stage-' . Str::slug($eventData['nom']) . '.jpg',
+                    'nom' => 'stage-'.Str::slug($eventData['nom']).'.jpg',
                 ],
                 [
-                    'contenu' => 'galerie/' . Str::slug($eventData['nom']) . '/stage.jpg',
+                    'contenu' => 'galerie/'.Str::slug($eventData['nom']).'/stage.jpg',
                     'updated_at' => $now,
                     'created_at' => $now,
                 ]
@@ -154,7 +154,7 @@ class DemoEvenementScenarioSeeder extends Seeder
             $standardType = $ticketTypes->firstWhere('nom_type', 'Standard');
 
             if ($standardType) {
-                $billetCode = 'SEED-' . $event->id . '-' . $standardType->id;
+                $billetCode = 'SEED-'.$event->id.'-'.$standardType->id;
 
                 $billet = Billet::updateOrCreate(
                     ['code_billet' => $billetCode],

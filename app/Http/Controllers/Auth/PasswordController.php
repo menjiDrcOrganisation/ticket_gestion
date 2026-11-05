@@ -16,7 +16,7 @@ class PasswordController extends Controller
      */
     public function edit(Request $request): View|RedirectResponse
     {
-        if (!$request->user()->must_change_password) {
+        if (! $request->user()->must_change_password) {
             return redirect()->route('home');
         }
 

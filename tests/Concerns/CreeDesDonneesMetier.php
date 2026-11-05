@@ -46,7 +46,7 @@ trait CreeDesDonneesMetier
         return Evenement::factory()->create(array_merge([
             'organisateur_id' => ($organisateur ?? $this->creerOrganisateur())->id,
             'scanneur_id' => $scanneur?->id,
-            'url_evenement' => 'event-' . Str::lower(Str::random(8)),
+            'url_evenement' => 'event-'.Str::lower(Str::random(8)),
             'statut' => 'encours',
         ], $attributs));
     }
@@ -68,7 +68,7 @@ trait CreeDesDonneesMetier
             'date_achat' => now(),
             'nom_auteur' => 'Client Test',
             'numero' => '0990000002',
-            'code_billet' => 'TCK-' . Str::upper(Str::random(10)),
+            'code_billet' => 'TCK-'.Str::upper(Str::random(10)),
             'billetImage' => '',
             'quantite' => $quantite,
             'quantite_fictif' => $quantite,

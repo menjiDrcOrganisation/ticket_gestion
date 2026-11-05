@@ -16,11 +16,17 @@ class EnvoiMotDePasseMail extends Mailable
     use Queueable, SerializesModels;
 
     public $nom_client;
+
     public $email;
+
     public $mot_de_passe;
+
     public $url;
+
     public $email_scanneur;
+
     public $mot_de_passe_scanneur;
+
     public ?Evenement $evenement;
 
     /**
@@ -43,6 +49,6 @@ class EnvoiMotDePasseMail extends Mailable
     public function build()
     {
         return $this->subject('Vos identifiants de connexion')
-                    ->view('emails.messagePasseOrganisateur');
+            ->view('emails.messagePasseOrganisateur');
     }
 }

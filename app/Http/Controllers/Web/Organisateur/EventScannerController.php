@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 
 class EventScannerController extends Controller
 {
-public function index(Request $request)
+    public function index(Request $request)
     {
         $organisateur = auth()->user()->organisateur;
         $search = trim((string) $request->query('q', ''));
@@ -17,7 +17,7 @@ public function index(Request $request)
         $typeEvenementId = $request->query('type_evenement_id');
         $perPage = (int) $request->query('per_page', 10);
 
-        if (!in_array($perPage, [10, 25, 50, 100], true)) {
+        if (! in_array($perPage, [10, 25, 50, 100], true)) {
             $perPage = 10;
         }
 
@@ -27,20 +27,20 @@ public function index(Request $request)
         $evenements = (clone $baseQuery)
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
-                    $subQuery->where('nom', 'like', '%' . $search . '%')
-                        ->orWhere('url_evenement', 'like', '%' . $search . '%')
-                        ->orWhere('adresse', 'like', '%' . $search . '%')
-                        ->orWhere('salle', 'like', '%' . $search . '%')
+                    $subQuery->where('nom', 'like', '%'.$search.'%')
+                        ->orWhere('url_evenement', 'like', '%'.$search.'%')
+                        ->orWhere('adresse', 'like', '%'.$search.'%')
+                        ->orWhere('salle', 'like', '%'.$search.'%')
                         ->orWhereHas('scanneur.user', function ($scannerUserQuery) use ($search) {
-                            $scannerUserQuery->where('name', 'like', '%' . $search . '%')
-                                ->orWhere('email', 'like', '%' . $search . '%');
+                            $scannerUserQuery->where('name', 'like', '%'.$search.'%')
+                                ->orWhere('email', 'like', '%'.$search.'%');
                         });
                 });
             })
             ->when($status !== '', function ($query) use ($status) {
                 $query->where('statut', $status);
             })
-            ->when(!empty($typeEvenementId), function ($query) use ($typeEvenementId) {
+            ->when(! empty($typeEvenementId), function ($query) use ($typeEvenementId) {
                 $query->where('type_evenement_id', (int) $typeEvenementId);
             })
             ->orderByDesc('date_debut')

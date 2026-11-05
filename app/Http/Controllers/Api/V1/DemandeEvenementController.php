@@ -2,40 +2,39 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Rules\FichierTeleverse;
-use App\Http\Requests\Api\V1\StoreDemandeEvenementApiRequest;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\Api\V1\StoreDemandeEvenementApiRequest;
 use App\Models\DemandeEvenement;
+use App\Rules\FichierTeleverse;
 
 class DemandeEvenementController extends Controller
 {
     public function storeDemande(StoreDemandeEvenementApiRequest $request)
     {
         $validated = $request->validate([
-    'nom_evenement' => 'required|string|max:255',
+            'nom_evenement' => 'required|string|max:255',
 
-    'contact_organisateur' => [
-        'required',
-        'string',
-        'max:255',
-        function ($attribute, $value, $fail) {
-            $isEmail = filter_var($value, FILTER_VALIDATE_EMAIL);
+            'contact_organisateur' => [
+                'required',
+                'string',
+                'max:255',
+                function ($attribute, $value, $fail) {
+                    $isEmail = filter_var($value, FILTER_VALIDATE_EMAIL);
 
-            // Exemple : +243812345678, 0812345678, 081 234 56 78
-            $isPhone = preg_match('/^\+?[0-9][0-9\s\-]{7,20}$/', $value);
+                    // Exemple : +243812345678, 0812345678, 081 234 56 78
+                    $isPhone = preg_match('/^\+?[0-9][0-9\s\-]{7,20}$/', $value);
 
-            if (!$isEmail && !$isPhone) {
-                $fail('Le contact doit être un numéro de téléphone ou une adresse email valide.');
-            }
-        },
-    ],
+                    if (! $isEmail && ! $isPhone) {
+                        $fail('Le contact doit être un numéro de téléphone ou une adresse email valide.');
+                    }
+                },
+            ],
 
-    'description' => 'required|string',
-    'type_evenement' => 'required|string|max:255',
-    'statut' => 'required|string|in:en_attente,valide,ferme',
-    'affiche' => ['nullable', new FichierTeleverse('affiche')],
-]);
+            'description' => 'required|string',
+            'type_evenement' => 'required|string|max:255',
+            'statut' => 'required|string|in:en_attente,valide,ferme',
+            'affiche' => ['nullable', new FichierTeleverse('affiche')],
+        ]);
 
         // Upload affiche si existe
         $affichePath = null;
@@ -56,10 +55,7 @@ class DemandeEvenementController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Demande créée avec succès',
-            'data' => $demande
+            'data' => $demande,
         ], 201);
     }
 }
-
-
-

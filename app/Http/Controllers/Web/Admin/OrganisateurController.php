@@ -48,7 +48,7 @@ class OrganisateurController extends Controller
             $organisateur->user->update([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
-                'password' => !empty($validated['password'])
+                'password' => ! empty($validated['password'])
                     ? Hash::make($validated['password'])
                     : $organisateur->user->password,
             ]);

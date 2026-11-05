@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\StoreEvenementApiRequest;
-use Illuminate\Http\Request;
 use App\Models\Evenement;
 use App\Services\EvenementCreationService;
 use App\Services\EvenementMailService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
@@ -26,7 +26,7 @@ class EvenementController extends Controller
                 'message' => 'Votre événement a été créé avec succès',
                 'data' => $evenement,
                 'organisateur_existant' => $creation['organisateur_existant'],
-                'changement_mot_de_passe_requis' => !$creation['organisateur_existant'],
+                'changement_mot_de_passe_requis' => ! $creation['organisateur_existant'],
                 'mail_envoye' => $mailEnvoye,
                 'credentials' => [
                     'organisateur_code' => $creation['organisateur_code'],
@@ -55,13 +55,14 @@ class EvenementController extends Controller
         }
     }
 
-    public function getEvenement(Request $request,$short_url){
+    public function getEvenement(Request $request, $short_url)
+    {
         try {
-            $evenement = Evenement::with(['organisateur', 'typeBillets','ressource','typeEvenement'])
-            ->where('url_evenement', $short_url)
-            ->first();
+            $evenement = Evenement::with(['organisateur', 'typeBillets', 'ressource', 'typeEvenement'])
+                ->where('url_evenement', $short_url)
+                ->first();
 
-            if (!$evenement) {
+            if (! $evenement) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Événement non trouvé',
@@ -71,7 +72,7 @@ class EvenementController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Événement récupéré avec succès',
-                'data' => $evenement
+                'data' => $evenement,
             ], 200);
         } catch (\Throwable $th) {
             Log::error('Erreur API getEvenement', [
@@ -89,12 +90,12 @@ class EvenementController extends Controller
         }
     }
 
-
-    public function getAll(Request $request){
+    public function getAll(Request $request)
+    {
         try {
-            $evenements = Evenement::with(['typeBillets','ressource','typeEvenement'])->get();
+            $evenements = Evenement::with(['typeBillets', 'ressource', 'typeEvenement'])->get();
 
-            if (!$evenements) {
+            if (! $evenements) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Événement non trouvé',
@@ -104,7 +105,7 @@ class EvenementController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Événement récupéré avec succès',
-                'data' => $evenements
+                'data' => $evenements,
             ], 200);
         } catch (\Throwable $th) {
             Log::error('Erreur API getAllEvenements', [
@@ -121,8 +122,3 @@ class EvenementController extends Controller
         }
     }
 }
-
-
-
-
-

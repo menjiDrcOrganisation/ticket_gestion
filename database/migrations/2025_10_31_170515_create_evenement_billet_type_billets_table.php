@@ -11,16 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-      Schema::create('evenement_billet_type_billets', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('evenement_id')->constrained('evenements')->onDelete('cascade');
-    $table->foreignId('billet_id')->constrained('billets')->onDelete('cascade');
-    $table->foreignId('type_billet_id')->constrained('type_billets')->onDelete('cascade');
-    $table->string('statut');
-    $table->integer('quantite')->nullable();
-    $table->integer('quantite_fictif')->nullable();;
-    $table->timestamps();
-});
+        Schema::create('evenement_billet_type_billets', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('evenement_id')->constrained('evenements')->onDelete('cascade');
+            $table->foreignId('billet_id')->constrained('billets')->onDelete('cascade');
+            $table->foreignId('type_billet_id')->constrained('type_billets')->onDelete('cascade');
+            $table->string('statut');
+            $table->integer('quantite')->nullable();
+            $table->integer('quantite_fictif')->nullable();
+            $table->timestamps();
+        });
 
     }
 

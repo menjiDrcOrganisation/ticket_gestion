@@ -9,16 +9,17 @@ class EvenementTypeBillet extends Model
 {
     /** @use HasFactory<\Database\Factories\EvenementTypeBilletFactory> */
     use HasFactory;
-     protected $fillable = [
+
+    protected $fillable = [
         'type_billet_id',
         'evenement_id',
-        'type_billet_id', 
-         'nombre_billet',
-         'prix_unitaire',
-         'devise'
+        'type_billet_id',
+        'nombre_billet',
+        'prix_unitaire',
+        'devise',
     ];
-    
-   public function typeBillet()
+
+    public function typeBillet()
     {
         return $this->belongsTo(TypeBillet::class, 'type_billet_id');
     }
@@ -27,5 +28,4 @@ class EvenementTypeBillet extends Model
     {
         return $this->belongsTo(Evenement::class, 'evenement_id');
     }
-
 }

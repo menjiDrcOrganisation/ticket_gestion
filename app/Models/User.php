@@ -48,16 +48,18 @@ class User extends Authenticatable
             'must_change_password' => 'boolean',
         ];
     }
-    function admin()
+
+    public function admin()
     {
         return $this->hasOne(Admin::class, 'user_id', 'id');
-    }   
-    function organisateur()
+    }
+
+    public function organisateur()
     {
         return $this->hasOne(Organisateur::class);
     }
 
-     function scanneur()
+    public function scanneur()
     {
         return $this->hasOne(Scanneur::class);
     }

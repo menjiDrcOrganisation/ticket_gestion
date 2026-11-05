@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Transaction;
 use App\Models\Billet;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
 
 class TransactionController extends Controller
 {
@@ -28,13 +27,13 @@ class TransactionController extends Controller
         // Recherche par email utilisateur
         if ($request->filled('email')) {
             $query->whereHas('billet.user', function ($q) use ($request) {
-                $q->where('email', 'like', '%' . $request->email . '%');
+                $q->where('email', 'like', '%'.$request->email.'%');
             });
         }
 
         // Recherche par référence / numéro de commande
         if ($request->filled('reference')) {
-            $query->where('reference', 'like', '%' . $request->reference . '%');
+            $query->where('reference', 'like', '%'.$request->reference.'%');
         }
 
         // Recherche par téléphone
@@ -42,7 +41,7 @@ class TransactionController extends Controller
             $query->where(
                 'numero_telephone',
                 'like',
-                '%' . $request->numero_telephone . '%'
+                '%'.$request->numero_telephone.'%'
             );
         }
 
@@ -85,7 +84,7 @@ class TransactionController extends Controller
                 'date' => $transaction->created_at->addMinute(),
             ],
             [
-                'titre' => 'Statut : ' . $transaction->statut,
+                'titre' => 'Statut : '.$transaction->statut,
                 'date' => $transaction->updated_at,
             ],
         ];
@@ -93,9 +92,9 @@ class TransactionController extends Controller
         // Logs techniques simulés
         $logs = [
             'Gateway Response: SUCCESS',
-            'API Payment ID: PAY_' . Str::random(8),
+            'API Payment ID: PAY_'.Str::random(8),
             'IP Client: 127.0.0.1',
-            'Canal: ' . $transaction->methode_paiement,
+            'Canal: '.$transaction->methode_paiement,
         ];
 
         return view(
@@ -126,7 +125,7 @@ class TransactionController extends Controller
 
             // Génération manuelle du billet
             $billet = Billet::create([
-                'reference' => 'BLT-' . strtoupper(Str::random(10)),
+                'reference' => 'BLT-'.strtoupper(Str::random(10)),
                 'transaction_id' => $transaction->id,
             ]);
 
@@ -194,7 +193,3 @@ class TransactionController extends Controller
         );
     }
 }
-
-
-
-

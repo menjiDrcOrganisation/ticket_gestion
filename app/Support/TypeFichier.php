@@ -16,8 +16,7 @@ final class TypeFichier
         public readonly array $mimes,
         public readonly int $maxOctets,
         public readonly bool $image,
-    ) {
-    }
+    ) {}
 
     public static function get(string $nom): self
     {

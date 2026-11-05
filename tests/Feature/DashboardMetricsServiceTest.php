@@ -20,7 +20,7 @@ class DashboardMetricsServiceTest extends TestCase
     private function transaction(string $statut, float $montant, int $billets = 1, string $devise = 'USD', array $attributs = []): Transaction
     {
         return Transaction::create(array_merge([
-            'reference' => 'CMD-' . Str::upper(Str::random(12)),
+            'reference' => 'CMD-'.Str::upper(Str::random(12)),
             'montant' => $montant,
             'nombre_billet' => $billets,
             'statut' => $statut,

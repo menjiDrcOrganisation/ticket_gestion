@@ -9,14 +9,14 @@ class Admin extends Model
 {
     /** @use HasFactory<\Database\Factories\AdminFactory> */
     use HasFactory;
-    
-    protected     $fillable = [
-       'telephone', 
-       'user_id'
+
+    protected $fillable = [
+        'telephone',
+        'user_id',
     ];
 
-      function user()
+    public function user()
     {
         return $this->hasOne(User::class, ' id', 'user_id');
-    }  
+    }
 }

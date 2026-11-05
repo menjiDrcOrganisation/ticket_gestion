@@ -24,6 +24,7 @@ class CreationEvenementTest extends TestCase
     use RefreshDatabase;
 
     private TypeBillet $vip;
+
     private TypeBillet $standard;
 
     protected function setUp(): void

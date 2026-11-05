@@ -13,7 +13,6 @@ class DemandeRetraitAdminController extends Controller
      * Display a listing of the resource.
      */
     public function index(Request $request)
-
     {
         $search = trim((string) $request->query('q', ''));
         $status = trim((string) $request->query('statut', ''));
@@ -29,57 +28,57 @@ class DemandeRetraitAdminController extends Controller
         $retraitsQuery = Retrait::query()->with('organisateur.user')
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
-                    $subQuery->where('nom_detenteur', 'like', '%' . $search . '%')
-                        ->orWhere('montant', 'like', '%' . $search . '%')
+                    $subQuery->where('nom_detenteur', 'like', '%'.$search.'%')
+                        ->orWhere('montant', 'like', '%'.$search.'%')
                         ->orWhereHas('organisateur.user', function ($userQuery) use ($search) {
-                            $userQuery->where('name', 'like', '%' . $search . '%')
-                                ->orWhere('email', 'like', '%' . $search . '%');
+                            $userQuery->where('name', 'like', '%'.$search.'%')
+                                ->orWhere('email', 'like', '%'.$search.'%');
                         });
                 });
             })
             ->when($status !== '', function ($query) use ($status, $statusMap) {
                 $query->whereIn('statut', $statusMap[$status] ?? [$status]);
             })
-            ->when(!empty($dateFrom), function ($query) use ($dateFrom) {
+            ->when(! empty($dateFrom), function ($query) use ($dateFrom) {
                 $query->whereDate('date', '>=', $dateFrom);
             })
-            ->when(!empty($dateTo), function ($query) use ($dateTo) {
+            ->when(! empty($dateTo), function ($query) use ($dateTo) {
                 $query->whereDate('date', '<=', $dateTo);
             });
 
-        //totale de retraits demandés
+        // totale de retraits demandés
         $totaldmd = Retrait::count();
-        //montant total des retraits demandés
+        // montant total des retraits demandés
         $totalmontantdmd = Retrait::sum('montant');
-        //montage total des retraits demandés approuves
+        // montage total des retraits demandés approuves
         $totalmontantdmdapprouve = Retrait::whereIn('statut', $statusMap['approuve'])->sum('montant');
-       //
-        
-        //montant total des retraits demandés en attente
+        //
+
+        // montant total des retraits demandés en attente
         $totalmontantdmdenattente = Retrait::whereIn('statut', $statusMap['en_attente'])->sum('montant');
-        //montant total des retraits demandés refusés
+        // montant total des retraits demandés refusés
         $totalmontantdmdrefuse = Retrait::whereIn('statut', $statusMap['refuse'])->sum('montant');
-$stats = [
-    'totaldmd' => Retrait::count(),
+        $stats = [
+            'totaldmd' => Retrait::count(),
 
-    'totalmontantdmd' => Retrait::sum('montant'),
+            'totalmontantdmd' => Retrait::sum('montant'),
 
-    'totalmontantdmdapprouve' => Retrait::whereIn('statut', $statusMap['approuve'])
+            'totalmontantdmdapprouve' => Retrait::whereIn('statut', $statusMap['approuve'])
                 ->sum('montant'),
 
-    'totalmontantdmdenattente' => Retrait::whereIn('statut', $statusMap['en_attente'])
+            'totalmontantdmdenattente' => Retrait::whereIn('statut', $statusMap['en_attente'])
                 ->sum('montant'),
 
-    'totalmontantdmdrefuse' => Retrait::whereIn('statut', $statusMap['refuse'])
+            'totalmontantdmdrefuse' => Retrait::whereIn('statut', $statusMap['refuse'])
                 ->sum('montant'),
-];
+        ];
         $retraits = $retraitsQuery->latest()->paginate(10)->withQueryString();
         $organisateurs = Organisateur::with('user')->get();
 
         return view('dmd_retraits.index', compact('retraits', 'organisateurs', 'totaldmd',
-         'totalmontantdmd', 'totalmontantdmdapprouve',
-          'totalmontantdmdenattente', 'totalmontantdmdrefuse', 'stats',
-          'search', 'status', 'dateFrom', 'dateTo'));
+            'totalmontantdmd', 'totalmontantdmdapprouve',
+            'totalmontantdmdenattente', 'totalmontantdmdrefuse', 'stats',
+            'search', 'status', 'dateFrom', 'dateTo'));
     }
 
     public function updateStatut(Request $request, $id)
@@ -98,8 +97,8 @@ $stats = [
         $retrait->save();
 
         return redirect()->back()
-                         ->with('success', 'Statut du retrait mis à jour avec succès.');
-    }   
+            ->with('success', 'Statut du retrait mis à jour avec succès.');
+    }
 
     /**
      * Show the form for creating a new resource.
@@ -116,7 +115,6 @@ $stats = [
     {
         //
     }
-
 
     /**
      * Display the specified resource.

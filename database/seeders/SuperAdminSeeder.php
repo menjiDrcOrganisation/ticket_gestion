@@ -18,6 +18,7 @@ class SuperAdminSeeder extends Seeder
 
         if (empty($email) || empty($password)) {
             $this->command?->warn('SUPER_ADMIN_EMAIL ou SUPER_ADMIN_PASSWORD manquant. Seeder SuperAdmin ignore.');
+
             return;
         }
 
