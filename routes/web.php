@@ -5,6 +5,28 @@ use App\Http\Controllers\Web\Shared\HomeController;
 use App\Http\Controllers\Web\Shared\ProfileController;
 use Illuminate\Support\Facades\Route;
 
+
+use App\Http\Controllers\Web\Admin\NotificationController;
+use App\Http\Middleware\RoleMiddleware;
+
+
+Route::middleware(['auth', RoleMiddleware::class.':admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::get('/notifications', [NotificationController::class, 'index'])
+            ->name('notifications.index');
+
+        Route::post('/notifications', [NotificationController::class, 'store'])
+            ->name('notifications.store');
+
+        Route::post('/notifications/{campaign}/send', [NotificationController::class, 'send'])
+            ->name('notifications.send');
+
+        Route::post('/notifications/{campaign}/cancel', [NotificationController::class, 'cancel'])
+            ->name('notifications.cancel');
+    });
+
 Route::get('/', [HomeController::class, 'home'])->name('home')->middleware(['auth']);
 
 Route::get('/dashboard', function () {

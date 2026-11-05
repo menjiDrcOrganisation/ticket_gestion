@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Services\TicketPdfService;
+
 
 class TransactionController extends Controller
 {
@@ -590,8 +592,13 @@ class TransactionController extends Controller
             /** @var Transaction $updatedTransaction */
             $updatedTransaction = $result['transaction'];
 
-            $this->generationBilletService->genererPdf($updatedTransaction, $billet);
-
+            $this->ticketPdfService->generate(
+                $billet,
+                (float) $updatedTransaction->montant_unitaire,
+                (string) $updatedTransaction->devise,
+                (float) $updatedTransaction->montant,
+                (string) $updatedTransaction->reference
+            );
             try {
                 app(\App\Services\NotificationDispatchService::class)->createCampaign([
                     'name' => 'Confirmation d’achat de billet',

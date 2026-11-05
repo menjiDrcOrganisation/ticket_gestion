@@ -85,19 +85,36 @@ class DashboardController extends Controller
 
         $derniersAchats = $billets->sortByDesc('created_at')->take(5)->values();
 
-        return view('organisateurs.dashboard_org', compact(
-            'evenement',
-            'evenementsOrganisateur',
-            'selectedEventId',
-            'totalBilletsVendus',
-            'revenusCDF',
-            'revenusUSD',
-            'typesBillets',
-            'billetsScannes',
-            'derniersAchats',
-            'remplissageVendus',
-            'remplissageCapacite',
-            'evolutionRemplissage'
-        ));
+        $remplissageVendus = 0;
+$remplissageCapacite = 0;
+$evolutionRemplissage = [];
+
+if ($evenement) {
+    $remplissageVendus = (int) ($evenement->billetsVendus() ?? 0);
+    $remplissageCapacite = (int) ($evenement->capaciteTotale() ?? 0);
+
+    if ($remplissageCapacite > 0) {
+        $evolutionRemplissage = [
+            'vendus' => $remplissageVendus,
+            'capacite' => $remplissageCapacite,
+            'taux' => round(($remplissageVendus / $remplissageCapacite) * 100, 1),
+        ];
+    }
+}
+
+return view('organisateurs.dashboard_org', compact(
+    'evenement',
+    'evenementsOrganisateur',
+    'selectedEventId',
+    'totalBilletsVendus',
+    'revenusCDF',
+    'revenusUSD',
+    'typesBillets',
+    'billetsScannes',
+    'derniersAchats',
+    'remplissageVendus',
+    'remplissageCapacite',
+    'evolutionRemplissage'
+));
     }
 }
