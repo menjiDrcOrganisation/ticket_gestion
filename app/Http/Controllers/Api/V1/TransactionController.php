@@ -4,12 +4,10 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\InitierTransactionRequest;
-use App\Jobs\RegenerateTicketPdfJob;
 use App\Models\Billet;
 use App\Models\EvenementTypeBillet;
 use App\Models\Transaction;
 use App\Services\ExchangeRateService;
-use App\Services\GenerationBilletService;
 use App\Services\MobileMoneyService;
 use Exception;
 use Illuminate\Http\JsonResponse;

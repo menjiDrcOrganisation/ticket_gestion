@@ -11,10 +11,6 @@ use App\Models\TypeBillet;
 use App\Models\TypeEvenement;
 use App\Services\EvenementCreationService;
 use App\Services\EvenementMailService;
-<<<<<<< HEAD
-=======
-use App\Services\NotificationDispatchService;
->>>>>>> 0dbb603616bbcba77e6497a1abf66dc43849d487
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -279,28 +275,10 @@ class EvenementController extends Controller
     {
         try {
             $evenement = Evenement::with('typeBillets')->findOrFail($id);
-<<<<<<< HEAD
-=======
-            try {
-                $notificationDispatch->notifyEventBuyers(
-                    $evenement,
-                    'Annulation de votre événement',
-                    sprintf("Bonjour,\n\nL’événement « %s » a été annulé. Veuillez contacter l’organisateur pour toute question.", $evenement->nom),
-                    'event_cancelled',
-                    'event-cancelled-'.$evenement->id
-                );
-            } catch (\Throwable $exception) {
-                Log::error('Échec de la notification d’annulation d’événement', [
-                    'evenement_id' => $evenement->id,
-                    'error' => $exception->getMessage(),
-                ]);
-            }
->>>>>>> 0dbb603616bbcba77e6497a1abf66dc43849d487
             $evenement->typeBillets()->detach();
             $evenement->delete();
 
             return redirect()->route('evenements.index')->with('success', 'Événement supprimé avec succès.');
-<<<<<<< HEAD
 
         } catch (\Exception $e) {
             return redirect()->route('evenements.index')->with('error', 'Une erreur est survenue lors de la suppression.');
@@ -313,38 +291,6 @@ class EvenementController extends Controller
         $evenement = Evenement::findOrFail($id);
         $evenement->statut = $validated['statut'];
         $evenement->save();
-=======
-
-        } catch (\Exception $e) {
-            return redirect()->route('evenements.index')->with('error', 'Une erreur est survenue lors de la suppression.');
-        }
-    }
-
-    public function updateStatus(UpdateEvenementStatusRequest $request, $id, NotificationDispatchService $notificationDispatch)
-    {
-        $validated = $request->validated();
-        $evenement = Evenement::findOrFail($id);
-        $previousStatus = $evenement->statut;
-        $evenement->statut = $validated['statut'];
-        $evenement->save();
-
-        if ($previousStatus !== $evenement->statut) {
-            try {
-                $notificationDispatch->notifyEventBuyers(
-                    $evenement,
-                    'Changement de statut de votre événement',
-                    sprintf("Bonjour,\n\nLe statut de l’événement « %s » est désormais « %s ».", $evenement->nom, $evenement->statut),
-                    'event_status_changed',
-                    'event-status-'.$evenement->id.'-'.(string) Str::uuid()
-                );
-            } catch (\Throwable $exception) {
-                Log::error('Échec de la notification de changement de statut', [
-                    'evenement_id' => $evenement->id,
-                    'error' => $exception->getMessage(),
-                ]);
-            }
-        }
->>>>>>> 0dbb603616bbcba77e6497a1abf66dc43849d487
 
         return redirect()->back()->with('success', 'Statut de l’événement mis à jour avec succès.');
     }

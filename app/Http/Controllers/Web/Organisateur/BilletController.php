@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Billet;
 use App\Models\Evenement;
 use App\Models\EvenementTypeBillet;
-use App\Services\AnnulationBilletService;
 use App\Services\TicketPdfService;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;

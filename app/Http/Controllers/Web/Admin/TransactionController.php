@@ -114,7 +114,7 @@ class TransactionController extends Controller
 
         try {
             // Renvoie [type, message] si la génération est refusée, null sinon.
-            $refus = DB::transaction(function () use ($id, $generationBilletService, &$transaction, &$billet) {
+            $refus = DB::transaction(function () use ($id, &$transaction, &$billet) {
                 $transaction = Transaction::lockForUpdate()->findOrFail($id);
 
                 // Vérifier si billet déjà généré
@@ -130,11 +130,11 @@ class TransactionController extends Controller
                     return ['error', 'Transaction incomplète : événement, type ou nombre de billets manquant.'];
                 }
 
-            // Génération manuelle du billet
-            $billet = Billet::create([
-                'reference' => 'BLT-'.strtoupper(Str::random(10)),
-                'transaction_id' => $transaction->id,
-            ]);
+                // Génération manuelle du billet
+                $billet = Billet::create([
+                    'reference' => 'BLT-'.strtoupper(Str::random(10)),
+                    'transaction_id' => $transaction->id,
+                ]);
 
                 $transaction->update([
                     'billet_id' => $billet->id,
