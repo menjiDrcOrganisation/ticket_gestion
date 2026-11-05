@@ -45,16 +45,22 @@ class Billet extends Model
         $this->attributes[$column] = $value;
     }
 
-public function estAnnule(): bool
-{
-    return $this->statut === self::STATUT_ANNULE;
-}
+    public function estAnnule(): bool
+    {
+        return $this->statut === self::STATUT_ANNULE;
+    }
 
-/** Billets comptés comme vendus (tout sauf les billets annulés). */
-public function scopeNonAnnules($query)
-{
-    return $query->where('statut', '!=', self::STATUT_ANNULE);
-}
+    /** Billets comptés comme vendus (tout sauf les billets annulés). */
+    public function scopeNonAnnules($query)
+    {
+        return $query->where('statut', '!=', self::STATUT_ANNULE);
+    }
+
+    private function resolveBilletImageColumn(): string
+    {
+        if (self::$billetImageColumn !== null) {
+            return self::$billetImageColumn;
+        }
 
         self::$billetImageColumn = Schema::hasColumn('billets', 'billetImage')
             ? 'billetImage'

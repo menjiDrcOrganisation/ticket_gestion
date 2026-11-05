@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\TypeEvenement;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -165,8 +164,4 @@ class Evenement extends Model
             })
             ->values();
     }
-
-
-
-
 }

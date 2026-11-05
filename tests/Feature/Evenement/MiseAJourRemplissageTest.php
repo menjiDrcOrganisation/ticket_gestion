@@ -22,7 +22,9 @@ class MiseAJourRemplissageTest extends TestCase
     use RefreshDatabase;
 
     private Evenement $evenement;
+
     private TypeBillet $vip;
+
     private EvenementTypeBillet $stock;
 
     protected function setUp(): void
@@ -71,7 +73,7 @@ class MiseAJourRemplissageTest extends TestCase
     {
         $billet = $this->vendre(20);
         $transaction = Transaction::create([
-            'reference' => 'TRX-' . Str::upper(Str::random(8)),
+            'reference' => 'TRX-'.Str::upper(Str::random(8)),
             'montant' => 200,
             'nombre_billet' => 20,
             'statut' => 'completee',

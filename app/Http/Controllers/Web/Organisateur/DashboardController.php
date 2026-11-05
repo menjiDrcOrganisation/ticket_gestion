@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers\Web\Organisateur;
 
-use App\Models\Evenement;
-use App\Models\Billet;
-use App\Models\EvenementTypeBillet;
 use App\Http\Controllers\Controller;
 use App\Models\Billet;
 use App\Models\Evenement;
+use App\Models\EvenementTypeBillet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 

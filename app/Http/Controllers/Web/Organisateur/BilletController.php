@@ -8,10 +8,10 @@ use App\Models\Evenement;
 use App\Models\EvenementTypeBillet;
 use App\Services\AnnulationBilletService;
 use App\Services\TicketPdfService;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class BilletController extends Controller
@@ -210,33 +210,33 @@ class BilletController extends Controller
     }
 
     public function destroy($id, AnnulationBilletService $annulationBilletService)
-{
-    $billet = Billet::find($id);
+    {
+        $billet = Billet::find($id);
 
-    if (! $billet) {
-        return redirect()->back()->with('error', 'Billet introuvable.');
+        if (! $billet) {
+            return redirect()->back()->with('error', 'Billet introuvable.');
+        }
+
+        // Seul l'organisateur de cet événement peut supprimer son billet.
+        $user = Auth::user();
+        $organisateurId = $user?->organisateur?->id;
+
+        $estProprietaire = $user?->role === 'organisateur'
+            && $organisateurId !== null
+            && Evenement::whereKey($billet->evenement_id)
+                ->where('organisateur_id', $organisateurId)
+                ->exists();
+
+        abort_unless($estProprietaire, 403);
+
+        // Rendre les places au stock avant de supprimer le billet.
+        DB::transaction(function () use ($billet, $annulationBilletService) {
+            $annulationBilletService->restituerStock($billet);
+            $billet->delete();
+        });
+
+        return redirect()->back()->with('success', 'Billet supprimé avec succès.');
     }
-
-    // Seul l'organisateur de cet événement peut supprimer son billet.
-    $user = Auth::user();
-    $organisateurId = $user?->organisateur?->id;
-
-    $estProprietaire = $user?->role === 'organisateur'
-        && $organisateurId !== null
-        && Evenement::whereKey($billet->evenement_id)
-            ->where('organisateur_id', $organisateurId)
-            ->exists();
-
-    abort_unless($estProprietaire, 403);
-
-    // Rendre les places au stock avant de supprimer le billet.
-    DB::transaction(function () use ($billet, $annulationBilletService) {
-        $annulationBilletService->restituerStock($billet);
-        $billet->delete();
-    });
-
-    return redirect()->back()->with('success', 'Billet supprimé avec succès.');
-}
 
     public function regenererDepuisDB($id, TicketPdfService $ticketPdfService)
     {
