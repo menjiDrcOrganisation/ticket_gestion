@@ -44,7 +44,8 @@ class DashboardController extends Controller
             $billetsQuery->where('evenement_id', $selectedEventId);
         }
 
-        $billets = $billetsQuery->get();
+        // Les billets annulés (remboursés) ne comptent ni dans les ventes ni dans le remplissage.
+        $billets = $billetsQuery->get()->reject->estAnnule()->values();
 
         $totalBilletsVendus = 0;
         $revenusCDF = 0;
@@ -93,7 +94,10 @@ class DashboardController extends Controller
             'revenusUSD',
             'typesBillets',
             'billetsScannes',
-            'derniersAchats'
+            'derniersAchats',
+            'remplissageVendus',
+            'remplissageCapacite',
+            'evolutionRemplissage'
         ));
     }
 }

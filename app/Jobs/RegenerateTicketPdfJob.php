@@ -2,13 +2,14 @@
 
 namespace App\Jobs;
 
+use App\Mail\TicketGenerationFailedMail;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Services\EmailDeliveryService;
 use App\Services\TicketPdfService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class RegenerateTicketPdfJob implements ShouldQueue
 {

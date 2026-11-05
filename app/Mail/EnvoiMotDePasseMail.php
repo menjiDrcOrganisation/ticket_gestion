@@ -4,6 +4,7 @@ namespace App\Mail;
 
 use App\Models\Evenement;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
@@ -11,7 +12,7 @@ use Illuminate\Queue\SerializesModels;
  * Mail envoyé à un NOUVEL organisateur : identifiants de connexion (mot de passe temporaire
  * à changer obligatoirement), informations de l'événement et identifiants du scanneur.
  */
-class EnvoiMotDePasseMail extends Mailable
+class EnvoiMotDePasseMail extends Mailable implements ShouldBeEncrypted
 {
     use Queueable, SerializesModels;
 

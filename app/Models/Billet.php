@@ -11,6 +11,8 @@ class Billet extends Model
     /** @use HasFactory<\Database\Factories\BilletFactory> */
     use HasFactory;
 
+    public const STATUT_ANNULE = 'annule';
+
     private static ?string $billetImageColumn = null;
 
     protected $fillable = [

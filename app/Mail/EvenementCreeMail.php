@@ -4,6 +4,7 @@ namespace App\Mail;
 
 use App\Models\Evenement;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
@@ -11,7 +12,7 @@ use Illuminate\Queue\SerializesModels;
  * Mail envoyé à un organisateur DÉJÀ inscrit lorsqu'un nouvel événement est créé sur son compte :
  * informations de l'événement et identifiants du nouveau scanneur (aucun mot de passe organisateur).
  */
-class EvenementCreeMail extends Mailable
+class EvenementCreeMail extends Mailable implements ShouldBeEncrypted
 {
     use Queueable, SerializesModels;
 

@@ -3,10 +3,11 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class EnvoiMotDePasseOublieMail extends Mailable
+class EnvoiMotDePasseOublieMail extends Mailable implements ShouldBeEncrypted
 {
     use Queueable, SerializesModels;
 
@@ -34,16 +35,12 @@ class EnvoiMotDePasseOublieMail extends Mailable
      * @param  string  $resetUrl
      * @param  array|null  $options  (appName, expires, supportEmail, supportPhone, logo)
      */
-    public function __construct($email, $token, $resetUrl, $options = [])
+    public function __construct($resetUrl, $options = [])
     {
-        $this->email = $email;
-        $this->token = $token;
         $this->resetUrl = $resetUrl;
-        $this->appName = $options['appName'] ?? config('app.name');
         $this->expires = $options['expires'] ?? '60 minutes';
         $this->supportEmail = $options['supportEmail'] ?? config('mail.from.address');
-        $this->supportPhone = $options['supportPhone'] ?? '+243 84 747 374 5';
-        $this->logo = $options['logo'] ?? null;
+        $this->supportPhone = $options['supportPhone'] ?? null;
     }
 
     /**

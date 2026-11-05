@@ -1,6 +1,5 @@
-
-
 <?php
+
 use App\Http\Controllers\Web\Admin\EvenementController;
 use App\Http\Middleware\AuditTrail;
 use App\Http\Middleware\RoleMiddleware;

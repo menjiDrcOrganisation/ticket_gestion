@@ -9,8 +9,8 @@ use App\Models\Billet;
 use App\Models\EvenementTypeBillet;
 use App\Models\Transaction;
 use App\Services\ExchangeRateService;
+use App\Services\GenerationBilletService;
 use App\Services\MobileMoneyService;
-use App\Services\TicketPdfService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -65,6 +65,7 @@ class TransactionController extends Controller
                 'montant_unitaire' => $montantUnitaireConverti,
                 'nombre_billet' => $validated['nombre_reel'],
                 'numero_telephone' => $validated['numero_client'],
+                'email_client' => $validated['email_client'] ?? null,
                 'nom_complet_client' => $validated['nom_complet_client'],
                 'statut' => 'en_attente',
                 'type' => 'paiement',
@@ -561,6 +562,7 @@ class TransactionController extends Controller
             $billet = Billet::create([
                 'nom_auteur' => $locked->nom_complet_client,
                 'numero' => $locked->numero_telephone,
+                'email' => $locked->email_client,
                 'billetImage' => '',
                 'code_billet' => 'TCK-'.strtoupper(uniqid()),
                 'evenement_id' => $locked->evenement_id,
@@ -590,29 +592,32 @@ class TransactionController extends Controller
             /** @var Transaction $updatedTransaction */
             $updatedTransaction = $result['transaction'];
 
+            $this->generationBilletService->genererPdf($updatedTransaction, $billet);
+
             try {
-                $this->ticketPdfService->generate(
-                    $billet,
-                    (float) $updatedTransaction->montant_unitaire,
-                    $updatedTransaction->devise,
-                    (float) $updatedTransaction->montant,
-                    $updatedTransaction->reference
-                );
-
-                $updatedTransaction->update([
-                    'statut' => 'paye',
-                ]);
-            } catch (Exception $e) {
-                $updatedTransaction->update([
-                    'statut' => 'paye_sans_billet',
-                ]);
-
-                RegenerateTicketPdfJob::dispatch($updatedTransaction->id);
-
-                Log::error('Erreur generation billet apres paiement.', [
+                app(\App\Services\NotificationDispatchService::class)->createCampaign([
+                    'name' => 'Confirmation d’achat de billet',
+                    'subject' => 'Confirmation de votre achat - '.($updatedTransaction->evenement?->nom ?? 'événement'),
+                    'message' => sprintf(
+                        "Bonjour %s,\n\nVotre paiement pour l’événement « %s » est confirmé.\nRéférence : %s\nQuantité : %s billet(s).\n\nMerci pour votre achat.",
+                        $updatedTransaction->nom_complet_client,
+                        $updatedTransaction->evenement?->nom ?? 'événement',
+                        $updatedTransaction->reference,
+                        $updatedTransaction->nombre_billet
+                    ),
+                    'channels' => ['email', 'sms'],
+                    'trigger' => 'purchase',
+                    'event_id' => $updatedTransaction->evenement_id,
+                    'source_key' => 'purchase-'.$updatedTransaction->reference,
+                ], [[
+                    'name' => $updatedTransaction->nom_complet_client,
+                    'email' => $updatedTransaction->email_client,
+                    'phone' => $updatedTransaction->numero_telephone,
+                ]]);
+            } catch (\Throwable $exception) {
+                Log::error('Échec de création de notification de confirmation d’achat', [
                     'transaction_id' => $updatedTransaction->id,
-                    'reference' => $updatedTransaction->reference,
-                    'error' => $e->getMessage(),
+                    'error' => $exception->getMessage(),
                 ]);
             }
 

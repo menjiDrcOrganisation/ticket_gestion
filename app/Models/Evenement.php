@@ -26,9 +26,18 @@ class Evenement extends Model
         'url_evenement',
         'mail_send_attempts',
         'mail_sent_at',
+        'mail_queued_at',
         'last_mail_error',
 
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'mail_sent_at' => 'datetime',
+            'mail_queued_at' => 'datetime',
+        ];
+    }
 
     public function organisateur()
     {
@@ -76,20 +85,37 @@ class Evenement extends Model
         return round(min(100, ($billetsVendus / $capaciteTotale) * 100), 1);
     }
 
+    /**
+     * Billets vendus, hors billets annulés (remboursés).
+     * Utilise la relation « billets » si elle est déjà chargée, pour éviter une requête par événement dans les listes.
+     */
     public function billetsVendus(): int
     {
-        return (int) $this->billets()->sum('quantite');
+        if ($this->relationLoaded('billets')) {
+            return (int) $this->billets->reject->estAnnule()->sum('quantite');
+        }
+
+        return (int) $this->billets()->nonAnnules()->sum('quantite');
     }
 
     /**
      * Capacité totale = stock restant + billets vendus
-     * (le stock evenement_type_billets.nombre_billet est décrémenté à chaque vente).
+     * (le stock evenement_type_billets.nombre_billet est décrémenté à chaque vente
+     * et réincrémenté à chaque annulation).
      */
     public function capaciteTotale(): int
     {
-        $stockRestant = (int) EvenementTypeBillet::where('evenement_id', $this->id)->sum('nombre_billet');
+        $stockRestant = $this->relationLoaded('typeBillets')
+            ? (int) $this->typeBillets->sum('pivot.nombre_billet')
+            : (int) EvenementTypeBillet::where('evenement_id', $this->id)->sum('nombre_billet');
 
         return $stockRestant + $this->billetsVendus();
+    }
+
+    /** Faux tant qu'aucune billetterie (stock) n'a été définie pour l'événement. */
+    public function aUneCapacite(): bool
+    {
+        return $this->capaciteTotale() > 0;
     }
 
     public function tauxRemplissage(): float
