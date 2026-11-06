@@ -11,7 +11,13 @@ class EnvoiMotDePasseOublieMail extends Mailable implements ShouldBeEncrypted
 {
     use Queueable, SerializesModels;
 
+    public $email;
+
+    public $token;
+
     public $resetUrl;
+
+    public $appName;
 
     public $expires;
 
@@ -19,11 +25,15 @@ class EnvoiMotDePasseOublieMail extends Mailable implements ShouldBeEncrypted
 
     public $supportPhone;
 
+    public $logo;
+
     /**
      * Crée une nouvelle instance de message.
      *
+     * @param  string  $email
+     * @param  string  $token
      * @param  string  $resetUrl
-     * @param  array  $options  (expires, supportEmail, supportPhone)
+     * @param  array|null  $options  (appName, expires, supportEmail, supportPhone, logo)
      */
     public function __construct($resetUrl, $options = [])
     {
@@ -38,13 +48,17 @@ class EnvoiMotDePasseOublieMail extends Mailable implements ShouldBeEncrypted
      */
     public function build()
     {
-        return $this->subject('Réinitialisation de votre mot de passe')
-            ->view('emails.reset-password')
+        return $this->subject("Réinitialisation du mot de passe — {$this->appName}")
+            ->view('emails.reset-password')          // HTML
             ->with([
+                'email' => $this->email,
+                'token' => $this->token,
                 'resetUrl' => $this->resetUrl,
+                'appName' => $this->appName,
                 'expires' => $this->expires,
                 'supportEmail' => $this->supportEmail,
                 'supportPhone' => $this->supportPhone,
+                'logo' => $this->logo,
             ]);
     }
 }

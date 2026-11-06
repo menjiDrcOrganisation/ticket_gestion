@@ -11,11 +11,13 @@ use App\Models\TypeBillet;
 use App\Models\TypeEvenement;
 use App\Services\EvenementCreationService;
 use App\Services\EvenementMailService;
-use App\Services\NotificationDispatchService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use App\Services\NotificationDispatchService;
+
+
 
 class EvenementController extends Controller
 {
@@ -276,20 +278,6 @@ class EvenementController extends Controller
     {
         try {
             $evenement = Evenement::with('typeBillets')->findOrFail($id);
-            try {
-                $notificationDispatch->notifyEventBuyers(
-                    $evenement,
-                    'Annulation de votre événement',
-                    sprintf("Bonjour,\n\nL’événement « %s » a été annulé. Veuillez contacter l’organisateur pour toute question.", $evenement->nom),
-                    'event_cancelled',
-                    'event-cancelled-'.$evenement->id
-                );
-            } catch (\Throwable $exception) {
-                Log::error('Échec de la notification d’annulation d’événement', [
-                    'evenement_id' => $evenement->id,
-                    'error' => $exception->getMessage(),
-                ]);
-            }
             $evenement->typeBillets()->detach();
             $evenement->delete();
 
@@ -300,30 +288,12 @@ class EvenementController extends Controller
         }
     }
 
-    public function updateStatus(UpdateEvenementStatusRequest $request, $id, NotificationDispatchService $notificationDispatch)
+    public function updateStatus(UpdateEvenementStatusRequest $request, $id)
     {
         $validated = $request->validated();
         $evenement = Evenement::findOrFail($id);
-        $previousStatus = $evenement->statut;
         $evenement->statut = $validated['statut'];
         $evenement->save();
-
-        if ($previousStatus !== $evenement->statut) {
-            try {
-                $notificationDispatch->notifyEventBuyers(
-                    $evenement,
-                    'Changement de statut de votre événement',
-                    sprintf("Bonjour,\n\nLe statut de l’événement « %s » est désormais « %s ».", $evenement->nom, $evenement->statut),
-                    'event_status_changed',
-                    'event-status-'.$evenement->id.'-'.(string) Str::uuid()
-                );
-            } catch (\Throwable $exception) {
-                Log::error('Échec de la notification de changement de statut', [
-                    'evenement_id' => $evenement->id,
-                    'error' => $exception->getMessage(),
-                ]);
-            }
-        }
 
         return redirect()->back()->with('success', 'Statut de l’événement mis à jour avec succès.');
     }

@@ -21,7 +21,7 @@ class EvenementMailService
 
     /**
      * @param  array  $creation  Résultat de EvenementCreationService::create()
-     * @return bool true si le mail a été envoyé ou mis en file, false en cas d'échec.
+     * @return bool true si le mail est parti, false sinon (l'erreur est journalisée et tracée sur l'événement).
      */
     public function envoyerApresCreation(array $creation): bool
     {

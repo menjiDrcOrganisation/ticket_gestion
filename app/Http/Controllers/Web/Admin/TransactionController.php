@@ -5,13 +5,12 @@ namespace App\Http\Controllers\Web\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Billet;
 use App\Models\Transaction;
-use App\Services\AnnulationBilletService;
-use App\Services\GenerationBilletService;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use App\Services\AnnulationBilletService;
+use App\Services\GenerationBilletService;
 
 class TransactionController extends Controller
 {
@@ -117,7 +116,7 @@ class TransactionController extends Controller
 
         try {
             // Renvoie [type, message] si la génération est refusée, null sinon.
-            $refus = DB::transaction(function () use ($id, $generationBilletService, &$transaction, &$billet) {
+            $refus = DB::transaction(function () use ($id, &$transaction, &$billet) {
                 $transaction = Transaction::lockForUpdate()->findOrFail($id);
 
                 // Vérifier si billet déjà généré
@@ -133,7 +132,11 @@ class TransactionController extends Controller
                     return ['error', 'Transaction incomplète : événement, type ou nombre de billets manquant.'];
                 }
 
-                $billet = $generationBilletService->creerBillet($transaction);
+                // Génération manuelle du billet
+                $billet = Billet::create([
+                    'reference' => 'BLT-'.strtoupper(Str::random(10)),
+                    'transaction_id' => $transaction->id,
+                ]);
 
                 $transaction->update([
                     'billet_id' => $billet->id,

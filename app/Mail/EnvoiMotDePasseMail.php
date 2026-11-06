@@ -49,33 +49,7 @@ class EnvoiMotDePasseMail extends Mailable implements ShouldBeEncrypted
      */
     public function build()
     {
-        return $this->subject('Bienvenue sur '.config('app.name'))
+        return $this->subject('Vos identifiants de connexion')
             ->view('emails.messagePasseOrganisateur');
-    }
-
-    public function send($mailer)
-    {
-        $result = parent::send($mailer);
-
-        if ($this->evenement) {
-            $this->evenement->forceFill([
-                'mail_sent_at' => now(),
-                'mail_queued_at' => null,
-                'last_mail_error' => null,
-            ])->save();
-        }
-
-        return $result;
-    }
-
-    public function failed(\Throwable $exception): void
-    {
-        if ($this->evenement) {
-            $this->evenement->forceFill([
-                'mail_sent_at' => null,
-                'mail_queued_at' => null,
-                'last_mail_error' => 'MAIL_SEND_FAILED',
-            ])->save();
-        }
     }
 }

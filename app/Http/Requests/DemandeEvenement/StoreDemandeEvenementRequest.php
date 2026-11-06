@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\DemandeEvenement;
 
+use App\Rules\FichierTeleverse;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreDemandeEvenementRequest extends FormRequest
@@ -19,7 +20,7 @@ class StoreDemandeEvenementRequest extends FormRequest
             'description' => 'required|string',
             'type_evenement' => 'required|string|max:255',
             'statut' => 'required|string|in:en_attente,valide,ferme',
-            'affiche' => 'nullable|image|max:2048',
+            'affiche' => ['nullable', new FichierTeleverse('affiche')],
         ];
     }
 }

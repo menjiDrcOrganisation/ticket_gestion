@@ -8,7 +8,6 @@ use App\Models\Billet;
 use App\Models\EvenementTypeBillet;
 use App\Models\Transaction;
 use App\Services\ExchangeRateService;
-use App\Services\GenerationBilletService;
 use App\Services\MobileMoneyService;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -17,12 +16,14 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Services\TicketPdfService;
+
 
 class TransactionController extends Controller
 {
     public function __construct(
         private readonly ExchangeRateService $exchangeRateService,
-        private readonly GenerationBilletService $generationBilletService
+        private readonly TicketPdfService $ticketPdfService
     ) {}
 
     public function initier(InitierTransactionRequest $request): JsonResponse
@@ -518,7 +519,7 @@ class TransactionController extends Controller
         $baseUrl = rtrim((string) env('MOBILE_MONEY_CALLBACK_BASE_URL', ''), '/');
 
         if ($baseUrl !== '') {
-            return $baseUrl.route('transactions.callback', [], false);
+            return $baseUrl.'/api/transactions/callback';
         }
 
         return route('transactions.callback');
@@ -527,9 +528,15 @@ class TransactionController extends Controller
     private function finaliserPaiement(Transaction $transaction, array $payload): array
     {
         $result = DB::transaction(function () use ($transaction, $payload): array {
-            $locked = Transaction::with(['billet'])
-                ->lockForUpdate()
-                ->findOrFail($transaction->id);
+            $locked->update([
+                    'billet_id' => $billet->id,
+                    'statut' => 'paye',
+                    'gateway_reference' => $payload['gatewayReference']
+                        ?? $payload['transactionReference']
+                        ?? null,
+                    'callback_payload' => $payload,
+                    'paid_at' => now(),
+                ]);
 
             if (in_array($locked->statut, ['paye', 'paye_sans_billet'], true) && $locked->billet) {
                 return [
@@ -591,8 +598,13 @@ class TransactionController extends Controller
             /** @var Transaction $updatedTransaction */
             $updatedTransaction = $result['transaction'];
 
-            $this->generationBilletService->genererPdf($updatedTransaction, $billet);
-
+            $this->ticketPdfService->generate(
+                $billet,
+                (float) $updatedTransaction->montant_unitaire,
+                (string) $updatedTransaction->devise,
+                (float) $updatedTransaction->montant,
+                (string) $updatedTransaction->reference
+            );
             try {
                 app(\App\Services\NotificationDispatchService::class)->createCampaign([
                     'name' => 'Confirmation d’achat de billet',

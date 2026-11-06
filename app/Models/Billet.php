@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Eloquent\Builder;
 
 class Billet extends Model
 {
@@ -45,17 +46,6 @@ class Billet extends Model
         $this->attributes[$column] = $value;
     }
 
-    public function estAnnule(): bool
-    {
-        return $this->statut === self::STATUT_ANNULE;
-    }
-
-    /** Billets comptés comme vendus (tout sauf les billets annulés). */
-    public function scopeNonAnnules($query)
-    {
-        return $query->where('statut', '!=', self::STATUT_ANNULE);
-    }
-
     private function resolveBilletImageColumn(): string
     {
         if (self::$billetImageColumn !== null) {
@@ -67,12 +57,6 @@ class Billet extends Model
             : 'billet_image';
 
         return self::$billetImageColumn;
-    }
-
-    /** Toutes les entrées du billet ont déjà été scannées : il ne donne plus accès à l'événement. */
-    public function estEntierementUtilise(): bool
-    {
-        return $this->statut === 'utilisee' || (int) $this->quantite_fictif <= 0;
     }
 
     public function evenement()
@@ -101,4 +85,15 @@ class Billet extends Model
     {
         return $this->hasMany(Transaction::class);
     }
+    
+
+public function estAnnule(): bool
+{
+    return $this->statut === self::STATUT_ANNULE;
+}
+
+public function scopeNonAnnules(Builder $query): Builder
+{
+    return $query->where('statut', '!=', self::STATUT_ANNULE);
+}
 }

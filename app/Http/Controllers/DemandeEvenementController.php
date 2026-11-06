@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DemandeEvenement;
+use App\Rules\FichierTeleverse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -41,7 +42,7 @@ class DemandeEvenementController extends Controller
             'description' => 'required|string',
             'type_evenement' => 'required|string|max:255',
             'statut' => 'required|string|in:en_attente,valide,ferme',
-            'affiche' => 'nullable|image|max:2048',
+            'affiche' => ['nullable', new FichierTeleverse('affiche')],
         ]);
 
         $affichePath = null;
@@ -70,7 +71,7 @@ class DemandeEvenementController extends Controller
             'description' => 'required|string',
             'type_evenement' => 'required|string|max:255',
             'statut' => 'required|string|in:en_attente,valide,ferme',
-            'affiche' => 'nullable|image|max:2048',
+            'affiche' => ['nullable', new FichierTeleverse('affiche')],
         ]);
 
         if ($request->hasFile('affiche')) {

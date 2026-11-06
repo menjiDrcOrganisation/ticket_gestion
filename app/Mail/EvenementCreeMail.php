@@ -26,28 +26,7 @@ class EvenementCreeMail extends Mailable implements ShouldBeEncrypted
 
     public function build()
     {
-        return $this->subject('Votre événement est créé')
+        return $this->subject('Votre événement a été créé avec succès')
             ->view('emails.messageEvenementCree');
-    }
-
-    public function send($mailer)
-    {
-        $result = parent::send($mailer);
-        $this->evenement->forceFill([
-            'mail_sent_at' => now(),
-            'mail_queued_at' => null,
-            'last_mail_error' => null,
-        ])->save();
-
-        return $result;
-    }
-
-    public function failed(\Throwable $exception): void
-    {
-        $this->evenement->forceFill([
-            'mail_sent_at' => null,
-            'mail_queued_at' => null,
-            'last_mail_error' => 'MAIL_SEND_FAILED',
-        ])->save();
     }
 }
