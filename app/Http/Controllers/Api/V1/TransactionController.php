@@ -528,9 +528,15 @@ class TransactionController extends Controller
     private function finaliserPaiement(Transaction $transaction, array $payload): array
     {
         $result = DB::transaction(function () use ($transaction, $payload): array {
-            $locked = Transaction::with(['billet'])
-                ->lockForUpdate()
-                ->findOrFail($transaction->id);
+            $locked->update([
+                    'billet_id' => $billet->id,
+                    'statut' => 'paye',
+                    'gateway_reference' => $payload['gatewayReference']
+                        ?? $payload['transactionReference']
+                        ?? null,
+                    'callback_payload' => $payload,
+                    'paid_at' => now(),
+                ]);
 
             if (in_array($locked->statut, ['paye', 'paye_sans_billet'], true) && $locked->billet) {
                 return [

@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use App\Services\AnnulationBilletService;
+use App\Services\GenerationBilletService;
 
 class TransactionController extends Controller
 {
