@@ -20,7 +20,7 @@
 
         <x-indic-dashboard :value="$evenementsEncours" title="Événements en cours" subtitle="Actifs" icon="play-circle" tone="emerald" />
 
-        <x-indic-dashboard :value="$evenementsPasse" title="Événements fermés" subtitle="Terminés" icon="check-circle" tone="slate" />
+        <x-indic-dashboard :value="$evenementsSuspendus" title="Événements suspendus" subtitle="Suspendus" icon="pause-circle" tone="slate" />
     </div>
     </div>
 
@@ -37,7 +37,7 @@
                 <x-app-select id="statut" name="statut" wrapperClass="mb-0">
                     <option value="">Tous les statuts</option>
                     <option value="encours" @selected($status === 'encours')>En cours</option>
-                    <option value="ferme" @selected($status === 'ferme')>Fermé</option>
+                    <option value="suspendu" @selected($status === 'suspendu')>Suspendu</option>
                     <option value="a venir" @selected($status === 'a venir')>À venir</option>
                 </x-app-select>
             </div>
@@ -110,8 +110,8 @@
                     <td class="px-4 py-4 whitespace-nowrap">
                         @if($evenement->statut === 'encours')
                             <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">encours</span>
-                        @elseif($evenement->statut === 'ferme')
-                            <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs">Fermé</span>
+                        @elseif($evenement->statut === 'suspendu')
+                            <span class="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs">Suspendu</span>
                         @else
                             <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs">À venir</span>
                         @endif
@@ -158,26 +158,34 @@
                                 title="Modifier">
                                 <i data-lucide="edit-3" class="w-4 h-4"></i>
                             </button>
-                            <!-- Fermer -->
-                            @if($evenement->statut === 'ferme')
-                                <button type="button"
-                                        class="text-slate-400 transition p-1 rounded cursor-not-allowed"
-                                        title="Événement déjà fermé"
-                                        disabled>
-                                    <i data-lucide="lock" class="w-4 h-4"></i>
-                                </button>
-                            @else
+                            @if($evenement->statut === 'encours')
                                 <form action="{{ route('evenements.updateStatus', $evenement->id) }}"
                                       method="POST"
-                                      onsubmit="return confirm('Voulez-vous vraiment fermer cet événement ?')"
+                                      onsubmit="return confirm('Voulez-vous vraiment suspendre cet événement ?')"
                                       class="inline">
                                     @csrf
                                     @method('PATCH')
-                                    <input type="hidden" name="statut" value="ferme">
+                                    <input type="hidden" name="statut" value="suspendu">
                                     <button type="submit"
-                                            class="text-rose-600 hover:text-rose-700 transition p-1 rounded hover:bg-rose-50"
-                                            title="Fermer l'événement">
-                                        <i data-lucide="lock" class="w-4 h-4"></i>
+                                            class="text-amber-600 hover:text-amber-700 transition p-1 rounded hover:bg-amber-50"
+                                            title="Suspendre l'événement"
+                                            aria-label="Suspendre">
+                                        <i data-lucide="pause" class="w-4 h-4"></i>
+                                    </button>
+                                </form>
+                            @elseif($evenement->statut === 'suspendu')
+                                <form action="{{ route('evenements.updateStatus', $evenement->id) }}"
+                                      method="POST"
+                                      onsubmit="return confirm('Voulez-vous vraiment rouvrir cet événement ?')"
+                                      class="inline">
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="hidden" name="statut" value="encours">
+                                    <button type="submit"
+                                            class="text-emerald-600 hover:text-emerald-700 transition p-1 rounded hover:bg-emerald-50"
+                                            title="Ouvrir l'événement"
+                                            aria-label="Ouvrir">
+                                        <i data-lucide="play" class="w-4 h-4"></i>
                                     </button>
                                 </form>
                             @endif
@@ -209,7 +217,7 @@
                 <!-- Modal amélioré -->
                 <div id="modal-{{ $evenement->id }}" class="fixed inset-0 bg-black bg-opacity-50 items-center justify-center hidden z-50 p-4">
                     <div class="bg-white rounded-xl shadow-lg w-full max-w-2xl p-6 relative max-h-[90vh] overflow-y-auto">
-                        <!-- Bouton fermer -->
+                        <!-- Bouton de fermeture du modal -->
                         <button onclick="closeModal('modal-{{ $evenement->id }}')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition p-2 rounded-full hover:bg-gray-100">
                             <i data-lucide="x" class="w-5 h-5"></i>
                         </button>
@@ -220,8 +228,8 @@
                             <div class="flex items-center gap-2 mt-2">
                                 @if($evenement->statut === 'encours')
                                     <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">Actif</span>
-                                @elseif($evenement->statut === 'ferme')
-                                    <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">Fermé</span>
+                                @elseif($evenement->statut === 'suspendu')
+                                    <span class="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-sm font-medium">Suspendu</span>
                                 @else
                                     <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm font-medium">À venir</span>
                                 @endif

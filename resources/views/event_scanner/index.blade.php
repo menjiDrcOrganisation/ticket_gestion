@@ -11,7 +11,7 @@
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <x-indic-dashboard :value="$totalEvenements" title="Mes événements" subtitle="Total" icon="calendar-days" tone="blue" />
         <x-indic-dashboard :value="$evenementsEncours" title="En cours" subtitle="Actifs" icon="play-circle" tone="emerald" />
-        <x-indic-dashboard :value="$evenementsFermes" title="Fermés" subtitle="Terminés" icon="lock-closed" tone="slate" />
+        <x-indic-dashboard :value="$evenementsSuspendus" title="Suspendus" subtitle="Suspendus" icon="pause-circle" tone="slate" />
         <x-indic-dashboard :value="$evenementsSansScanneur" title="Sans scanneur" subtitle="Affectation" icon="user-minus" tone="amber" />
     </div>
 
@@ -27,7 +27,7 @@
                 <x-app-select id="statut" name="statut" wrapperClass="mb-0">
                     <option value="">Tous</option>
                     <option value="encours" @selected($status === 'encours')>En cours</option>
-                    <option value="ferme" @selected($status === 'ferme')>Fermé</option>
+                    <option value="suspendu" @selected($status === 'suspendu')>Suspendu</option>
                     <option value="a venir" @selected($status === 'a venir')>À venir</option>
                 </x-app-select>
             </div>
@@ -84,7 +84,7 @@
                 @php
                     $statusClass = match ($evenement->statut) {
                         'encours' => 'bg-emerald-100 text-emerald-700',
-                        'ferme' => 'bg-rose-100 text-rose-700',
+                        'suspendu' => 'bg-slate-100 text-slate-700',
                         default => 'bg-amber-100 text-amber-700',
                     };
                     $publicUrl = rtrim((string) env('ACHAT_URL', ''), '/') . '/' . ltrim((string) $evenement->url_evenement, '/');
@@ -109,7 +109,7 @@
                     </x-app-td>
                     <x-app-td align="center">{{ $evenement->typeBillets->count() }}</x-app-td>
                     <x-app-td align="center" nowrap>
-                        <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $statusClass }}">{{ $evenement->statut }}</span>
+                        <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $statusClass }}">{{ $evenement->statut === 'suspendu' ? 'Suspendu' : $evenement->statut }}</span>
                     </x-app-td>
                     <x-app-td class="max-w-[180px] truncate">
                         <a href="{{ $publicUrl }}" target="_blank" class="text-blue-600 hover:underline">{{ $evenement->url_evenement }}</a>

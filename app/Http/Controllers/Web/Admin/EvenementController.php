@@ -55,7 +55,7 @@ class EvenementController extends Controller
             ->latest()
             ->get()->count();
 
-        $evenementsPasse = Evenement::where('statut', 'ferme')
+        $evenementsSuspendus = Evenement::where('statut', 'suspendu')
             ->with(['organisateur.user', 'typeBillets'])
             ->latest()
             ->get()->count();
@@ -63,7 +63,7 @@ class EvenementController extends Controller
         return view('evenements.showAll', compact(
             'evenements',
             'evenementsEncours',
-            'evenementsPasse',
+            'evenementsSuspendus',
             'typeEvenements',
             'search',
             'status',
@@ -305,6 +305,16 @@ class EvenementController extends Controller
         $validated = $request->validated();
         $evenement = Evenement::findOrFail($id);
         $previousStatus = $evenement->statut;
+
+        $transitionAutorisee = ($previousStatus === 'encours' && $validated['statut'] === 'suspendu')
+            || ($previousStatus === 'suspendu' && $validated['statut'] === 'encours');
+
+        if (! $transitionAutorisee) {
+            throw ValidationException::withMessages([
+                'statut' => 'Cette transition de statut n’est pas autorisée.',
+            ]);
+        }
+
         $evenement->statut = $validated['statut'];
         $evenement->save();
 
