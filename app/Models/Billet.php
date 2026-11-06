@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Eloquent\Builder;
 
 class Billet extends Model
 {
@@ -84,4 +85,15 @@ class Billet extends Model
     {
         return $this->hasMany(Transaction::class);
     }
+    
+
+public function estAnnule(): bool
+{
+    return $this->statut === self::STATUT_ANNULE;
+}
+
+public function scopeNonAnnules(Builder $query): Builder
+{
+    return $query->where('statut', '!=', self::STATUT_ANNULE);
+}
 }

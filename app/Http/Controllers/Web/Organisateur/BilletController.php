@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Billet;
 use App\Models\Evenement;
 use App\Models\EvenementTypeBillet;
+use App\Services\AnnulationBilletService;
 use App\Services\TicketPdfService;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class BilletController extends Controller
@@ -29,16 +31,21 @@ class BilletController extends Controller
             $type = trim((string) $request->query('type', ''));
             $selectedEventId = (int) $request->query('event_id', 0);
             $perPage = (int) $request->query('per_page', 10);
+
             if (! in_array($perPage, [10, 25, 50, 100], true)) {
                 $perPage = 10;
             }
 
             $user = Auth::user();
-            $evenementsOrganisateur = Evenement::where('organisateur_id', $user->organisateur->id)
+            $evenementsOrganisateur = Evenement::where(
+                'organisateur_id',
+                $user->organisateur->id
+            )
                 ->orderBy('date_debut', 'desc')
                 ->get(['id', 'nom', 'date_debut']);
 
             $allowedEventIds = $evenementsOrganisateur->pluck('id')->all();
+
             if (empty($allowedEventIds)) {
                 $emptyPaginator = new LengthAwarePaginator([], 0, $perPage, 1, [
                     'path' => $request->url(),
@@ -64,7 +71,10 @@ class BilletController extends Controller
                 ]);
             }
 
-            if ($selectedEventId > 0 && ! in_array($selectedEventId, $allowedEventIds, true)) {
+            if (
+                $selectedEventId > 0
+                && ! in_array($selectedEventId, $allowedEventIds, true)
+            ) {
                 $selectedEventId = 0;
             }
 
@@ -78,6 +88,7 @@ class BilletController extends Controller
 
             foreach ($billets as $billet) {
                 $eventType = $billet->evenementTypeBillet();
+
                 if (! $eventType) {
                     continue;
                 }
@@ -102,7 +113,6 @@ class BilletController extends Controller
 
                 $totalAchat += $billet->quantite;
 
-                // Montants par devise
                 if ($eventType->devise === 'CDF') {
                     $totalCDF += $eventType->prix_unitaire * $billet->quantite;
                 }
@@ -135,35 +145,41 @@ class BilletController extends Controller
                 ->sort()
                 ->values();
 
-            $filtered = $detailleCollection->filter(function (array $item) use ($search, $status, $devise, $type): bool {
-                if ($search !== '') {
-                    $haystack = mb_strtolower(
-                        implode(' ', [
-                            (string) ($item['auteur'] ?? ''),
-                            (string) ($item['type'] ?? ''),
-                            (string) ($item['code'] ?? ''),
-                        ])
-                    );
+            $filtered = $detailleCollection->filter(
+                function (array $item) use ($search, $status, $devise, $type): bool {
+                    if ($search !== '') {
+                        $haystack = mb_strtolower(
+                            implode(' ', [
+                                (string) ($item['auteur'] ?? ''),
+                                (string) ($item['type'] ?? ''),
+                                (string) ($item['code'] ?? ''),
+                            ])
+                        );
 
-                    if (! str_contains($haystack, mb_strtolower($search))) {
+                        if (! str_contains($haystack, mb_strtolower($search))) {
+                            return false;
+                        }
+                    }
+
+                    if (
+                        $status !== ''
+                        && mb_strtolower((string) ($item['statut'] ?? ''))
+                            !== mb_strtolower($status)
+                    ) {
                         return false;
                     }
-                }
 
-                if ($status !== '' && mb_strtolower((string) ($item['statut'] ?? '')) !== mb_strtolower($status)) {
-                    return false;
-                }
+                    if ($devise !== '' && (string) ($item['devise'] ?? '') !== $devise) {
+                        return false;
+                    }
 
-                if ($devise !== '' && (string) ($item['devise'] ?? '') !== $devise) {
-                    return false;
-                }
+                    if ($type !== '' && (string) ($item['type'] ?? '') !== $type) {
+                        return false;
+                    }
 
-                if ($type !== '' && (string) ($item['type'] ?? '') !== $type) {
-                    return false;
+                    return true;
                 }
-
-                return true;
-            })->values();
+            )->values();
 
             $currentPage = LengthAwarePaginator::resolveCurrentPage();
             $currentPageItems = $filtered->forPage($currentPage, $perPage)->values();
@@ -196,18 +212,20 @@ class BilletController extends Controller
                 'typeOptions',
                 'evenementsOrganisateur'
             ));
-
         } catch (\Throwable $th) {
             Log::error('Erreur chargement billets organisateur', [
                 'error_message' => $th->getMessage(),
                 'exception' => $th,
             ]);
 
-            return redirect()->back()->with('error', 'Impossible de charger les billets pour le moment.');
+            return redirect()->back()->with(
+                'error',
+                'Impossible de charger les billets pour le moment.'
+            );
         }
     }
 
-    public function destroy($id)
+    public function destroy($id, AnnulationBilletService $annulationBilletService)
     {
         $billet = Billet::find($id);
 
@@ -239,29 +257,35 @@ class BilletController extends Controller
     public function regenererDepuisDB($id, TicketPdfService $ticketPdfService)
     {
         try {
-            $billet = Billet::with(['evenement.ressource', 'type_billet'])->findOrFail($id);
+            $billet = Billet::with(['evenement.ressource', 'type_billet'])
+                ->findOrFail($id);
 
-            $type_billet = EvenementTypeBillet::where('type_billet_id', $billet->type_billet_id)
+            $typeBillet = EvenementTypeBillet::where(
+                'type_billet_id',
+                $billet->type_billet_id
+            )
                 ->where('evenement_id', $billet->evenement_id)
                 ->first();
 
-            if (! $type_billet) {
-                return back()->with('error', 'Type de billet introuvable pour cet evenement.');
+            if (! $typeBillet) {
+                return back()->with(
+                    'error',
+                    'Type de billet introuvable pour cet evenement.'
+                );
             }
 
-            $prix = (float) $type_billet->prix_unitaire;
+            $prix = (float) $typeBillet->prix_unitaire;
             $total = $prix * (int) $billet->quantite;
 
             $ticketPdfService->generate(
                 $billet,
                 $prix,
-                (string) $type_billet->devise,
+                (string) $typeBillet->devise,
                 $total,
                 (string) $billet->code_billet
             );
 
             return back()->with('success', 'Billet régénéré avec succès.');
-
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
