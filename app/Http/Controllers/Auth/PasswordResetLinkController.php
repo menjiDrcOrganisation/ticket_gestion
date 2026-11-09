@@ -35,11 +35,11 @@ class PasswordResetLinkController extends Controller
         $user = \App\Models\User::where('email', $request->email)->first();
 
         if (! $user) {
-    return back()->with(
-        'status',
-        'Si un compte correspond à cette adresse, un lien de réinitialisation lui sera envoyé.'
-    );
-}
+            return back()->with(
+                'status',
+                'Si un compte correspond à cette adresse, un lien de réinitialisation lui sera envoyé.'
+            );
+        }
 
         // 1️⃣ Laravel génère un token sécurisé et l’enregistre dans la base
         $token = Password::broker('users')->createToken($user);

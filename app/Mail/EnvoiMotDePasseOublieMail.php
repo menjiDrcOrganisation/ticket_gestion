@@ -30,22 +30,19 @@ class EnvoiMotDePasseOublieMail extends Mailable implements ShouldBeEncrypted
     /**
      * Crée une nouvelle instance de message.
      *
-     * @param  string  $email
-     * @param  string  $token
-     * @param  string  $resetUrl
      * @param  array|null  $options  (appName, expires, supportEmail, supportPhone, logo)
      */
     public function __construct(string $email, string $token, string $resetUrl, array $options = [])
-{
-    $this->email = $email;
-    $this->token = $token;
-    $this->resetUrl = $resetUrl;
-    $this->appName = $options['appName'] ?? config('app.name');
-    $this->expires = $options['expires'] ?? '60 minutes';
-    $this->supportEmail = $options['supportEmail'] ?? config('mail.from.address');
-    $this->supportPhone = $options['supportPhone'] ?? null;
-    $this->logo = $options['logo'] ?? null;
-}
+    {
+        $this->email = $email;
+        $this->token = $token;
+        $this->resetUrl = $resetUrl;
+        $this->appName = $options['appName'] ?? config('app.name');
+        $this->expires = $options['expires'] ?? '60 minutes';
+        $this->supportEmail = $options['supportEmail'] ?? config('mail.from.address');
+        $this->supportPhone = $options['supportPhone'] ?? null;
+        $this->logo = $options['logo'] ?? null;
+    }
 
     /**
      * Construire le mail.

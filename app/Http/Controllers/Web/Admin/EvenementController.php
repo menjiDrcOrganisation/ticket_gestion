@@ -11,13 +11,11 @@ use App\Models\TypeBillet;
 use App\Models\TypeEvenement;
 use App\Services\EvenementCreationService;
 use App\Services\EvenementMailService;
+use App\Services\NotificationDispatchService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
-use App\Services\NotificationDispatchService;
-
-
 
 class EvenementController extends Controller
 {
@@ -289,24 +287,24 @@ class EvenementController extends Controller
     }
 
     public function updateStatus(UpdateEvenementStatusRequest $request, $id)
-{
-    $evenement = Evenement::findOrFail($id);
-    $validated = $request->validated();
+    {
+        $evenement = Evenement::findOrFail($id);
+        $validated = $request->validated();
 
-    if ($evenement->statut === $validated['statut']) {
-        throw \Illuminate\Validation\ValidationException::withMessages([
-            'statut' => 'L’événement possède déjà ce statut.',
-        ]);
+        if ($evenement->statut === $validated['statut']) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'statut' => 'L’événement possède déjà ce statut.',
+            ]);
+        }
+
+        $evenement->statut = $validated['statut'];
+        $evenement->save();
+
+        return redirect()->back()->with(
+            'success',
+            'Statut de l’événement mis à jour avec succès.'
+        );
     }
-
-    $evenement->statut = $validated['statut'];
-    $evenement->save();
-
-    return redirect()->back()->with(
-        'success',
-        'Statut de l’événement mis à jour avec succès.'
-    );
-}
 
     public function resendMail($id, EvenementMailService $evenementMailService)
     {

@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Eloquent\Builder;
 
 class Billet extends Model
 {
@@ -85,24 +85,23 @@ class Billet extends Model
     {
         return $this->hasMany(Transaction::class);
     }
-    
 
-public function estAnnule(): bool
-{
-    return $this->statut === self::STATUT_ANNULE;
-}
-/**
- * Indique si toutes les entrées de ce billet ont déjà été utilisées.
- */
-public function estEntierementUtilise(): bool
-{
-    return $this->statut === 'utilisee'
-        || (int) $this->quantite_fictif <= 0;
-}
+    public function estAnnule(): bool
+    {
+        return $this->statut === self::STATUT_ANNULE;
+    }
 
-public function scopeNonAnnules(Builder $query): Builder
-{
-    return $query->where('statut', '!=', self::STATUT_ANNULE);
-}
+    /**
+     * Indique si toutes les entrées de ce billet ont déjà été utilisées.
+     */
+    public function estEntierementUtilise(): bool
+    {
+        return $this->statut === 'utilisee'
+            || (int) $this->quantite_fictif <= 0;
+    }
 
+    public function scopeNonAnnules(Builder $query): Builder
+    {
+        return $query->where('statut', '!=', self::STATUT_ANNULE);
+    }
 }

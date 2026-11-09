@@ -1,14 +1,11 @@
 <?php
 
+use App\Http\Controllers\Web\Admin\NotificationController;
 use App\Http\Controllers\Web\Organisateur\BilletController;
 use App\Http\Controllers\Web\Shared\HomeController;
 use App\Http\Controllers\Web\Shared\ProfileController;
-use Illuminate\Support\Facades\Route;
-
-
-use App\Http\Controllers\Web\Admin\NotificationController;
 use App\Http\Middleware\RoleMiddleware;
-
+use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', RoleMiddleware::class.':admin'])
     ->prefix('admin')

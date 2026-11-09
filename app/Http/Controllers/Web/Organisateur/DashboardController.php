@@ -85,31 +85,31 @@ class DashboardController extends Controller
 
         $derniersAchats = $billets->sortByDesc('created_at')->take(5)->values();
 
-$remplissageVendus = 0;
-$remplissageCapacite = 0;
-$evolutionRemplissage = [];
+        $remplissageVendus = 0;
+        $remplissageCapacite = 0;
+        $evolutionRemplissage = [];
 
-if ($evenement) {
-    $remplissageVendus = $evenement->billetsVendus();
-    $remplissageCapacite = $evenement->capaciteTotale();
+        if ($evenement) {
+            $remplissageVendus = $evenement->billetsVendus();
+            $remplissageCapacite = $evenement->capaciteTotale();
 
-    // Le composant attend une liste d'entrées contenant date, vendus et cumul.
-    $evolutionRemplissage = $evenement->evolutionRemplissage();
-}
+            // Le composant attend une liste d'entrées contenant date, vendus et cumul.
+            $evolutionRemplissage = $evenement->evolutionRemplissage();
+        }
 
-return view('organisateurs.dashboard_org', compact(
-    'evenement',
-    'evenementsOrganisateur',
-    'selectedEventId',
-    'totalBilletsVendus',
-    'revenusCDF',
-    'revenusUSD',
-    'typesBillets',
-    'billetsScannes',
-    'derniersAchats',
-    'remplissageVendus',
-    'remplissageCapacite',
-    'evolutionRemplissage'
-));
+        return view('organisateurs.dashboard_org', compact(
+            'evenement',
+            'evenementsOrganisateur',
+            'selectedEventId',
+            'totalBilletsVendus',
+            'revenusCDF',
+            'revenusUSD',
+            'typesBillets',
+            'billetsScannes',
+            'derniersAchats',
+            'remplissageVendus',
+            'remplissageCapacite',
+            'evolutionRemplissage'
+        ));
     }
 }
