@@ -65,7 +65,7 @@ class PermissionsTest extends TestCase
     {
         $url = $avecId ? route($route, $this->creerEvenement()->id) : route($route);
 
-        return $this->call(strtoupper($methode), $url, ['statut' => 'ferme']);
+        return $this->call(strtoupper($methode), $url, ['statut' => 'suspendu']);
     }
 
     #[DataProvider('routesAdminEvenements')]
@@ -90,19 +90,24 @@ class PermissionsTest extends TestCase
         $this->appeler($methode, $route, $avecId)->assertForbidden();
     }
 
-    public function test_un_organisateur_ne_peut_ni_fermer_ni_supprimer_un_evenement(): void
+    public function test_un_organisateur_ne_peut_ni_suspendre_ni_supprimer_un_evenement(): void
     {
         $organisateur = $this->creerOrganisateur();
         $evenement = $this->creerEvenement($organisateur, null, ['statut' => 'encours']);
 
         $this->actingAs($organisateur->user)
-            ->patch(route('evenements.updateStatus', $evenement->id), ['statut' => 'ferme'])
+            ->patch(route('evenements.updateStatus', $evenement->id), ['statut' => 'suspendu'])
+            ->assertForbidden();
+        $evenementSuspendu = $this->creerEvenement($organisateur, null, ['statut' => 'suspendu']);
+        $this->actingAs($organisateur->user)
+            ->patch(route('evenements.updateStatus', $evenementSuspendu->id), ['statut' => 'encours'])
             ->assertForbidden();
         $this->actingAs($organisateur->user)
             ->delete(route('evenements.destroy', $evenement->id))
             ->assertForbidden();
 
         $this->assertSame('encours', $evenement->fresh()->statut);
+        $this->assertSame('suspendu', $evenementSuspendu->fresh()->statut);
     }
 
     public function test_l_admin_accede_a_la_gestion_des_evenements(): void

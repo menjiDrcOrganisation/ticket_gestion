@@ -72,7 +72,7 @@ class DashboardMetricsServiceTest extends TestCase
     {
         $this->creerEvenement(null, null, ['statut' => 'encours']);
         $this->creerEvenement(null, null, ['statut' => 'encours']);
-        $this->creerEvenement(null, null, ['statut' => 'ferme']);
+        $this->creerEvenement(null, null, ['statut' => 'suspendu']);
 
         $this->assertSame(2, $this->donnees()['kpis']['evenementsActifs']);
     }
