@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
+use Illuminate\Support\Facades\Password;
 
 class PasswordResetTest extends TestCase
 {
@@ -69,6 +70,12 @@ class PasswordResetTest extends TestCase
         $user = User::factory()->create();
 
         $mail = $this->demanderLien($user);
+        $token = $mail->token;
+
+$this->assertTrue(
+    Password::broker('users')->tokenExists($user, $token),
+    'Laravel ne reconnaît pas le jeton créé pour le courriel.'
+);
 
         $this->get('/reset-password/'.$this->tokenFrom($mail))->assertStatus(200);
     }
@@ -78,9 +85,10 @@ class PasswordResetTest extends TestCase
         $user = User::factory()->create(['must_change_password' => true]);
 
         $mail = $this->demanderLien($user);
+        $token = $mail->token; // Ajoutez cette ligne
 
         $this->post('/reset-password', [
-            'token' => $this->tokenFrom($mail),
+            'token' => $token,
             'email' => $user->email,
             'password' => 'NouveauMotDePasse1',
             'password_confirmation' => 'NouveauMotDePasse1',
