@@ -276,20 +276,6 @@ class EvenementController extends Controller
     {
         try {
             $evenement = Evenement::with('typeBillets')->findOrFail($id);
-            try {
-                $notificationDispatch->notifyEventBuyers(
-                    $evenement,
-                    'Annulation de votre événement',
-                    sprintf("Bonjour,\n\nL’événement « %s » a été annulé. Veuillez contacter l’organisateur pour toute question.", $evenement->nom),
-                    'event_cancelled',
-                    'event-cancelled-'.$evenement->id
-                );
-            } catch (\Throwable $exception) {
-                Log::error('Échec de la notification d’annulation d’événement', [
-                    'evenement_id' => $evenement->id,
-                    'error' => $exception->getMessage(),
-                ]);
-            }
             $evenement->typeBillets()->detach();
             $evenement->delete();
 
@@ -300,42 +286,24 @@ class EvenementController extends Controller
         }
     }
 
-    public function updateStatus(UpdateEvenementStatusRequest $request, $id, NotificationDispatchService $notificationDispatch)
+    public function updateStatus(UpdateEvenementStatusRequest $request, $id)
     {
-        $validated = $request->validated();
         $evenement = Evenement::findOrFail($id);
-        $previousStatus = $evenement->statut;
+        $validated = $request->validated();
 
-        $transitionAutorisee = ($previousStatus === 'encours' && $validated['statut'] === 'suspendu')
-            || ($previousStatus === 'suspendu' && $validated['statut'] === 'encours');
-
-        if (! $transitionAutorisee) {
-            throw ValidationException::withMessages([
-                'statut' => 'Cette transition de statut n’est pas autorisée.',
+        if ($evenement->statut === $validated['statut']) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'statut' => 'L’événement possède déjà ce statut.',
             ]);
         }
 
         $evenement->statut = $validated['statut'];
         $evenement->save();
 
-        if ($previousStatus !== $evenement->statut) {
-            try {
-                $notificationDispatch->notifyEventBuyers(
-                    $evenement,
-                    'Changement de statut de votre événement',
-                    sprintf("Bonjour,\n\nLe statut de l’événement « %s » est désormais « %s ».", $evenement->nom, $evenement->statut),
-                    'event_status_changed',
-                    'event-status-'.$evenement->id.'-'.(string) Str::uuid()
-                );
-            } catch (\Throwable $exception) {
-                Log::error('Échec de la notification de changement de statut', [
-                    'evenement_id' => $evenement->id,
-                    'error' => $exception->getMessage(),
-                ]);
-            }
-        }
-
-        return redirect()->back()->with('success', 'Statut de l’événement mis à jour avec succès.');
+        return redirect()->back()->with(
+            'success',
+            'Statut de l’événement mis à jour avec succès.'
+        );
     }
 
     public function resendMail($id, EvenementMailService $evenementMailService)

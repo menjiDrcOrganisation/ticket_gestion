@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Web\Organisateur;
 use App\Http\Controllers\Controller;
 use App\Models\Billet;
 use App\Models\Evenement;
-use App\Models\EvenementTypeBillet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -48,13 +47,6 @@ class DashboardController extends Controller
         // Les billets annulés (remboursés) ne comptent ni dans les ventes ni dans le remplissage.
         $billets = $billetsQuery->get()->reject->estAnnule()->values();
 
-        // Remplissage du périmètre affiché (un événement ou tous) : capacité = stock restant + billets vendus.
-        $evenementIdsPerimetre = $selectedEventId > 0 ? [$selectedEventId] : $allowedEventIds;
-        $remplissageVendus = (int) $billets->sum('quantite');
-        $remplissageCapacite = (int) EvenementTypeBillet::whereIn('evenement_id', $evenementIdsPerimetre)->sum('nombre_billet')
-            + $remplissageVendus;
-        $evolutionRemplissage = Evenement::construireEvolution($billets, $remplissageCapacite);
-
         $totalBilletsVendus = 0;
         $revenusCDF = 0;
         $revenusUSD = 0;
@@ -92,6 +84,18 @@ class DashboardController extends Controller
         }
 
         $derniersAchats = $billets->sortByDesc('created_at')->take(5)->values();
+
+        $remplissageVendus = 0;
+        $remplissageCapacite = 0;
+        $evolutionRemplissage = [];
+
+        if ($evenement) {
+            $remplissageVendus = $evenement->billetsVendus();
+            $remplissageCapacite = $evenement->capaciteTotale();
+
+            // Le composant attend une liste d'entrées contenant date, vendus et cumul.
+            $evolutionRemplissage = $evenement->evolutionRemplissage();
+        }
 
         return view('organisateurs.dashboard_org', compact(
             'evenement',

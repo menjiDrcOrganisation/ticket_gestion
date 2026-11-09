@@ -1,9 +1,28 @@
 <?php
 
+use App\Http\Controllers\Web\Admin\NotificationController;
 use App\Http\Controllers\Web\Organisateur\BilletController;
 use App\Http\Controllers\Web\Shared\HomeController;
 use App\Http\Controllers\Web\Shared\ProfileController;
+use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
+
+Route::middleware(['auth', RoleMiddleware::class.':admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::get('/notifications', [NotificationController::class, 'index'])
+            ->name('notifications.index');
+
+        Route::post('/notifications', [NotificationController::class, 'store'])
+            ->name('notifications.store');
+
+        Route::post('/notifications/{campaign}/send', [NotificationController::class, 'send'])
+            ->name('notifications.send');
+
+        Route::post('/notifications/{campaign}/cancel', [NotificationController::class, 'cancel'])
+            ->name('notifications.cancel');
+    });
 
 Route::get('/', [HomeController::class, 'home'])->name('home')->middleware(['auth']);
 
@@ -35,4 +54,3 @@ require __DIR__.'/dmd_retrait.php';
 require __DIR__.'/transaction.php';
 require __DIR__.'/admin_organisateur.php';
 require __DIR__.'/audit.php';
-require __DIR__.'/notifications.php';

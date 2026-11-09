@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api\V1;
 
+use App\Rules\FichierTeleverse;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreDemandeEvenementApiRequest extends FormRequest
@@ -18,7 +19,7 @@ class StoreDemandeEvenementApiRequest extends FormRequest
             'contact_organisateur' => 'required|string|max:255',
             'description' => 'required|string',
             'type_evenement' => 'required|string|max:255',
-            'affiche' => 'nullable|image|max:2048',
+            'affiche' => ['nullable', new FichierTeleverse('affiche')],
             'statut' => 'required|in:en_attente,valide,ferme',
         ];
     }
