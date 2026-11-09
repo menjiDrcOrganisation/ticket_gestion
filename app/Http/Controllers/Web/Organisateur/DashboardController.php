@@ -85,21 +85,16 @@ class DashboardController extends Controller
 
         $derniersAchats = $billets->sortByDesc('created_at')->take(5)->values();
 
-        $remplissageVendus = 0;
+$remplissageVendus = 0;
 $remplissageCapacite = 0;
 $evolutionRemplissage = [];
 
 if ($evenement) {
-    $remplissageVendus = (int) ($evenement->billetsVendus() ?? 0);
-    $remplissageCapacite = (int) ($evenement->capaciteTotale() ?? 0);
+    $remplissageVendus = $evenement->billetsVendus();
+    $remplissageCapacite = $evenement->capaciteTotale();
 
-    if ($remplissageCapacite > 0) {
-        $evolutionRemplissage = [
-            'vendus' => $remplissageVendus,
-            'capacite' => $remplissageCapacite,
-            'taux' => round(($remplissageVendus / $remplissageCapacite) * 100, 1),
-        ];
-    }
+    // Le composant attend une liste d'entrées contenant date, vendus et cumul.
+    $evolutionRemplissage = $evenement->evolutionRemplissage();
 }
 
 return view('organisateurs.dashboard_org', compact(
