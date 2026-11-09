@@ -57,7 +57,7 @@ class EvenementController extends Controller
             ->latest()
             ->get()->count();
 
-        $evenementsPasse = Evenement::where('statut', 'ferme')
+        $evenementsSuspendus = Evenement::where('statut', 'suspendu')
             ->with(['organisateur.user', 'typeBillets'])
             ->latest()
             ->get()->count();
@@ -65,7 +65,7 @@ class EvenementController extends Controller
         return view('evenements.showAll', compact(
             'evenements',
             'evenementsEncours',
-            'evenementsPasse',
+            'evenementsSuspendus',
             'typeEvenements',
             'search',
             'status',

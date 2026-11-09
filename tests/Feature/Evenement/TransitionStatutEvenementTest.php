@@ -12,7 +12,7 @@ use Tests\Concerns\CreeDesDonneesMetier;
 use Tests\TestCase;
 
 /**
- * Cycle de vie d'un événement : encours (à la création) ⇄ ferme.
+ * Cycle de vie d'un événement : encours (à la création) ⇄ suspendu.
  */
 class TransitionStatutEvenementTest extends TestCase
 {
@@ -47,33 +47,42 @@ class TransitionStatutEvenementTest extends TestCase
         $this->assertSame('encours', Evenement::firstOrFail()->statut);
     }
 
-    public function test_fermeture_d_un_evenement_en_cours(): void
+    public function test_suspension_d_un_evenement_en_cours(): void
     {
         $evenement = $this->creerEvenement(null, null, ['statut' => 'encours']);
 
-        $this->changerStatut($evenement, 'ferme')
+        $this->changerStatut($evenement, 'suspendu')
             ->assertRedirect(route('evenements.index'))
             ->assertSessionHas('success');
 
-        $this->assertSame('ferme', $evenement->fresh()->statut);
+        $this->assertSame('suspendu', $evenement->fresh()->statut);
     }
 
-    public function test_reouverture_d_un_evenement_ferme(): void
+    public function test_reouverture_d_un_evenement_suspendu(): void
     {
-        $evenement = $this->creerEvenement(null, null, ['statut' => 'ferme']);
+        $evenement = $this->creerEvenement(null, null, ['statut' => 'suspendu']);
 
         $this->changerStatut($evenement, 'encours')->assertSessionHasNoErrors();
 
         $this->assertSame('encours', $evenement->fresh()->statut);
     }
 
-    public function test_une_transition_vers_le_meme_statut_est_sans_effet(): void
+    public function test_un_evenement_en_cours_ne_peut_pas_etre_rouvert(): void
     {
-        $evenement = $this->creerEvenement(null, null, ['statut' => 'ferme']);
+        $evenement = $this->creerEvenement(null, null, ['statut' => 'encours']);
 
-        $this->changerStatut($evenement, 'ferme')->assertSessionHasNoErrors();
+        $this->changerStatut($evenement, 'encours')->assertSessionHasErrors('statut');
 
-        $this->assertSame('ferme', $evenement->fresh()->statut);
+        $this->assertSame('encours', $evenement->fresh()->statut);
+    }
+
+    public function test_un_evenement_suspendu_ne_peut_pas_etre_suspendu_une_seconde_fois(): void
+    {
+        $evenement = $this->creerEvenement(null, null, ['statut' => 'suspendu']);
+
+        $this->changerStatut($evenement, 'suspendu')->assertSessionHasErrors('statut');
+
+        $this->assertSame('suspendu', $evenement->fresh()->statut);
     }
 
     public function test_un_statut_inconnu_est_refuse_et_l_etat_est_conserve(): void
@@ -88,7 +97,7 @@ class TransitionStatutEvenementTest extends TestCase
     public function test_changer_le_statut_d_un_evenement_inexistant_renvoie_404(): void
     {
         $this->actingAs($this->admin)
-            ->patch(route('evenements.updateStatus', 9999), ['statut' => 'ferme'])
+            ->patch(route('evenements.updateStatus', 9999), ['statut' => 'suspendu'])
             ->assertNotFound();
     }
 
@@ -96,27 +105,53 @@ class TransitionStatutEvenementTest extends TestCase
     {
         $evenement = $this->creerEvenement(null, null, ['statut' => 'encours']);
 
-        $this->changerStatut($evenement, 'ferme');
+        $this->changerStatut($evenement, 'suspendu');
 
-        $this->assertTrue(AuditLog::where('user_id', $this->admin->id)->exists());
+        $journal = AuditLog::where('user_id', $this->admin->id)->firstOrFail();
+
+        $this->assertSame('status_change', $journal->action);
+        $this->assertSame($evenement->id, $journal->entity_id);
+        $this->assertSame('suspendu', $journal->after_values['statut']);
     }
 
     public function test_les_compteurs_de_la_liste_suivent_les_statuts(): void
     {
         $this->creerEvenement(null, null, ['statut' => 'encours']);
         $this->creerEvenement(null, null, ['statut' => 'encours']);
-        $ferme = $this->creerEvenement(null, null, ['statut' => 'encours']);
+        $suspendu = $this->creerEvenement(null, null, ['statut' => 'encours']);
 
-        $this->changerStatut($ferme, 'ferme');
+        $this->changerStatut($suspendu, 'suspendu');
 
         $this->actingAs($this->admin)
             ->get(route('evenements.index'))
             ->assertOk()
             ->assertViewHas('evenementsEncours', 2)
-            ->assertViewHas('evenementsPasse', 1);
+            ->assertViewHas('evenementsSuspendus', 1);
 
         $this->actingAs($this->admin)
-            ->get(route('evenements.index', ['statut' => 'ferme']))
-            ->assertViewHas('evenements', fn ($page) => $page->pluck('id')->all() === [$ferme->id]);
+            ->get(route('evenements.index', ['statut' => 'suspendu']))
+            ->assertViewHas('evenements', fn ($page) => $page->pluck('id')->all() === [$suspendu->id]);
+    }
+
+    public function test_l_action_suspendre_est_affichee_uniquement_pour_un_evenement_en_cours(): void
+    {
+        $this->creerEvenement(null, null, ['statut' => 'encours']);
+
+        $this->actingAs($this->admin)
+            ->get(route('evenements.index'))
+            ->assertOk()
+            ->assertSee('aria-label="Suspendre"', false)
+            ->assertDontSee('aria-label="Ouvrir"', false);
+    }
+
+    public function test_l_action_ouvrir_est_affichee_uniquement_pour_un_evenement_suspendu(): void
+    {
+        $this->creerEvenement(null, null, ['statut' => 'suspendu']);
+
+        $this->actingAs($this->admin)
+            ->get(route('evenements.index'))
+            ->assertOk()
+            ->assertSee('aria-label="Ouvrir"', false)
+            ->assertDontSee('aria-label="Suspendre"', false);
     }
 }

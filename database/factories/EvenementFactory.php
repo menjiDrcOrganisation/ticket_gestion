@@ -20,7 +20,7 @@ class EvenementFactory extends Factory
             'salle' => $this->faker->word(),
             'heure_debut' => $this->faker->time(),
             'heure_fin' => $this->faker->time(),
-            'statut' => $this->faker->randomElement(['encours', 'ferme']),
+            'statut' => $this->faker->randomElement(['encours', 'suspendu']),
         ];
     }
 }

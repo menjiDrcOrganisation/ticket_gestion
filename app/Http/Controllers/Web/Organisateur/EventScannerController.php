@@ -49,7 +49,7 @@ class EventScannerController extends Controller
 
         $totalEvenements = (clone $baseQuery)->count();
         $evenementsEncours = (clone $baseQuery)->where('statut', 'encours')->count();
-        $evenementsFermes = (clone $baseQuery)->where('statut', 'ferme')->count();
+        $evenementsSuspendus = (clone $baseQuery)->where('statut', 'suspendu')->count();
         $evenementsSansScanneur = (clone $baseQuery)->whereNull('scanneur_id')->count();
 
         $typeEvenements = TypeEvenement::orderBy('nom_type')->get(['id', 'nom_type']);
@@ -62,7 +62,7 @@ class EventScannerController extends Controller
             'perPage',
             'totalEvenements',
             'evenementsEncours',
-            'evenementsFermes',
+            'evenementsSuspendus',
             'evenementsSansScanneur',
             'typeEvenements'
         ));
