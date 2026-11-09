@@ -91,9 +91,18 @@ public function estAnnule(): bool
 {
     return $this->statut === self::STATUT_ANNULE;
 }
+/**
+ * Indique si toutes les entrées de ce billet ont déjà été utilisées.
+ */
+public function estEntierementUtilise(): bool
+{
+    return $this->statut === 'utilisee'
+        || (int) $this->quantite_fictif <= 0;
+}
 
 public function scopeNonAnnules(Builder $query): Builder
 {
     return $query->where('statut', '!=', self::STATUT_ANNULE);
 }
+
 }

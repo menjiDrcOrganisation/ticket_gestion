@@ -63,6 +63,21 @@ class ScanneController extends Controller
             $billet = Billet::where('code_billet', $code)
                 ->whereIn('evenement_id', $scopeEventIds)
                 ->first();
+            if ($billet->estAnnule()) {
+    return response()->json([
+        'valid' => false,
+        'message' => 'Billet annulé (remboursé)',
+    ], 422);
+}
+
+if ($billet->estEntierementUtilise()) {
+    return response()->json([
+        'valid' => false,
+        'nom' => $billet->nom_auteur ?? '',
+        'quantite_fictif' => 0,
+        'message' => 'Billet déjà utilisé',
+    ], 422);
+}
             if (! $billet) {
                 return response()->json([
                     'valid' => false,
