@@ -16,15 +16,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use App\Services\TicketPdfService;
+use App\Services\GenerationBilletService;
 
 
 class TransactionController extends Controller
 {
-    public function __construct(
-        private readonly ExchangeRateService $exchangeRateService,
-        private readonly TicketPdfService $ticketPdfService
-    ) {}
+   public function __construct(
+    private readonly ExchangeRateService $exchangeRateService,
+    private readonly GenerationBilletService $generationBilletService
+) {}
 
     public function initier(InitierTransactionRequest $request): JsonResponse
     {
@@ -525,124 +525,102 @@ class TransactionController extends Controller
         return route('transactions.callback');
     }
 
-    private function finaliserPaiement(Transaction $transaction, array $payload): array
-    {
-        $result = DB::transaction(function () use ($transaction, $payload): array {
-            $locked->update([
-                    'billet_id' => $billet->id,
-                    'statut' => 'paye',
-                    'gateway_reference' => $payload['gatewayReference']
-                        ?? $payload['transactionReference']
-                        ?? null,
-                    'callback_payload' => $payload,
-                    'paid_at' => now(),
-                ]);
+  private function finaliserPaiement(Transaction $transaction, array $payload): array
+{
+    $resultat = DB::transaction(function () use ($transaction, $payload): array {
+        $locked = Transaction::with('billet')
+            ->lockForUpdate()
+            ->findOrFail($transaction->id);
 
-            if (in_array($locked->statut, ['paye', 'paye_sans_billet'], true) && $locked->billet) {
-                return [
-                    'status' => true,
-                    'message' => 'Transaction deja finalisee.',
-                    'numero_commande' => $locked->reference,
-                    'statut' => $locked->statut,
-                    'download_url' => $locked->billet->billetImage
-                        ? route('transactions.download', ['reference' => $locked->reference])
-                        : null,
-                ];
-            }
-
-            $type = EvenementTypeBillet::lockForUpdate()
-                ->where('type_billet_id', $locked->type_billet_id)
-                ->where('evenement_id', $locked->evenement_id)
-                ->first();
-
-            if (! $type) {
-                throw new Exception('Stock introuvable.');
-            }
-
-            if ($type->nombre_billet < $locked->nombre_billet) {
-                throw new Exception('Stock insuffisant au moment de la confirmation.');
-            }
-
-            $type->decrement('nombre_billet', (int) $locked->nombre_billet);
-
-            $billet = Billet::create([
-                'nom_auteur' => $locked->nom_complet_client,
-                'numero' => $locked->numero_telephone,
-                'email' => $locked->email_client,
-                'billetImage' => '',
-                'code_billet' => 'TCK-'.strtoupper(uniqid()),
-                'evenement_id' => $locked->evenement_id,
-                'type_billet_id' => $locked->type_billet_id,
-                'quantite' => $locked->nombre_billet,
-                'quantite_fictif' => $locked->nombre_billet,
-                'statut' => 'valide',
-                'date_achat' => now(),
-            ]);
-
-            $locked->update([
-                'billet_id' => $billet->id,
-                'gateway_reference' => $payload['gatewayReference'] ?? $payload['transactionReference'] ?? null,
-                'callback_payload' => $payload,
-                'paid_at' => now(),
-            ]);
-
+        if ($locked->billet_id || $locked->billet) {
             return [
-                'billet' => $billet,
-                'transaction' => $locked->fresh(),
-            ];
-        });
-
-        if (isset($result['billet'])) {
-            /** @var Billet $billet */
-            $billet = $result['billet'];
-            /** @var Transaction $updatedTransaction */
-            $updatedTransaction = $result['transaction'];
-
-            $this->ticketPdfService->generate(
-                $billet,
-                (float) $updatedTransaction->montant_unitaire,
-                (string) $updatedTransaction->devise,
-                (float) $updatedTransaction->montant,
-                (string) $updatedTransaction->reference
-            );
-            try {
-                app(\App\Services\NotificationDispatchService::class)->createCampaign([
-                    'name' => 'Confirmation d’achat de billet',
-                    'subject' => 'Confirmation de votre achat - '.($updatedTransaction->evenement?->nom ?? 'événement'),
-                    'message' => sprintf(
-                        "Bonjour %s,\n\nVotre paiement pour l’événement « %s » est confirmé.\nRéférence : %s\nQuantité : %s billet(s).\n\nMerci pour votre achat.",
-                        $updatedTransaction->nom_complet_client,
-                        $updatedTransaction->evenement?->nom ?? 'événement',
-                        $updatedTransaction->reference,
-                        $updatedTransaction->nombre_billet
-                    ),
-                    'channels' => ['email', 'sms'],
-                    'trigger' => 'purchase',
-                    'event_id' => $updatedTransaction->evenement_id,
-                    'source_key' => 'purchase-'.$updatedTransaction->reference,
-                ], [[
-                    'name' => $updatedTransaction->nom_complet_client,
-                    'email' => $updatedTransaction->email_client,
-                    'phone' => $updatedTransaction->numero_telephone,
-                ]]);
-            } catch (\Throwable $exception) {
-                Log::error('Échec de création de notification de confirmation d’achat', [
-                    'transaction_id' => $updatedTransaction->id,
-                    'error' => $exception->getMessage(),
-                ]);
-            }
-
-            return [
-                'status' => true,
-                'message' => 'Paiement confirme.',
-                'numero_commande' => $updatedTransaction->reference,
-                'statut' => $updatedTransaction->fresh()->statut,
-                'download_url' => $billet->fresh()->billetImage
-                    ? route('transactions.download', ['reference' => $updatedTransaction->reference])
-                    : null,
+                'deja_traitee' => true,
+                'transaction' => $locked,
+                'billet' => $locked->billet,
             ];
         }
 
-        return $result;
+        $billet = $this->generationBilletService->creerBillet($locked);
+
+        $locked->update([
+            'billet_id' => $billet->id,
+            'gateway_reference' => $payload['gatewayReference']
+                ?? $payload['transactionReference']
+                ?? null,
+            'callback_payload' => $payload,
+            'paid_at' => $locked->paid_at ?? now(),
+        ]);
+
+        return [
+            'deja_traitee' => false,
+            'transaction' => $locked->fresh(['evenement']),
+            'billet' => $billet,
+        ];
+    });
+
+    $transactionFinalisee = $resultat['transaction'];
+    $billet = $resultat['billet'];
+
+    if ($resultat['deja_traitee']) {
+        return [
+            'status' => true,
+            'message' => 'Transaction deja traitee.',
+            'numero_commande' => $transactionFinalisee->reference,
+            'statut' => $transactionFinalisee->statut,
+            'download_url' => $billet?->billetImage
+                ? route('transactions.download', [
+                    'reference' => $transactionFinalisee->reference,
+                ])
+                : null,
+        ];
     }
+
+    $this->generationBilletService->genererPdf(
+        $transactionFinalisee,
+        $billet
+    );
+
+    $transactionFinalisee->refresh();
+    $billet->refresh();
+
+    try {
+        app(\App\Services\NotificationDispatchService::class)->createCampaign([
+            'name' => 'Confirmation d’achat de billet',
+            'subject' => 'Confirmation de votre achat - '
+                .($transactionFinalisee->evenement?->nom ?? 'événement'),
+            'message' => sprintf(
+                "Bonjour %s,\n\nVotre paiement pour l’événement « %s » est confirmé.\nRéférence : %s\nQuantité : %s billet(s).\n\nMerci pour votre achat.",
+                $transactionFinalisee->nom_complet_client,
+                $transactionFinalisee->evenement?->nom ?? 'événement',
+                $transactionFinalisee->reference,
+                $transactionFinalisee->nombre_billet
+            ),
+            'channels' => ['email', 'sms'],
+            'trigger' => 'purchase',
+            'event_id' => $transactionFinalisee->evenement_id,
+            'source_key' => 'purchase-'.$transactionFinalisee->reference,
+        ], [[
+            'name' => $transactionFinalisee->nom_complet_client,
+            'email' => $transactionFinalisee->email_client,
+            'phone' => $transactionFinalisee->numero_telephone,
+        ]]);
+    } catch (\Throwable $exception) {
+        Log::error('Échec de création de notification de confirmation d’achat', [
+            'transaction_id' => $transactionFinalisee->id,
+            'error' => $exception->getMessage(),
+        ]);
+    }
+
+    return [
+        'status' => true,
+        'message' => 'Paiement confirme.',
+        'numero_commande' => $transactionFinalisee->reference,
+        'statut' => $transactionFinalisee->statut,
+        'download_url' => $billet->billetImage
+            ? route('transactions.download', [
+                'reference' => $transactionFinalisee->reference,
+            ])
+            : null,
+    ];
+}
 }
