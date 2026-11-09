@@ -601,7 +601,7 @@ class TransactionController extends Controller
                 'name' => $transactionFinalisee->nom_complet_client,
                 'email' => $transactionFinalisee->email_client,
                 'phone' => $transactionFinalisee->numero_telephone,
-        ]]);
+            ]]);
         } catch (\Throwable $exception) {
             Log::error('Échec de création de notification de confirmation d’achat', [
                 'transaction_id' => $transactionFinalisee->id,
