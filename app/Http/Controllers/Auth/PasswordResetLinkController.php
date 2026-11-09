@@ -35,14 +35,16 @@ class PasswordResetLinkController extends Controller
         $user = \App\Models\User::where('email', $request->email)->first();
 
         if (! $user) {
-            return back()->withErrors(['email' => 'Cette adresse e-mail est introuvable.']);
-        }
+    return back()->with(
+        'status',
+        'Si un compte correspond à cette adresse, un lien de réinitialisation lui sera envoyé.'
+    );
+}
 
         // 1️⃣ Laravel génère un token sécurisé et l’enregistre dans la base
-        $token = Password::createToken($user);
+        $token = Password::broker('users')->createToken($user);
 
-        // 2️⃣ Créer le lien officiel de Laravel
-        $resetUrl = url('/reset-password/'.$token.'?email='.$user->email);
+        $resetUrl = url('/reset-password/'.$token.'?email='.urlencode($user->email));
 
         // 3️⃣ Envoyer TON e-mail personnalisé
         Mail::to($user->email)->send(new EnvoiMotDePasseOublieMail(
